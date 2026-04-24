@@ -58,11 +58,11 @@ function ManageSheet({ onClose }) {
     r => r.toUserId === currentUser?.id && r.status === 'pending'
   )
 
-  function handleSend() {
+  async function handleSend() {
     if (uid.length < 11) return
-    const res = sendFamilyRequest(uid, relationship)
+    const res = await sendFamilyRequest(uid, relationship)
     setResult(res)
-    if (res.ok) setUid('')
+    if (res?.ok) setUid('')
   }
 
   function handleRemove(id) {

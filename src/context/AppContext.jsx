@@ -195,6 +195,18 @@ export function AppProvider({ children }) {
           setFamilyRequests(prev => {
             if (payload.eventType === 'INSERT') {
               if (prev.find(r => r.id === row.id)) return prev
+              // If this request is incoming (we are the recipient), push a notification
+              if (row.toUserId === uid) {
+                setNotifications(n => {
+                  const notifId = `fam-req-${row.id}`
+                  if (n.find(x => x.id === notifId)) return n
+                  return [{
+                    id: notifId, type: 'familyRequest', requestId: row.id,
+                    forUserId: uid, timestamp: row.timestamp,
+                    message: `${row.fromUserName} (${row.fromUserUid}) wants to connect with you as ${row.relationship}.`,
+                  }, ...n].slice(0, 30)
+                })
+              }
               return [...prev, payload.new]
             }
             if (payload.eventType === 'UPDATE') return prev.map(r => r.id === payload.new.id ? payload.new : r)

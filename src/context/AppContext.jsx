@@ -662,10 +662,6 @@ export function AppProvider({ children }) {
     const req = familyRequests.find(r => r.id === requestId)
     if (!req) return
 
-    const newStatus = accept ? 'accepted' : 'rejected'
-    setFamilyRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: newStatus } : r))
-    await sbUpdate('familyRequests', requestId, { status: newStatus })
-
     if (accept) {
       let fromUserAge = null, fromUserGender = 'other', fromUserName = req.fromUserName
 
@@ -683,14 +679,24 @@ export function AppProvider({ children }) {
 
       // linkedFamilyId stores the OTHER user's familyId so each session can
       // subscribe to emergency events from connected families (cross-account alerts).
-      const memberForRecipient = { id: `mem-${Date.now()}`,   familyId: currentUser.familyId, linkedFamilyId: req.fromFamilyId,       userId: req.fromUserId,   name: fromUserName, relationship: inverseRel,        age: fromUserAge,              gender: fromUserGender,          avatar: fromUserName.slice(0,2).toUpperCase(), avatarColor: colors[Math.floor(Math.random()*colors.length)] }
-      const memberForSender    = { id: `mem-${Date.now()+1}`, familyId: req.fromFamilyId,    linkedFamilyId: currentUser.familyId, userId: currentUser.id,   name: myName,       relationship: req.relationship, age: currentUser.age||null,    gender: currentUser.gender||'other', avatar: myName.slice(0,2).toUpperCase(),       avatarColor: colors[Math.floor(Math.random()*colors.length)] }
+      const memberForRecipient = { id: `mem-${Date.now()}`,   familyId: currentUser.familyId, linkedFamilyId: req.fromFamilyId,     userId: req.fromUserId, name: fromUserName, relationship: inverseRel,        age: fromUserAge,           gender: fromUserGender,              avatar: fromUserName.slice(0,2).toUpperCase(), avatarColor: colors[Math.floor(Math.random()*colors.length)] }
+      const memberForSender    = { id: `mem-${Date.now()+1}`, familyId: req.fromFamilyId,    linkedFamilyId: currentUser.familyId, userId: currentUser.id, name: myName,       relationship: req.relationship, age: currentUser.age||null, gender: currentUser.gender||'other', avatar: myName.slice(0,2).toUpperCase(),       avatarColor: colors[Math.floor(Math.random()*colors.length)] }
 
+      // ── IMPORTANT: insert members FIRST, then update status ──────────────────
+      // The sender's realtime handler queries for the new member the moment it
+      // receives the familyRequests UPDATE. If we update status first the member
+      // won't exist yet and the query returns null.
       setMembers(prev => [...prev, memberForRecipient])
       await Promise.all([sbInsert('members', memberForRecipient), sbInsert('members', memberForSender)])
 
+      // Now safe to fire the status update — member is already in Supabase
+      setFamilyRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'accepted' } : r))
+      await sbUpdate('familyRequests', requestId, { status: 'accepted' })
+
       pushNotif({ id: `fam-accept-${requestId}`, type: 'success', forUserId: currentUser.id, message: `✅ You're now connected with ${req.fromUserName} as ${req.relationship}.` })
     } else {
+      setFamilyRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'rejected' } : r))
+      await sbUpdate('familyRequests', requestId, { status: 'rejected' })
       pushNotif({ id: `fam-reject-${requestId}`, type: 'info', forUserId: currentUser.id, message: `You declined ${req.fromUserName}'s connection request.` })
     }
     dismissNotification(`fam-req-${requestId}`)

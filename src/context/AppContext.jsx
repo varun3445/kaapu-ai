@@ -21,7 +21,9 @@ const lsSave = (k, v)  => { try { localStorage.setItem(k, JSON.stringify(v)) } c
 // ── Emergency summary ─────────────────────────────────────────────────────────
 function buildEmergencySummary({ member, conditions, medications, symptoms, checkIns, riskProfile, userNote }) {
   const lines = []
-  lines.push(`Patient: ${member.name}, ${member.age}yo ${member.gender}`)
+  const agePart    = member.age  ? `, ${member.age}yo` : ''
+  const genderPart = member.gender && member.gender !== 'other' ? ` ${member.gender}` : ''
+  lines.push(`Patient: ${member.name}${agePart}${genderPart}`)
   if (conditions.length)  lines.push(`Chronic conditions: ${conditions.map(c => c.name).join(', ')}`)
   if (medications.length) lines.push(`Current medications: ${medications.map(m => `${m.name} ${m.dosage}`).join(', ')}`)
   const hrs72 = symptoms.filter(s => Date.now() - new Date(s.timestamp).getTime() < 72 * 3600000)
@@ -174,6 +176,25 @@ export function AppProvider({ children }) {
           setMembers(prev => {
             if (payload.eventType === 'INSERT') {
               if (prev.find(m => m.id === payload.new.id)) return prev
+              // If this new member has a linkedFamilyId (a cross-family connection was just
+              // established WHILE this session is live), subscribe to their emergency channel
+              // so we receive alerts from their family in real-time.
+              const lfId = payload.new.linkedFamilyId
+              if (lfId && lfId !== familyId && supabase) {
+                const alreadyLinked = channelConnectedEmgRefs.current.some(
+                  ch => ch.topic && ch.topic.includes(lfId)
+                )
+                if (!alreadyLinked) {
+                  const newCh = supabase
+                    .channel(`emergency:linked:${lfId}`)
+                    .on('postgres_changes',
+                      { event: '*', schema: 'public', table: 'emergencyEvents', filter: `familyId=eq.${lfId}` },
+                      _handleEmergencyPayload,
+                    )
+                    .subscribe()
+                  channelConnectedEmgRefs.current = [...channelConnectedEmgRefs.current, newCh]
+                }
+              }
               return [...prev, payload.new]
             }
             if (payload.eventType === 'UPDATE') return prev.map(m => m.id === payload.new.id ? payload.new : m)

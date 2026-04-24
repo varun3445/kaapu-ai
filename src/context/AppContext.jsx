@@ -74,8 +74,9 @@ export function AppProvider({ children }) {
   const [skinColor,       setSkinColorState]  = useState(() => lsLoad(LS.skinColor, '#C49272'))
 
   // Real-time channel refs
-  const channelMembersRef  = useRef(null)
-  const channelRequestsRef = useRef(null)
+  const channelMembersRef   = useRef(null)
+  const channelRequestsRef  = useRef(null)
+  const channelEmergencyRef = useRef(null)
 
   // ── Persist UI prefs ──────────────────────────────────────────────────────
   useEffect(() => { lsSave(LS.skinColor, skinColor) }, [skinColor])
@@ -181,6 +182,43 @@ export function AppProvider({ children }) {
       )
       .subscribe()
 
+    // Real-time: emergency events — fires on ALL sessions in the same family
+    // so that family members on other devices see the alert immediately
+    channelEmergencyRef.current = supabase
+      .channel(`emergency:${familyId}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'emergencyEvents', filter: `familyId=eq.${familyId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const ev = payload.new
+            setEmergencyEvents(prev => prev.find(e => e.id === ev.id) ? prev : [ev, ...prev])
+            // Only alert members who didn't trigger it — the triggering session
+            // already has activeEmergency set via triggerEmergency()
+            setCurrentMember(me => {
+              if (me && ev.memberId !== me.id) {
+                // Show the emergency modal on this session too
+                setActiveEmergency(ev)
+                setNotifications(n => {
+                  const id = `emg-rt-${ev.id}`
+                  if (n.find(x => x.id === id)) return n
+                  return [{ id, type: 'emergency', eventId: ev.id, timestamp: ev.triggeredAt, message: `🚨 EMERGENCY: A family member has triggered an emergency alert.` }, ...n].slice(0, 30)
+                })
+              }
+              return me
+            })
+          }
+          if (payload.eventType === 'UPDATE') {
+            const ev = payload.new
+            setEmergencyEvents(prev => prev.map(e => e.id === ev.id ? ev : e))
+            // If the emergency was resolved, clear the modal on all sessions
+            if (ev.status === 'resolved') {
+              setActiveEmergency(prev => prev?.id === ev.id ? null : prev)
+            }
+          }
+        }
+      )
+      .subscribe()
+
     // Real-time: family requests
     channelRequestsRef.current = supabase
       .channel(`requests:${uid}`)
@@ -245,8 +283,9 @@ export function AppProvider({ children }) {
   }
 
   function _removeChannels() {
-    if (channelMembersRef.current)  { supabase?.removeChannel(channelMembersRef.current);  channelMembersRef.current  = null }
-    if (channelRequestsRef.current) { supabase?.removeChannel(channelRequestsRef.current); channelRequestsRef.current = null }
+    if (channelMembersRef.current)   { supabase?.removeChannel(channelMembersRef.current);   channelMembersRef.current   = null }
+    if (channelRequestsRef.current)  { supabase?.removeChannel(channelRequestsRef.current);  channelRequestsRef.current  = null }
+    if (channelEmergencyRef.current) { supabase?.removeChannel(channelEmergencyRef.current); channelEmergencyRef.current = null }
   }
 
   function _clearState() {

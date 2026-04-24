@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, supabaseReady } from '../supabase'
+import { startAlarm, stopActiveAlarm } from '../utils/audio'
 import {
   DEMO_FAMILY, DEMO_MEMBERS, DEMO_SYMPTOMS, DEMO_CHECKINS,
   DEMO_DOCUMENTS, DEMO_CONDITIONS, DEMO_MEDICATIONS, DEMO_RISK_PROFILES,
@@ -267,14 +268,18 @@ export function AppProvider({ children }) {
         // Use functional update to read current member without stale closure
         setCurrentMember(me => {
           if (!me || ev.memberId !== me.id) {
+            // Emergency from someone else (same family or connected family)
             setActiveEmergency(ev)
+            // Start the alarm siren so the observer hears it immediately
+            try { startAlarm() } catch (_) {}
             setNotifications(n => {
               const id = `emg-rt-${ev.id}`
               if (n.find(x => x.id === id)) return n
+              const name = ev.memberName || 'A family member'
               return [{
                 id, type: 'emergency', eventId: ev.id,
                 timestamp: ev.triggeredAt,
-                message: `🚨 EMERGENCY: A family member has triggered an emergency alert.`,
+                message: `🚨 EMERGENCY: ${name} needs help!`,
               }, ...n].slice(0, 30)
             })
           }
@@ -285,7 +290,14 @@ export function AppProvider({ children }) {
         const ev = payload.new
         setEmergencyEvents(prev => prev.map(e => e.id === ev.id ? ev : e))
         if (ev.status === 'resolved') {
-          setActiveEmergency(prev => prev?.id === ev.id ? null : prev)
+          setActiveEmergency(prev => {
+            if (prev?.id === ev.id) {
+              // Stop alarm for the observer when the emergency is resolved
+              try { stopActiveAlarm() } catch (_) {}
+              return null
+            }
+            return prev
+          })
         }
       }
     }
@@ -827,6 +839,7 @@ export function AppProvider({ children }) {
     })
     const event = {
       id: `emg-${Date.now()}`, memberId: currentMember.id, familyId: currentUser.familyId,
+      memberName: currentMember.name,
       triggeredAt: new Date().toISOString(), type: note ? 'manual' : 'auto',
       status: 'active', summary, location, note, healthId: generateHealthID(currentMember.id),
     }

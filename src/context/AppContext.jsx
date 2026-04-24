@@ -74,9 +74,10 @@ export function AppProvider({ children }) {
   const [skinColor,       setSkinColorState]  = useState(() => lsLoad(LS.skinColor, '#C49272'))
 
   // Real-time channel refs
-  const channelMembersRef   = useRef(null)
-  const channelRequestsRef  = useRef(null)
-  const channelEmergencyRef = useRef(null)
+  const channelMembersRef        = useRef(null)
+  const channelRequestsRef       = useRef(null)
+  const channelEmergencyRef      = useRef(null)
+  const channelConnectedEmgRefs  = useRef([]) // one channel per linked family
 
   // ── Persist UI prefs ──────────────────────────────────────────────────────
   useEffect(() => { lsSave(LS.skinColor, skinColor) }, [skinColor])
@@ -182,43 +183,6 @@ export function AppProvider({ children }) {
       )
       .subscribe()
 
-    // Real-time: emergency events — fires on ALL sessions in the same family
-    // so that family members on other devices see the alert immediately
-    channelEmergencyRef.current = supabase
-      .channel(`emergency:${familyId}`)
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'emergencyEvents', filter: `familyId=eq.${familyId}` },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            const ev = payload.new
-            setEmergencyEvents(prev => prev.find(e => e.id === ev.id) ? prev : [ev, ...prev])
-            // Only alert members who didn't trigger it — the triggering session
-            // already has activeEmergency set via triggerEmergency()
-            setCurrentMember(me => {
-              if (me && ev.memberId !== me.id) {
-                // Show the emergency modal on this session too
-                setActiveEmergency(ev)
-                setNotifications(n => {
-                  const id = `emg-rt-${ev.id}`
-                  if (n.find(x => x.id === id)) return n
-                  return [{ id, type: 'emergency', eventId: ev.id, timestamp: ev.triggeredAt, message: `🚨 EMERGENCY: A family member has triggered an emergency alert.` }, ...n].slice(0, 30)
-                })
-              }
-              return me
-            })
-          }
-          if (payload.eventType === 'UPDATE') {
-            const ev = payload.new
-            setEmergencyEvents(prev => prev.map(e => e.id === ev.id ? ev : e))
-            // If the emergency was resolved, clear the modal on all sessions
-            if (ev.status === 'resolved') {
-              setActiveEmergency(prev => prev?.id === ev.id ? null : prev)
-            }
-          }
-        }
-      )
-      .subscribe()
-
     // Real-time: family requests
     channelRequestsRef.current = supabase
       .channel(`requests:${uid}`)
@@ -241,15 +205,79 @@ export function AppProvider({ children }) {
       )
       .subscribe()
 
-    // Bulk load — each query has its own 15s timeout, failures are non-fatal
-    const safe = (res) => (res && !res.error ? res.data || [] : [])
+    // ── Step 1: Load members first — needed to know linked (connected) families ──
+    const safe    = (res) => (res && !res.error ? res.data || [] : [])
     const safeOne = (res) => (res && !res.error ? res.data : null)
 
+    const membersRes = await _sbq(supabase.from('members').select('*').eq('familyId', familyId)).catch(() => ({}))
+    const allMems = safe(membersRes)
+    setMembers(allMems)
+
+    // ── Step 2: Wire emergency realtime for own family + all linked families ───
+    // When a family connection is accepted, each member record gets a linkedFamilyId
+    // pointing to the OTHER user's family. Subscribing to those channels means
+    // emergencies triggered by connected users propagate to this session instantly.
+    function _handleEmergencyPayload(payload) {
+      if (payload.eventType === 'INSERT') {
+        const ev = payload.new
+        setEmergencyEvents(prev => prev.find(e => e.id === ev.id) ? prev : [ev, ...prev])
+        // Use functional update to read current member without stale closure
+        setCurrentMember(me => {
+          if (!me || ev.memberId !== me.id) {
+            setActiveEmergency(ev)
+            setNotifications(n => {
+              const id = `emg-rt-${ev.id}`
+              if (n.find(x => x.id === id)) return n
+              return [{
+                id, type: 'emergency', eventId: ev.id,
+                timestamp: ev.triggeredAt,
+                message: `🚨 EMERGENCY: A family member has triggered an emergency alert.`,
+              }, ...n].slice(0, 30)
+            })
+          }
+          return me
+        })
+      }
+      if (payload.eventType === 'UPDATE') {
+        const ev = payload.new
+        setEmergencyEvents(prev => prev.map(e => e.id === ev.id ? ev : e))
+        if (ev.status === 'resolved') {
+          setActiveEmergency(prev => prev?.id === ev.id ? null : prev)
+        }
+      }
+    }
+
+    // Own family emergency channel
+    channelEmergencyRef.current = supabase
+      .channel(`emergency:own:${familyId}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'emergencyEvents', filter: `familyId=eq.${familyId}` },
+        _handleEmergencyPayload,
+      )
+      .subscribe()
+
+    // Connected family emergency channels (one per unique linkedFamilyId)
+    const linkedFamilyIds = [...new Set(
+      allMems
+        .filter(m => m.linkedFamilyId && m.linkedFamilyId !== familyId)
+        .map(m => m.linkedFamilyId)
+    )]
+    channelConnectedEmgRefs.current.forEach(ch => supabase?.removeChannel(ch))
+    channelConnectedEmgRefs.current = linkedFamilyIds.map(lfId =>
+      supabase
+        .channel(`emergency:linked:${lfId}`)
+        .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'emergencyEvents', filter: `familyId=eq.${lfId}` },
+          _handleEmergencyPayload,
+        )
+        .subscribe()
+    )
+
+    // ── Step 3: Load remaining data in parallel ────────────────────────────────
     const [
-      membersRes, familyRes, sympRes, ciRes, docRes, dpRes,
+      familyRes, sympRes, ciRes, docRes, dpRes,
       condRes, medRes, riskRes, emgRes, reqRes,
     ] = await Promise.all([
-      _sbq(supabase.from('members').select('*').eq('familyId', familyId)).catch(() => ({})),
       _sbq(supabase.from('families').select('*').eq('id', familyId).single()).catch(() => ({})),
       _sbq(supabase.from('symptoms').select('*').eq('familyId', familyId)).catch(() => ({})),
       _sbq(supabase.from('checkIns').select('*').eq('familyId', familyId)).catch(() => ({})),
@@ -262,8 +290,6 @@ export function AppProvider({ children }) {
       _sbq(supabase.from('familyRequests').select('*').or(`fromUserId.eq.${uid},toUserId.eq.${uid}`)).catch(() => ({})),
     ])
 
-    const allMems = safe(membersRes)
-    setMembers(allMems)
     const fam = safeOne(familyRes)
     if (fam) setFamilies([fam])
     setSymptoms(safe(sympRes))
@@ -286,6 +312,8 @@ export function AppProvider({ children }) {
     if (channelMembersRef.current)   { supabase?.removeChannel(channelMembersRef.current);   channelMembersRef.current   = null }
     if (channelRequestsRef.current)  { supabase?.removeChannel(channelRequestsRef.current);  channelRequestsRef.current  = null }
     if (channelEmergencyRef.current) { supabase?.removeChannel(channelEmergencyRef.current); channelEmergencyRef.current = null }
+    channelConnectedEmgRefs.current.forEach(ch => supabase?.removeChannel(ch))
+    channelConnectedEmgRefs.current = []
   }
 
   function _clearState() {
@@ -595,8 +623,10 @@ export function AppProvider({ children }) {
       const inverseRel = RELATIONSHIP_INVERSE[req.relationship] || req.relationship
       const myName     = currentMember?.name || currentUser.name
 
-      const memberForRecipient = { id: `mem-${Date.now()}`, familyId: currentUser.familyId, userId: req.fromUserId, name: fromUserName, relationship: inverseRel, age: fromUserAge, gender: fromUserGender, avatar: fromUserName.slice(0,2).toUpperCase(), avatarColor: colors[Math.floor(Math.random()*colors.length)] }
-      const memberForSender    = { id: `mem-${Date.now()+1}`, familyId: req.fromFamilyId, userId: currentUser.id, name: myName, relationship: req.relationship, age: currentUser.age||null, gender: currentUser.gender||'other', avatar: myName.slice(0,2).toUpperCase(), avatarColor: colors[Math.floor(Math.random()*colors.length)] }
+      // linkedFamilyId stores the OTHER user's familyId so each session can
+      // subscribe to emergency events from connected families (cross-account alerts).
+      const memberForRecipient = { id: `mem-${Date.now()}`,   familyId: currentUser.familyId, linkedFamilyId: req.fromFamilyId,       userId: req.fromUserId,   name: fromUserName, relationship: inverseRel,        age: fromUserAge,              gender: fromUserGender,          avatar: fromUserName.slice(0,2).toUpperCase(), avatarColor: colors[Math.floor(Math.random()*colors.length)] }
+      const memberForSender    = { id: `mem-${Date.now()+1}`, familyId: req.fromFamilyId,    linkedFamilyId: currentUser.familyId, userId: currentUser.id,   name: myName,       relationship: req.relationship, age: currentUser.age||null,    gender: currentUser.gender||'other', avatar: myName.slice(0,2).toUpperCase(),       avatarColor: colors[Math.floor(Math.random()*colors.length)] }
 
       setMembers(prev => [...prev, memberForRecipient])
       await Promise.all([sbInsert('members', memberForRecipient), sbInsert('members', memberForSender)])

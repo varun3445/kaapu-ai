@@ -1,22 +1,21 @@
 /**
  * Web Audio API utilities for the emergency system.
  *
- * KEY DESIGN: one shared AudioContext for all short sounds (tick, beep, cancel).
- * Creating a fresh context per-tick causes browsers to hit their concurrent-context
- * limit and silently suspend new ones after ~5 s. The shared context is created
- * once on first use and resumed if the browser suspends it (mobile policy).
- *
- * The alarm siren gets its own context so we can close it cleanly on stop().
+ * KEY DESIGN: one shared AudioContext for ALL sounds including the alarm siren.
+ * Creating a new AudioContext outside a user gesture gets immediately suspended
+ * on mobile (Android WebView, iOS Safari). The shared context is warmed once
+ * during the user's FAB tap (warmAudio) and kept alive by the countdown ticks,
+ * so startAlarm() — called when the countdown reaches zero — can reuse it
+ * without needing another gesture.
  */
 
-// ── Shared context (short sounds) ────────────────────────────────────────────
+// ── Shared context ────────────────────────────────────────────────────────────
 let _shared = null
 
 function ctx() {
   if (!_shared || _shared.state === 'closed') {
     _shared = new (window.AudioContext || window.webkitAudioContext)()
   }
-  // Mobile browsers suspend the context until a user gesture resumes it
   if (_shared.state === 'suspended') {
     _shared.resume().catch(() => {})
   }
@@ -24,10 +23,9 @@ function ctx() {
 }
 
 /**
- * Call this synchronously inside a user-gesture handler (e.g. onClick) to
+ * Call synchronously inside a user-gesture handler (e.g. onClick) to
  * pre-create and resume the AudioContext while the browser still considers
- * the call stack to be within a user interaction. Safari in particular refuses
- * to resume a context that was created outside a gesture.
+ * the call stack to be within a user interaction.
  */
 export function warmAudio() {
   try {
@@ -92,23 +90,27 @@ export function playCancel() {
   } catch (_) {}
 }
 
-// ── Alarm siren (own context) ────────────────────────────────────────────────
+// ── Alarm siren ───────────────────────────────────────────────────────────────
 let _activeStopFn = null
 
 /**
- * Two-tone ambulance siren. Runs until stop() is called.
- * Registers itself globally so stopActiveAlarm() works from any component.
- * Returns a stop() function.
+ * Two-tone ambulance siren. Runs until stopActiveAlarm() is called.
+ * Uses the SHARED AudioContext (already unlocked by warmAudio + countdown ticks)
+ * so it plays immediately even when called from a setTimeout/interval callback
+ * with no active user gesture.
  */
 export function startAlarm() {
   // Kill any existing alarm first
   _activeStopFn?.()
 
-  let stopped   = false
-  let alarmCtx  = null
+  let stopped = false
 
   try {
-    alarmCtx = new (window.AudioContext || window.webkitAudioContext)()
+    // Reuse the shared context — it was warmed during the FAB tap and kept alive
+    // by the countdown ticks. Do NOT create a new context here; that would get
+    // suspended on mobile because we're outside a user-gesture call stack.
+    const alarmCtx = ctx()
+    if (alarmCtx.state === 'suspended') alarmCtx.resume().catch(() => {})
 
     function cycle(t) {
       if (stopped) return
@@ -143,8 +145,8 @@ export function startAlarm() {
 
   function stop() {
     stopped = true
-    try { alarmCtx?.close() } catch (_) {}
-    alarmCtx = null
+    // Do NOT close the shared context — other sounds still need it.
+    // Just set the stopped flag so the cycle halts.
     if (_activeStopFn === stop) _activeStopFn = null
   }
 

@@ -8,7 +8,13 @@ import EmergencyBanner from '../Emergency/EmergencyBanner'
 import { useApp } from '../../context/AppContext'
 
 export default function AppLayout() {
-  const { activeEmergency } = useApp()
+  const { activeEmergency, currentUser } = useApp()
+
+  // Only show the banner (and its "I'm OK" resolve button) when the emergency
+  // belongs to THIS user's own family. Connected-family emergencies are handled
+  // by ConnectedEmergencyModal inside EmergencyButton — observers must NOT be
+  // able to resolve someone else's alert.
+  const isMyEmergency = !!activeEmergency && activeEmergency.familyId === currentUser?.familyId
 
   return (
     <div className="flex flex-col h-screen overflow-hidden" style={{ background: '#eeeae6' }}>
@@ -25,9 +31,9 @@ export default function AppLayout() {
       </div>
       <Header />
 
-      {/* Emergency banner — part of flow so it pushes content (intentional) */}
+      {/* Emergency banner — only for the person who triggered it, never for observers */}
       <AnimatePresence>
-        {activeEmergency && <EmergencyBanner />}
+        {isMyEmergency && <EmergencyBanner />}
       </AnimatePresence>
 
       <main

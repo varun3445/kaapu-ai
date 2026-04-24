@@ -333,9 +333,9 @@ export default function EmergencyButton() {
         )}
       </AnimatePresence>
 
-      {/* FAB — only when no active emergency of any kind */}
+      {/* FAB — hidden whenever any emergency is active (mine or connected) */}
       <AnimatePresence>
-        {!isActive && (
+        {!isActive && !isConnected && (
           <motion.button
             key="fab"
             onClick={() => { if (!open) { warmAudio(); sentRef.current = false; setOpen(true) } }}

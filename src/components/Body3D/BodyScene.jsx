@@ -1,16 +1,7 @@
 import { Suspense, useState } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { Canvas } from '@react-three/fiber'
 import { OrbitControls, ContactShadows, Html } from '@react-three/drei'
 import HumanBody from './HumanBody'
-
-// Runs every frame so it always wins over OrbitControls' cursor resets.
-function CursorController({ hovering }) {
-  const { gl } = useThree()
-  useFrame(() => {
-    gl.domElement.style.cursor = hovering ? 'crosshair' : 'grab'
-  })
-  return null
-}
 
 function Loader() {
   return (
@@ -43,7 +34,10 @@ export default function BodyScene({
   }
 
   return (
-    <div style={{ width: '100%', height: '100%', touchAction: 'none' }}>
+    <div
+      style={{ width: '100%', height: '100%', touchAction: 'none' }}
+      className={hovering ? 'body-map-hovering' : ''}
+    >
     <Canvas
       camera={{ position: [0, 0.15, 2.4], fov: 40 }}
       shadows
@@ -99,8 +93,6 @@ export default function BodyScene({
         has a faint blue-lilac secondary that adds depth on the shadow side
       */}
       <pointLight position={[-2, 1.5, -1.5]} intensity={0.12} color="#c8c0ff" />
-
-      <CursorController hovering={hovering} />
 
       <Suspense fallback={<Loader />}>
         <HumanBody

@@ -559,9 +559,24 @@ export function AppProvider({ children }) {
   const switchMember = useCallback((m) => { setCurrentMember(m); lsSave(LS.currentMember, m) }, [])
 
   const removeMember = useCallback((id) => {
+    const member = members.find(m => m.id === id)
     setMembers(prev => prev.filter(m => m.id !== id))
     if (currentMember?.id === id) setCurrentMember(members.filter(m => m.id !== id && m.familyId === currentUser?.familyId)[0] || null)
+
+    // Delete this user's copy
     sbDelete('members', id)
+
+    // Also delete the mirror record in the other person's family so the
+    // connection disappears on their account too. The mirror record lives in
+    // member.linkedFamilyId with userId = currentUser.id.
+    if (!isDemoRef.current && supabase && member?.linkedFamilyId && currentUser?.id) {
+      supabase
+        .from('members')
+        .delete()
+        .eq('familyId', member.linkedFamilyId)
+        .eq('userId', currentUser.id)
+        .then(({ error }) => { if (error) console.error('[removeMember mirror]', error) })
+    }
   }, [currentMember, members, currentUser, sbDelete])
 
   // ── Family requests ───────────────────────────────────────────────────────

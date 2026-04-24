@@ -93,23 +93,30 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
     return null
   }
 
+  // Keep a stable ref to the callback so the window listener never goes stale
+  const onBodyClickRef = useRef(onBodyClick)
+  useEffect(() => { onBodyClickRef.current = onBodyClick }, [onBodyClick])
+
+  // Window-level pointerup: fires even if the pointer drifted off the mesh.
+  // This is the only reliable way to detect a click in OrbitControls scenes.
+  useEffect(() => {
+    function onWindowUp(e) {
+      if (!downRef.current) return
+      const dx   = e.clientX - downRef.current.x
+      const dy   = e.clientY - downRef.current.y
+      if (Math.sqrt(dx * dx + dy * dy) < TAP_PX) {
+        const part = detectBodyPart(downRef.current.point, bboxRef.current)
+        onBodyClickRef.current?.({ ...part, position: downRef.current.point })
+      }
+      downRef.current = null
+    }
+    window.addEventListener('pointerup', onWindowUp)
+    return () => window.removeEventListener('pointerup', onWindowUp)
+  }, []) // stable — reads through refs
+
   function handlePointerDown(e) {
     e.stopPropagation()
     downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-  }
-
-  function handlePointerUp(e) {
-    e.stopPropagation()
-    if (!downRef.current) return
-    const dx   = e.clientX - downRef.current.x
-    const dy   = e.clientY - downRef.current.y
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    if (dist < TAP_PX) {
-      // Real tap — use the down point so we don't drift during the gesture
-      const part = detectBodyPart(downRef.current.point, ensureBbox())
-      onBodyClick?.({ ...part, position: downRef.current.point })
-    }
-    downRef.current = null
   }
 
   function handlePointerMove(e) {
@@ -121,7 +128,6 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
   function handlePointerOut(e) {
     e.stopPropagation()
     onBodyHover?.(null)
-    document.body.style.cursor = 'default'
     downRef.current = null
   }
 
@@ -129,7 +135,6 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
     <group
       ref={groupRef}
       onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
       onPointerMove={handlePointerMove}
       onPointerOut={handlePointerOut}
     >
@@ -161,21 +166,27 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
     return null
   }
 
+  const onBodyClickRef = useRef(onBodyClick)
+  useEffect(() => { onBodyClickRef.current = onBodyClick }, [onBodyClick])
+
+  useEffect(() => {
+    function onWindowUp(e) {
+      if (!downRef.current) return
+      const dx = e.clientX - downRef.current.x
+      const dy = e.clientY - downRef.current.y
+      if (Math.sqrt(dx * dx + dy * dy) < TAP_PX) {
+        const part = detectBodyPart(downRef.current.point, bboxRef.current)
+        onBodyClickRef.current?.({ ...part, position: downRef.current.point })
+      }
+      downRef.current = null
+    }
+    window.addEventListener('pointerup', onWindowUp)
+    return () => window.removeEventListener('pointerup', onWindowUp)
+  }, [])
+
   function handlePointerDown(e) {
     e.stopPropagation()
     downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-  }
-
-  function handlePointerUp(e) {
-    e.stopPropagation()
-    if (!downRef.current) return
-    const dx   = e.clientX - downRef.current.x
-    const dy   = e.clientY - downRef.current.y
-    if (Math.sqrt(dx * dx + dy * dy) < TAP_PX) {
-      const part = detectBodyPart(downRef.current.point, ensureGeomBbox())
-      onBodyClick?.({ ...part, position: downRef.current.point })
-    }
-    downRef.current = null
   }
 
   function handlePointerMove(e) {
@@ -225,10 +236,9 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   return (
     <group
       ref={groupRef}
-      onPointerMove={handlePointerMove}
       onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null); document.body.style.cursor = 'default'; downRef.current = null }}
+      onPointerMove={handlePointerMove}
+      onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null); downRef.current = null }}
     >
       {parts.map((p, i) => (
         <mesh key={i} position={p.pos} rotation={p.rot || [0,0,0]} material={mat} castShadow frustumCulled={false}>

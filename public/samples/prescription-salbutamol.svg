@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="595" height="842" viewBox="0 0 595 842" font-family="'Helvetica Neue', Arial, sans-serif">
+  <rect width="595" height="842" fill="#ffffff"/>
+
+  <!-- Header -->
+  <rect width="595" height="90" fill="#065f46"/>
+  <text x="32" y="36" fill="#ffffff" font-size="19" font-weight="700">Dr. Sarah Chen, MD</text>
+  <text x="32" y="54" fill="#6ee7b7" font-size="11">General Practitioner · MBBS, FRACGP</text>
+  <text x="32" y="70" fill="#6ee7b7" font-size="11">Meridian Health Clinic · 18 Wellness Ave, Suite 5 · Tel: (02) 9234 5678</text>
+  <text x="563" y="36" fill="#6ee7b7" font-size="10" text-anchor="end">Rx Reg. #: MED-GP-4421</text>
+  <text x="563" y="52" fill="#6ee7b7" font-size="10" text-anchor="end">Provider #: 2143987B</text>
+
+  <!-- Rx symbol -->
+  <text x="32" y="148" fill="#065f46" font-size="60" font-weight="700" opacity="0.08">℞</text>
+  <text x="80" y="136" fill="#065f46" font-size="22" font-weight="700">PRESCRIPTION</text>
+  <line x1="32" y1="144" x2="563" y2="144" stroke="#d1fae5" stroke-width="2"/>
+
+  <!-- Patient details -->
+  <rect x="32" y="154" width="531" height="64" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="48" y="174" fill="#064e3b" font-size="10" font-weight="700">PATIENT</text>
+  <text x="48" y="192" fill="#1e293b" font-size="13" font-weight="700">Olga Morgan</text>
+  <text x="48" y="208" fill="#64748b" font-size="10">Date of Birth: 14 March 1991 · Age: 34 · Female</text>
+  <text x="340" y="174" fill="#064e3b" font-size="10" font-weight="700">DATE PRESCRIBED</text>
+  <text x="340" y="192" fill="#1e293b" font-size="13" font-weight="700">02 April 2025</text>
+
+  <!-- Drug 1 -->
+  <rect x="32" y="234" width="531" height="120" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="32" y="234" width="8" height="120" rx="4" fill="#065f46"/>
+  <text x="52" y="258" fill="#064e3b" font-size="11" font-weight="700">① SALBUTAMOL SULFATE (Ventolin® HFA)</text>
+  <text x="52" y="275" fill="#374151" font-size="13" font-weight="700">100 mcg/actuation Metered Dose Inhaler</text>
+  <line x1="52" y1="284" x2="555" y2="284" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="52" y="300" fill="#64748b" font-size="10" font-weight="600">INSTRUCTIONS:</text>
+  <text x="52" y="315" fill="#374151" font-size="11">2 puffs inhaled via spacer as needed for acute breathlessness</text>
+  <text x="52" y="330" fill="#374151" font-size="11">Maximum: 8 puffs per day. Do not exceed without medical advice.</text>
+  <text x="52" y="345" fill="#64748b" font-size="10">Qty: 2 inhalers · Repeats: 5 · PBS: Yes</text>
+
+  <!-- Drug 2 -->
+  <rect x="32" y="368" width="531" height="110" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <rect x="32" y="368" width="8" height="110" rx="4" fill="#065f46"/>
+  <text x="52" y="392" fill="#064e3b" font-size="11" font-weight="700">② FLUTICASONE PROPIONATE (Flixotide® 250)</text>
+  <text x="52" y="408" fill="#374151" font-size="13" font-weight="700">250 mcg/actuation Inhaler</text>
+  <line x1="52" y1="418" x2="555" y2="418" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="52" y="434" fill="#64748b" font-size="10" font-weight="600">INSTRUCTIONS:</text>
+  <text x="52" y="449" fill="#374151" font-size="11">1 puff inhaled twice daily (morning and evening) via spacer</text>
+  <text x="52" y="464" fill="#374151" font-size="11">Rinse mouth with water after each use.</text>
+  <text x="52" y="477" fill="#64748b" font-size="10">Qty: 1 inhaler · Repeats: 3 · PBS: Yes</text>
+
+  <!-- Diagnosis / notes -->
+  <rect x="32" y="492" width="531" height="68" rx="6" fill="#f0fdf4" stroke="#bbf7d0" stroke-width="1"/>
+  <text x="48" y="512" fill="#064e3b" font-size="10" font-weight="700">DIAGNOSIS / CLINICAL NOTES</text>
+  <text x="48" y="528" fill="#374151" font-size="11">Mild-to-moderate persistent asthma. Patient reports 3–4 acute episodes per month.</text>
+  <text x="48" y="544" fill="#374151" font-size="11">Review in 6 weeks. Spirometry scheduled for 16 May 2025.</text>
+  <text x="48" y="558" fill="#64748b" font-size="10">Allergy status: No known drug allergies (NKDA)</text>
+
+  <!-- Warning box -->
+  <rect x="32" y="574" width="531" height="40" rx="6" fill="#fff7ed" stroke="#fed7aa" stroke-width="1"/>
+  <text x="48" y="591" fill="#9a3412" font-size="10" font-weight="700">⚠  PATIENT COUNSELLING NOTE</text>
+  <text x="48" y="606" fill="#9a3412" font-size="10">Always use reliever (Salbutamol) BEFORE preventer (Fluticasone). Seek emergency care if symptoms worsen rapidly.</text>
+
+  <!-- Signature block -->
+  <line x1="32" y1="650" x2="220" y2="650" stroke="#065f46" stroke-width="1.5"/>
+  <text x="32" y="665" fill="#065f46" font-size="11" font-weight="700">Dr. Sarah Chen</text>
+  <text x="32" y="680" fill="#64748b" font-size="10">Signature &amp; Date: 02 / 04 / 2025</text>
+
+  <!-- Footer -->
+  <line x1="32" y1="720" x2="563" y2="720" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="297" y="735" fill="#94a3b8" font-size="9" text-anchor="middle">This prescription is valid for 12 months from the date of prescribing unless otherwise indicated.</text>
+  <text x="297" y="748" fill="#94a3b8" font-size="9" text-anchor="middle">Meridian Health Clinic · ABN 44 123 456 789 · www.meridianhealthclinic.com.au</text>
+</svg>

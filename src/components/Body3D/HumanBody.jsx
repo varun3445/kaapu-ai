@@ -60,6 +60,7 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
       })
       child.castShadow    = true
       child.receiveShadow = true
+      child.frustumCulled = false   // FBX bbox is often wrong; never cull
     })
   }, [fbx, skinColor])
 
@@ -95,7 +96,6 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
   function handlePointerDown(e) {
     e.stopPropagation()
     downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-    document.body.style.cursor = 'crosshair'
   }
 
   function handlePointerUp(e) {
@@ -116,7 +116,6 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
     e.stopPropagation()
     const part = detectBodyPart(e.point, ensureBbox())
     onBodyHover?.(part.label)
-    document.body.style.cursor = 'crosshair'
   }
 
   function handlePointerOut(e) {
@@ -165,7 +164,6 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   function handlePointerDown(e) {
     e.stopPropagation()
     downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-    document.body.style.cursor = 'crosshair'
   }
 
   function handlePointerUp(e) {
@@ -184,7 +182,6 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
     e.stopPropagation()
     const part = detectBodyPart(e.point, ensureGeomBbox())
     onBodyHover?.(part.label)
-    document.body.style.cursor = 'crosshair'
   }
 
   const mat = useMemo(() => {
@@ -234,7 +231,7 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
       onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null); document.body.style.cursor = 'default'; downRef.current = null }}
     >
       {parts.map((p, i) => (
-        <mesh key={i} position={p.pos} rotation={p.rot || [0,0,0]} material={mat} castShadow>
+        <mesh key={i} position={p.pos} rotation={p.rot || [0,0,0]} material={mat} castShadow frustumCulled={false}>
           {p.type === 'sphere' && <sphereGeometry args={p.args} />}
           {p.type === 'cyl'    && <cylinderGeometry args={p.args} />}
           {p.type === 'box'    && <boxGeometry args={p.args} />}

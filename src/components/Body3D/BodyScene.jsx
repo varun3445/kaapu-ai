@@ -1,7 +1,16 @@
-import { Suspense } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useState } from 'react'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, ContactShadows, Html } from '@react-three/drei'
 import HumanBody from './HumanBody'
+
+// Runs every frame so it always wins over OrbitControls' cursor resets.
+function CursorController({ hovering }) {
+  const { gl } = useThree()
+  useFrame(() => {
+    gl.domElement.style.cursor = hovering ? 'crosshair' : 'grab'
+  })
+  return null
+}
 
 function Loader() {
   return (
@@ -26,6 +35,13 @@ export default function BodyScene({
   onHover,
   skinColor = '#C49272',
 }) {
+  const [hovering, setHovering] = useState(false)
+
+  function handleHover(label) {
+    setHovering(!!label)
+    onHover?.(label)
+  }
+
   return (
     <div style={{ width: '100%', height: '100%', touchAction: 'none' }}>
     <Canvas
@@ -84,11 +100,13 @@ export default function BodyScene({
       */}
       <pointLight position={[-2, 1.5, -1.5]} intensity={0.12} color="#c8c0ff" />
 
+      <CursorController hovering={hovering} />
+
       <Suspense fallback={<Loader />}>
         <HumanBody
           pins={pins}
           onRegionClick={onRegionClick}
-          onHover={onHover}
+          onHover={handleHover}
           skinColor={skinColor}
         />
         <ContactShadows
@@ -106,7 +124,7 @@ export default function BodyScene({
         enablePan
         panSpeed={0.6}
         screenSpacePanning
-        minDistance={1.0}
+        minDistance={0.4}
         maxDistance={4.5}
         minPolarAngle={Math.PI * 0.08}
         maxPolarAngle={Math.PI * 0.92}

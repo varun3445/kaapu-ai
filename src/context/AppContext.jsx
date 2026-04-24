@@ -210,7 +210,7 @@ export function AppProvider({ children }) {
               return [...prev, payload.new]
             }
             if (payload.eventType === 'UPDATE') {
-              // If our outgoing request just got accepted, notify the sender
+              // If our outgoing request was just accepted, notify + pull the new member
               if (payload.new.status === 'accepted' && payload.new.fromUserId === uid) {
                 setNotifications(n => {
                   const notifId = `fam-accept-rt-${payload.new.id}`
@@ -221,6 +221,23 @@ export function AppProvider({ children }) {
                     message: `✅ ${payload.new.toUserName} accepted your connection request.`,
                   }, ...n].slice(0, 30)
                 })
+                // The accepter inserted a member record into OUR family in Supabase.
+                // Don't rely on the members realtime channel for this — fetch it directly.
+                if (supabase) {
+                  supabase
+                    .from('members')
+                    .select('*')
+                    .eq('familyId', familyId)
+                    .eq('userId', payload.new.toUserId)
+                    .single()
+                    .then(({ data }) => {
+                      if (data) {
+                        setMembers(prev =>
+                          prev.find(m => m.id === data.id) ? prev : [...prev, data]
+                        )
+                      }
+                    })
+                }
               }
               return prev.map(r => r.id === payload.new.id ? payload.new : r)
             }

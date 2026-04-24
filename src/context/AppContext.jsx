@@ -209,7 +209,21 @@ export function AppProvider({ children }) {
               }
               return [...prev, payload.new]
             }
-            if (payload.eventType === 'UPDATE') return prev.map(r => r.id === payload.new.id ? payload.new : r)
+            if (payload.eventType === 'UPDATE') {
+              // If our outgoing request just got accepted, notify the sender
+              if (payload.new.status === 'accepted' && payload.new.fromUserId === uid) {
+                setNotifications(n => {
+                  const notifId = `fam-accept-rt-${payload.new.id}`
+                  if (n.find(x => x.id === notifId)) return n
+                  return [{
+                    id: notifId, type: 'success',
+                    timestamp: new Date().toISOString(),
+                    message: `✅ ${payload.new.toUserName} accepted your connection request.`,
+                  }, ...n].slice(0, 30)
+                })
+              }
+              return prev.map(r => r.id === payload.new.id ? payload.new : r)
+            }
             if (payload.eventType === 'DELETE') return prev.filter(r => r.id !== payload.old.id)
             return prev
           })

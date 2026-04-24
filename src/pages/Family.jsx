@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Settings2, X, Check, Clock, UserCheck, UserX } from 'lucide-react'
 import { format, isToday } from 'date-fns'
 import { useApp } from '../context/AppContext'
 import { SYMPTOM_CATEGORIES, FEELING_CONFIG } from '../data/mockData'
 import { Avatar } from '../components/Family/FamilySwitcher'
+import { supabase, supabaseReady } from '../supabase'
 
 // ── Shared helper ─────────────────────────────────────────────────────────────
 function formatUID(val) {
@@ -340,8 +341,62 @@ function MoodRow({ checkIn }) {
   )
 }
 
-function MemberProfile({ member, symptoms, checkIns }) {
-  const [tab, setTab] = useState('overview')
+function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIns }) {
+  const [tab,            setTab]            = useState('overview')
+  const [remoteSymptoms, setRemoteSymptoms] = useState(null) // null = not yet fetched
+  const [remoteCheckIns, setRemoteCheckIns] = useState(null)
+  const [loadingRemote,  setLoadingRemote]  = useState(false)
+
+  // If this member belongs to a connected account (has linkedFamilyId + userId),
+  // fetch their data from Supabase instead of relying on local state (which only
+  // has data for the current user's own family).
+  useEffect(() => {
+    setTab('overview')
+    setRemoteSymptoms(null)
+    setRemoteCheckIns(null)
+
+    if (!supabaseReady || !supabase) return
+    if (!member.linkedFamilyId || !member.userId) return
+
+    let cancelled = false
+    setLoadingRemote(true)
+
+    async function fetchRemote() {
+      try {
+        // 1. Find the member's self-record in their own family
+        const { data: selfMember } = await supabase
+          .from('members')
+          .select('id')
+          .eq('familyId', member.linkedFamilyId)
+          .eq('userId', member.userId)
+          .single()
+
+        if (!selfMember || cancelled) return
+
+        // 2. Fetch their symptoms and check-ins in parallel
+        const [sympRes, ciRes] = await Promise.all([
+          supabase.from('symptoms').select('*').eq('memberId', selfMember.id),
+          supabase.from('checkIns').select('*').eq('memberId', selfMember.id).order('date', { ascending: false }),
+        ])
+
+        if (cancelled) return
+        setRemoteSymptoms(sympRes.data || [])
+        setRemoteCheckIns(ciRes.data   || [])
+      } catch (_) {
+        if (!cancelled) { setRemoteSymptoms([]); setRemoteCheckIns([]) }
+      } finally {
+        if (!cancelled) setLoadingRemote(false)
+      }
+    }
+
+    fetchRemote()
+    return () => { cancelled = true }
+  }, [member.id, member.linkedFamilyId, member.userId])
+
+  // Use remote data for connected accounts; fall back to local for self / demo
+  const symptoms  = remoteSymptoms ?? localSymptoms
+  const checkIns  = remoteCheckIns ?? localCheckIns
+
   const active   = symptoms.filter(s => !s.resolved)
   const resolved = symptoms.filter(s => s.resolved)
   const recentCI = checkIns.slice(0, 5)
@@ -369,18 +424,26 @@ function MemberProfile({ member, symptoms, checkIns }) {
             </p>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { l: 'Active',    v: active.length,   c: active.length   ? '#f97316' : '#9ca3af' },
-            { l: 'Resolved',  v: resolved.length, c: resolved.length ? '#10b981' : '#9ca3af' },
-            { l: 'Check-ins', v: checkIns.length, c: '#6366f1' },
-          ].map(s => (
-            <div key={s.l} className="bg-gray-50 rounded-xl p-2.5 text-center">
-              <p className="text-xl font-extrabold" style={{ color: s.c }}>{s.v}</p>
-              <p className="text-[10px] text-gray-400">{s.l}</p>
-            </div>
-          ))}
-        </div>
+        {loadingRemote ? (
+          <div className="grid grid-cols-3 gap-2 animate-pulse">
+            {['Active','Resolved','Check-ins'].map(l => (
+              <div key={l} className="bg-gray-100 rounded-xl p-2.5 text-center h-14" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { l: 'Active',    v: active.length,   c: active.length   ? '#f97316' : '#9ca3af' },
+              { l: 'Resolved',  v: resolved.length, c: resolved.length ? '#10b981' : '#9ca3af' },
+              { l: 'Check-ins', v: checkIns.length, c: '#6366f1' },
+            ].map(s => (
+              <div key={s.l} className="bg-gray-50 rounded-xl p-2.5 text-center">
+                <p className="text-xl font-extrabold" style={{ color: s.c }}>{s.v}</p>
+                <p className="text-[10px] text-gray-400">{s.l}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {highSev.length > 0 && (
@@ -402,8 +465,12 @@ function MemberProfile({ member, symptoms, checkIns }) {
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div key={tab} initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}>
-          {tab === 'overview' && (
+        <motion.div key={loadingRemote ? 'loading' : tab} initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }}>
+          {loadingRemote ? (
+            <div className="space-y-2 animate-pulse">
+              {[1,2,3].map(i => <div key={i} className="h-14 bg-gray-100 rounded-xl" />)}
+            </div>
+          ) : tab === 'overview' ? (
             <div className="space-y-3">
               {recentCI[0] && (
                 <div>
@@ -425,8 +492,7 @@ function MemberProfile({ member, symptoms, checkIns }) {
                 </div>
               )}
             </div>
-          )}
-          {tab === 'symptoms' && (
+          ) : tab === 'symptoms' ? (
             <div className="space-y-2">
               {[...active,...resolved].length === 0 ? (
                 <div className="text-center py-10 glass-card rounded-2xl">
@@ -436,8 +502,7 @@ function MemberProfile({ member, symptoms, checkIns }) {
                 [...active,...resolved].map(s => <SymptomRow key={s.id} symptom={s} />)
               )}
             </div>
-          )}
-          {tab === 'mood' && (
+          ) : (
             <div className="space-y-2">
               {checkIns.length === 0 ? (
                 <div className="text-center py-10 glass-card rounded-2xl">

@@ -4,7 +4,6 @@ import { useFBX } from '@react-three/drei'
 import * as THREE from 'three'
 import { detectBodyPart } from '../../data/bodyPartDetector'
 
-// Severity → colour
 function severityColor(sev = 5) {
   if (sev <= 3) return '#22c55e'
   if (sev <= 5) return '#f59e0b'
@@ -12,10 +11,8 @@ function severityColor(sev = 5) {
   return '#ef4444'
 }
 
-// Pointer must travel < this many px to count as a tap (not a drag)
-const TAP_PX = 12
+const TAP_PX = 14
 
-// ─── Skin material ────────────────────────────────────────────────────────────
 function makeSkinMat(skinColor) {
   const base  = new THREE.Color(skinColor)
   const sss   = base.clone()
@@ -34,63 +31,17 @@ function makeSkinMat(skinColor) {
   })
 }
 
-// ─── Shared click hook ────────────────────────────────────────────────────────
-// Two-layer click detection:
-//   Layer 1 – R3F onClick  → fires immediately when pointer-up is still over mesh
-//   Layer 2 – onPointerDown stores hit + window pointerup fallback for drifted pointer
-//
-// The dedup timer prevents both layers from firing at once.
-// onPointerOut does NOT clear downRef (drift during release must not kill the tap).
-function useBodyClick({ bboxRef, onBodyClick }) {
-  const cbRef      = useRef(onBodyClick)
-  const downRef    = useRef(null)   // { x, y, point }
-  const lastFire   = useRef(0)
-
-  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
-
-  function fire(point) {
-    const now = Date.now()
-    if (now - lastFire.current < 400) return  // deduplicate layer 1 + 2
-    lastFire.current = now
-    const part = detectBodyPart(point, bboxRef.current)
-    cbRef.current?.({ ...part, position: point })
-  }
-
-  // Layer 1: R3F onClick (most reliable on desktop — fires if pointer-up on mesh)
-  function onClick(e) {
-    e.stopPropagation()
-    fire(e.point)
-  }
-
-  // Layer 2a: store hit point on pointer-down
-  function onPointerDown(e) {
-    e.stopPropagation()
-    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-  }
-
-  // Layer 2b: window pointerup fallback (fires even if pointer drifted off mesh)
-  useEffect(() => {
-    function onWindowUp(e) {
-      if (!downRef.current) return
-      const dx = e.clientX - downRef.current.x
-      const dy = e.clientY - downRef.current.y
-      const pt = downRef.current.point
-      downRef.current = null
-      if (Math.sqrt(dx * dx + dy * dy) < TAP_PX) fire(pt)
-    }
-    window.addEventListener('pointerup', onWindowUp)
-    return () => window.removeEventListener('pointerup', onWindowUp)
-  }, []) // stable — reads fire() which reads through refs
-
-  return { onClick, onPointerDown }
-}
-
 // ─── FBX model ───────────────────────────────────────────────────────────────
 function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
   const fbx      = useFBX('/models/stickman.fbx')
   const groupRef = useRef()
   const placed   = useRef(false)
   const bboxRef  = useRef(null)
+  const downRef  = useRef(null)   // {x, y, point} stored on pointerdown
+  const cbRef    = useRef(onBodyClick)
+  const lastFire = useRef(0)
+
+  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
 
   // Skin material
   useEffect(() => {
@@ -104,7 +55,7 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
     })
   }, [fbx, skinColor])
 
-  // Auto-scale + centre once
+  // Auto-scale + centre
   useEffect(() => {
     if (placed.current || !groupRef.current) return
     const bbox = new THREE.Box3().setFromObject(groupRef.current)
@@ -127,15 +78,59 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
     return null
   }
 
-  const { onClick, onPointerDown } = useBodyClick({ bboxRef, onBodyClick })
+  // Central fire — deduped so layer-1 and layer-2 can't both fire
+  function fire(point) {
+    const now = Date.now()
+    if (now - lastFire.current < 500) return
+    lastFire.current = now
+    const part = detectBodyPart(point, bboxRef.current)
+    cbRef.current?.({ ...part, position: point })
+  }
+
+  // Layer 1 — R3F onPointerUp (fires when pointer-up raycasts onto the mesh)
+  // This is the primary path for clean taps on desktop and touch devices.
+  function handlePointerUp(e) {
+    e.stopPropagation()
+    fire(e.point)
+  }
+
+  // Layer 2 — window pointerup (fallback if pointer drifted off mesh before release)
+  // Stored point comes from onPointerDown so we always have the original hit location.
+  useEffect(() => {
+    function onWindowUp(e) {
+      if (!downRef.current) return
+      const { x, y, point } = downRef.current
+      downRef.current = null
+      const dist = Math.sqrt((e.clientX - x) ** 2 + (e.clientY - y) ** 2)
+      if (dist < TAP_PX) fire(point)
+    }
+    window.addEventListener('pointerup', onWindowUp)
+    return () => window.removeEventListener('pointerup', onWindowUp)
+  }, []) // stable — fire reads through refs
+
+  function handlePointerDown(e) {
+    e.stopPropagation()
+    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
+  }
+
+  function handlePointerMove(e) {
+    e.stopPropagation()
+    onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label)
+  }
+
+  function handlePointerOut(e) {
+    e.stopPropagation()
+    onBodyHover?.(null)
+    // do NOT clear downRef — drift during release must not kill the tap
+  }
 
   return (
     <group
       ref={groupRef}
-      onClick={onClick}
-      onPointerDown={onPointerDown}
-      onPointerMove={e => { e.stopPropagation(); onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label) }}
-      onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null) }}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerMove={handlePointerMove}
+      onPointerOut={handlePointerOut}
     >
       <primitive object={fbx} />
     </group>
@@ -146,6 +141,11 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
 function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   const groupRef = useRef()
   const bboxRef  = useRef(null)
+  const downRef  = useRef(null)
+  const cbRef    = useRef(onBodyClick)
+  const lastFire = useRef(0)
+
+  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
 
   useEffect(() => {
     if (!groupRef.current) return
@@ -163,7 +163,36 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
     return null
   }
 
-  const { onClick, onPointerDown } = useBodyClick({ bboxRef, onBodyClick })
+  function fire(point) {
+    const now = Date.now()
+    if (now - lastFire.current < 500) return
+    lastFire.current = now
+    const part = detectBodyPart(point, bboxRef.current)
+    cbRef.current?.({ ...part, position: point })
+  }
+
+  function handlePointerUp(e) {
+    e.stopPropagation()
+    fire(e.point)
+  }
+
+  useEffect(() => {
+    function onWindowUp(e) {
+      if (!downRef.current) return
+      const { x, y, point } = downRef.current
+      downRef.current = null
+      const dist = Math.sqrt((e.clientX - x) ** 2 + (e.clientY - y) ** 2)
+      if (dist < TAP_PX) fire(point)
+    }
+    window.addEventListener('pointerup', onWindowUp)
+    return () => window.removeEventListener('pointerup', onWindowUp)
+  }, [])
+
+  function handlePointerDown(e) {
+    e.stopPropagation()
+    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
+  }
+
   const mat = useMemo(() => makeSkinMat(skinColor), [skinColor])
 
   const parts = [
@@ -191,8 +220,8 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   return (
     <group
       ref={groupRef}
-      onClick={onClick}
-      onPointerDown={onPointerDown}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
       onPointerMove={e => { e.stopPropagation(); onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label) }}
       onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null) }}
     >
@@ -224,9 +253,8 @@ function PinMarker({ position, severity = 5 }) {
   })
 
   if (!position) return null
-  const p = [position.x, position.y, position.z]
   return (
-    <group position={p}>
+    <group position={[position.x, position.y, position.z]}>
       <mesh ref={glowRef}>
         <sphereGeometry args={[0.038, 16, 16]} />
         <meshStandardMaterial color={color} transparent opacity={0.22} depthWrite={false} />

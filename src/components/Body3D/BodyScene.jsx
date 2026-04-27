@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, ContactShadows, Html } from '@react-three/drei'
 import HumanBody from './HumanBody'
@@ -27,6 +27,7 @@ export default function BodyScene({
   skinColor = '#C49272',
 }) {
   const [hovering, setHovering] = useState(false)
+  const containerRef = useRef()
 
   function handleHover(label) {
     setHovering(!!label)
@@ -35,6 +36,7 @@ export default function BodyScene({
 
   return (
     <div
+      ref={containerRef}
       style={{ width: '100%', height: '100%', touchAction: 'none' }}
       className={`body-map-container${hovering ? ' body-map-hovering' : ''}`}
     >
@@ -43,6 +45,8 @@ export default function BodyScene({
       shadows
       gl={{ antialias: true, alpha: true, toneMapping: 4 /* ACESFilmic */ }}
       style={{ background: 'transparent', touchAction: 'none' }}
+      eventSource={containerRef}
+      eventPrefix="client"
     >
       {/*
         ── Lighting rig — Apple-emoji style ────────────────────────────────────

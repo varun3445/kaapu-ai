@@ -31,9 +31,12 @@ html, body, #root {
 canvas { cursor: grab; }
 canvas:active { cursor: grabbing; }
 
-/* Body map canvas — always crosshair (overrides OrbitControls grab) */
-.body-map-container canvas { cursor: crosshair !important; }
-.body-map-container canvas:active { cursor: crosshair !important; }
+/* Body map canvas — always crosshair, and force touch-action:none so
+   pointer events fire on tablet (Three.js sets touch-action:auto by default) */
+.body-map-container canvas {
+  cursor: crosshair !important;
+  touch-action: none !important;
+}
 
 /* Transitions */
 .page-enter { animation: fadeUp 0.25s ease both; }

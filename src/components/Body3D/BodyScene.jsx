@@ -36,7 +36,7 @@ export default function BodyScene({
   return (
     <div
       style={{ width: '100%', height: '100%', touchAction: 'none' }}
-      className={hovering ? 'body-map-hovering' : ''}
+      className={`body-map-container${hovering ? ' body-map-hovering' : ''}`}
     >
     <Canvas
       camera={{ position: [0, 0.15, 2.4], fov: 40 }}

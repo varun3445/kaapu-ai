@@ -1,10 +1,10 @@
 import { useRef, useEffect, useMemo, Suspense } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { useFBX } from '@react-three/drei'
 import * as THREE from 'three'
 import { detectBodyPart } from '../../data/bodyPartDetector'
 
-// Severity → colour mapping
+// Severity → colour
 function severityColor(sev = 5) {
   if (sev <= 3) return '#22c55e'
   if (sev <= 5) return '#f59e0b'
@@ -12,73 +12,11 @@ function severityColor(sev = 5) {
   return '#ef4444'
 }
 
-// Maximum pointer movement (px) between down and up to count as a tap
-const TAP_PX = 10
+// Pointer must travel < this many px to count as a tap (not a drag)
+const TAP_PX = 12
 
-// ─── Custom hook: reliable body-click via raw DOM events + own Raycaster ─────
-//
-// Why not R3F's onPointerDown/Up?
-//   - onPointerUp only fires if the ray is still hitting the mesh at release
-//     (any drift = silent miss)
-//   - OrbitControls can capture the pointer before R3F sees onPointerDown
-//
-// Solution: attach pointerdown to the <canvas> element directly and perform
-// our own intersection test. Window-level pointerup checks drag distance and
-// fires the callback. Nothing depends on R3F's synthetic event pipeline.
-// ─────────────────────────────────────────────────────────────────────────────
-function useBodyClickDetection({ groupRef, bboxRef, onBodyClick }) {
-  const { gl, camera } = useThree()
-  const cbRef = useRef(onBodyClick)
-  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
-
-  useEffect(() => {
-    const canvas = gl.domElement
-    const rc = new THREE.Raycaster()
-    let downPos  = null   // { x, y } in screen px
-    let downPoint = null  // THREE.Vector3 — 3-D hit point at pointerdown
-
-    function getMeshHit(clientX, clientY) {
-      if (!groupRef.current) return null
-      const rect = canvas.getBoundingClientRect()
-      const ndcX =  ((clientX - rect.left)  / rect.width)  * 2 - 1
-      const ndcY = -((clientY - rect.top)   / rect.height) * 2 + 1
-      rc.setFromCamera({ x: ndcX, y: ndcY }, camera)
-      const meshes = []
-      groupRef.current.traverse(o => { if (o.isMesh) meshes.push(o) })
-      return rc.intersectObjects(meshes, false)[0] ?? null
-    }
-
-    function onCanvasDown(e) {
-      const hit = getMeshHit(e.clientX, e.clientY)
-      if (!hit) { downPos = null; return }
-      downPos   = { x: e.clientX, y: e.clientY }
-      downPoint = hit.point.clone()
-    }
-
-    function onWindowUp(e) {
-      if (!downPos) return
-      const dx  = e.clientX - downPos.x
-      const dy  = e.clientY - downPos.y
-      const pt  = downPoint
-      const bbox = bboxRef.current
-      downPos   = null
-      downPoint = null
-      if (Math.sqrt(dx * dx + dy * dy) >= TAP_PX) return   // was a drag
-      const part = detectBodyPart(pt, bbox)
-      cbRef.current?.({ ...part, position: pt })
-    }
-
-    canvas.addEventListener('pointerdown', onCanvasDown)
-    window.addEventListener('pointerup',   onWindowUp)
-    return () => {
-      canvas.removeEventListener('pointerdown', onCanvasDown)
-      window.removeEventListener('pointerup',   onWindowUp)
-    }
-  }, [gl, camera, groupRef, bboxRef]) // all stable refs — effect runs once
-}
-
-// ─── Skin material factory ────────────────────────────────────────────────────
-function makeSkinMaterial(skinColor) {
+// ─── Skin material ────────────────────────────────────────────────────────────
+function makeSkinMat(skinColor) {
   const base  = new THREE.Color(skinColor)
   const sss   = base.clone()
   sss.r = Math.min(1, sss.r * 1.18)
@@ -89,39 +27,84 @@ function makeSkinMaterial(skinColor) {
   sheen.g = Math.min(1, sheen.g + (1 - sheen.g) * 0.32)
   sheen.b = Math.min(1, sheen.b + (1 - sheen.b) * 0.28)
   return new THREE.MeshPhysicalMaterial({
-    color:              base,
-    roughness:          0.78,
-    metalness:          0.00,
-    sheen:              0.30,
-    sheenRoughness:     0.82,
-    sheenColor:         sheen,
-    clearcoat:          0.06,
-    clearcoatRoughness: 0.80,
-    emissive:           sss,
-    emissiveIntensity:  0.045,
+    color: base, roughness: 0.78, metalness: 0,
+    sheen: 0.30, sheenRoughness: 0.82, sheenColor: sheen,
+    clearcoat: 0.06, clearcoatRoughness: 0.80,
+    emissive: sss, emissiveIntensity: 0.045,
   })
 }
 
-// ─── FBX visual model ────────────────────────────────────────────────────────
+// ─── Shared click hook ────────────────────────────────────────────────────────
+// Two-layer click detection:
+//   Layer 1 – R3F onClick  → fires immediately when pointer-up is still over mesh
+//   Layer 2 – onPointerDown stores hit + window pointerup fallback for drifted pointer
+//
+// The dedup timer prevents both layers from firing at once.
+// onPointerOut does NOT clear downRef (drift during release must not kill the tap).
+function useBodyClick({ bboxRef, onBodyClick }) {
+  const cbRef      = useRef(onBodyClick)
+  const downRef    = useRef(null)   // { x, y, point }
+  const lastFire   = useRef(0)
+
+  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
+
+  function fire(point) {
+    const now = Date.now()
+    if (now - lastFire.current < 400) return  // deduplicate layer 1 + 2
+    lastFire.current = now
+    const part = detectBodyPart(point, bboxRef.current)
+    cbRef.current?.({ ...part, position: point })
+  }
+
+  // Layer 1: R3F onClick (most reliable on desktop — fires if pointer-up on mesh)
+  function onClick(e) {
+    e.stopPropagation()
+    fire(e.point)
+  }
+
+  // Layer 2a: store hit point on pointer-down
+  function onPointerDown(e) {
+    e.stopPropagation()
+    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
+  }
+
+  // Layer 2b: window pointerup fallback (fires even if pointer drifted off mesh)
+  useEffect(() => {
+    function onWindowUp(e) {
+      if (!downRef.current) return
+      const dx = e.clientX - downRef.current.x
+      const dy = e.clientY - downRef.current.y
+      const pt = downRef.current.point
+      downRef.current = null
+      if (Math.sqrt(dx * dx + dy * dy) < TAP_PX) fire(pt)
+    }
+    window.addEventListener('pointerup', onWindowUp)
+    return () => window.removeEventListener('pointerup', onWindowUp)
+  }, []) // stable — reads fire() which reads through refs
+
+  return { onClick, onPointerDown }
+}
+
+// ─── FBX model ───────────────────────────────────────────────────────────────
 function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
   const fbx      = useFBX('/models/stickman.fbx')
   const groupRef = useRef()
   const placed   = useRef(false)
   const bboxRef  = useRef(null)
 
-  // Apply skin material
+  // Skin material
   useEffect(() => {
-    const mat = makeSkinMaterial(skinColor)
+    const mat = makeSkinMat(skinColor)
     fbx.traverse(child => {
       if (!child.isMesh) return
-      child.material       = mat
-      child.castShadow     = true
-      child.receiveShadow  = true
-      child.frustumCulled  = false
+      child.material      = mat
+      child.castShadow    = true
+      child.receiveShadow = true
+      child.frustumCulled = false
     })
   }, [fbx, skinColor])
 
-  // Auto-scale + centre once geometry is ready
+  // Auto-scale + centre once
   useEffect(() => {
     if (placed.current || !groupRef.current) return
     const bbox = new THREE.Box3().setFromObject(groupRef.current)
@@ -144,27 +127,22 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
     return null
   }
 
-  // DOM-level click detection — completely bypasses R3F event system
-  useBodyClickDetection({ groupRef, bboxRef, onBodyClick })
-
-  // Hover label — R3F move/out events are fine for hover (no release timing issue)
-  function handlePointerMove(e) {
-    e.stopPropagation()
-    onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label)
-  }
-  function handlePointerOut(e) {
-    e.stopPropagation()
-    onBodyHover?.(null)
-  }
+  const { onClick, onPointerDown } = useBodyClick({ bboxRef, onBodyClick })
 
   return (
-    <group ref={groupRef} onPointerMove={handlePointerMove} onPointerOut={handlePointerOut}>
+    <group
+      ref={groupRef}
+      onClick={onClick}
+      onPointerDown={onPointerDown}
+      onPointerMove={e => { e.stopPropagation(); onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label) }}
+      onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null) }}
+    >
       <primitive object={fbx} />
     </group>
   )
 }
 
-// ─── Geometry fallback while FBX loads ───────────────────────────────────────
+// ─── Geometry fallback ────────────────────────────────────────────────────────
 function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   const groupRef = useRef()
   const bboxRef  = useRef(null)
@@ -185,10 +163,8 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
     return null
   }
 
-  // DOM-level click detection
-  useBodyClickDetection({ groupRef, bboxRef, onBodyClick })
-
-  const mat = useMemo(() => makeSkinMaterial(skinColor), [skinColor])
+  const { onClick, onPointerDown } = useBodyClick({ bboxRef, onBodyClick })
+  const mat = useMemo(() => makeSkinMat(skinColor), [skinColor])
 
   const parts = [
     { type:'sphere', args:[0.13,24,24],           pos:[0, 0.87, 0] },
@@ -215,6 +191,8 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   return (
     <group
       ref={groupRef}
+      onClick={onClick}
+      onPointerDown={onPointerDown}
       onPointerMove={e => { e.stopPropagation(); onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label) }}
       onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null) }}
     >
@@ -247,7 +225,6 @@ function PinMarker({ position, severity = 5 }) {
 
   if (!position) return null
   const p = [position.x, position.y, position.z]
-
   return (
     <group position={p}>
       <mesh ref={glowRef}>
@@ -276,7 +253,6 @@ export default function HumanBody({ pins = [], onRegionClick, onHover, skinColor
       <Suspense fallback={<GeometryBody skinColor={skinColor} onBodyClick={onRegionClick} onBodyHover={onHover} />}>
         <StickmanFBX skinColor={skinColor} onBodyClick={onRegionClick} onBodyHover={onHover} />
       </Suspense>
-
       {pins.map(pin => (
         <PinMarker key={pin.id} position={pin.position} severity={pin.severity} />
       ))}

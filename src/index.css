@@ -27,9 +27,13 @@ html, body, #root {
 ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 2px; }
 ::-webkit-scrollbar-thumb:hover { background: #818cf8; }
 
-/* Canvas cursor */
+/* Canvas cursor — default grab for all three.js canvases */
 canvas { cursor: grab; }
 canvas:active { cursor: grabbing; }
+
+/* Body map canvas — always crosshair (overrides OrbitControls grab) */
+.body-map-container canvas { cursor: crosshair !important; }
+.body-map-container canvas:active { cursor: crosshair !important; }
 
 /* Transitions */
 .page-enter { animation: fadeUp 0.25s ease both; }

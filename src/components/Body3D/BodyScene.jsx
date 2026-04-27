@@ -1,7 +1,9 @@
-import { Suspense, useState, useRef } from 'react'
-import { Canvas } from '@react-three/fiber'
+import { Suspense, useState, useRef, useCallback } from 'react'
+import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { OrbitControls, ContactShadows, Html } from '@react-three/drei'
+import * as THREE from 'three'
 import HumanBody from './HumanBody'
+import { detectBodyPart } from '../../data/bodyPartDetector'
 
 function Loader() {
   return (
@@ -14,20 +16,70 @@ function Loader() {
   )
 }
 
-/**
- * pins          – Array<{ id, label, position: { x, y, z } }>
- * onRegionClick – ({ id, label, position: THREE.Vector3 }) => void
- * onHover       – (labelString | null) => void
- * skinColor     – CSS hex
- */
-export default function BodyScene({
-  pins = [],
-  onRegionClick,
-  onHover,
-  skinColor = '#C49272',
-}) {
+// Keeps a ref to the live Three.js camera — updated every frame so it's
+// always current even after OrbitControls moves it.
+function CameraCapture({ cameraRef }) {
+  const { camera } = useThree()
+  useFrame(() => { cameraRef.current = camera })
+  return null
+}
+
+export default function BodyScene({ pins = [], onRegionClick, onHover, skinColor = '#C49272' }) {
+  const containerRef  = useRef()
+  const cameraRef     = useRef()   // filled by CameraCapture every frame
+  const bodyGroupRef  = useRef()   // filled by HumanBody once FBX loads
+  const bboxRef       = useRef()   // filled by HumanBody once placed
+  const downPosRef    = useRef(null) // {x,y} at pointerdown — for drag guard
+  const lastFireRef   = useRef(0)
+
   const [hovering, setHovering] = useState(false)
-  const containerRef = useRef()
+
+  // ── Click handler on the wrapper div ─────────────────────────────────────
+  // Native DOM onClick fires reliably on mouse AND touch (tap = synthesised
+  // click). We do our own THREE.Raycaster so we never touch R3F's event
+  // pipeline, which has been unreliable here.
+  const handleClick = useCallback((e) => {
+    if (!cameraRef.current || !bodyGroupRef.current) return
+
+    // Ignore if this was actually a drag (pointer moved > 12 px)
+    if (downPosRef.current) {
+      const dx = e.clientX - downPosRef.current.x
+      const dy = e.clientY - downPosRef.current.y
+      if (Math.sqrt(dx * dx + dy * dy) > 12) { downPosRef.current = null; return }
+    }
+    downPosRef.current = null
+
+    // Deduplicate (safety net — shouldn't be needed)
+    const now = Date.now()
+    if (now - lastFireRef.current < 300) return
+    lastFireRef.current = now
+
+    // NDC from click position relative to the canvas
+    const canvas = containerRef.current?.querySelector('canvas')
+    if (!canvas) return
+    const rect   = canvas.getBoundingClientRect()
+    const ndcX   =  ((e.clientX - rect.left) / rect.width)  * 2 - 1
+    const ndcY   = -((e.clientY - rect.top)  / rect.height) * 2 + 1
+
+    // Raycast against every mesh in the body group
+    const rc = new THREE.Raycaster()
+    bodyGroupRef.current.updateMatrixWorld(true)
+    rc.setFromCamera({ x: ndcX, y: ndcY }, cameraRef.current)
+
+    const meshes = []
+    bodyGroupRef.current.traverse(o => { if (o.isMesh) meshes.push(o) })
+
+    const hits = rc.intersectObjects(meshes, false)
+    if (!hits.length) return
+
+    const point = hits[0].point
+    const part  = detectBodyPart(point, bboxRef.current)
+    onRegionClick?.({ ...part, position: point })
+  }, [onRegionClick])
+
+  const handlePointerDown = useCallback((e) => {
+    downPosRef.current = { x: e.clientX, y: e.clientY }
+  }, [])
 
   function handleHover(label) {
     setHovering(!!label)
@@ -39,95 +91,52 @@ export default function BodyScene({
       ref={containerRef}
       style={{ width: '100%', height: '100%', touchAction: 'none' }}
       className={`body-map-container${hovering ? ' body-map-hovering' : ''}`}
+      onClick={handleClick}
+      onPointerDown={handlePointerDown}
     >
-    <Canvas
-      camera={{ position: [0, 0.15, 2.4], fov: 40 }}
-      shadows
-      gl={{ antialias: true, alpha: true, toneMapping: 4 /* ACESFilmic */ }}
-      style={{ background: 'transparent', touchAction: 'none' }}
-      eventSource={containerRef}
-      eventPrefix="client"
-    >
-      {/*
-        ── Lighting rig — Apple-emoji style ────────────────────────────────────
-        Goal: warm upper-left key, cool right-side fill, golden rim from behind,
-        warm hemisphere ambient. Produces a soft lit-sphere look matching the
-        skin-tone swatches.
-      */}
+      <Canvas
+        camera={{ position: [0, 0.15, 2.4], fov: 40 }}
+        shadows
+        gl={{ antialias: true, alpha: true, toneMapping: 4 }}
+        style={{ background: 'transparent', touchAction: 'none' }}
+      >
+        <CameraCapture cameraRef={cameraRef} />
 
-      {/* Sky/ground hemisphere — warm sky, warm amber ground bounce */}
-      <hemisphereLight args={['#ffe8d0', '#d4956a', 0.55]} />
-
-      {/* Key light — upper-left-front, warm studio white, casts shadows */}
-      <directionalLight
-        position={[-2.2, 5, 3.5]}
-        intensity={2.0}
-        color="#fff4e8"
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-bias={-0.0002}
-        shadow-camera-near={0.5}
-        shadow-camera-far={20}
-        shadow-camera-left={-2}
-        shadow-camera-right={2}
-        shadow-camera-top={3}
-        shadow-camera-bottom={-2}
-      />
-
-      {/* Fill light — right side, slightly cool, softens key shadows */}
-      <directionalLight
-        position={[3.5, 2, 2]}
-        intensity={0.50}
-        color="#dceeff"
-      />
-
-      {/* Rim / back light — upper-rear, warm golden, separates figure from bg */}
-      <directionalLight
-        position={[0.5, 4, -3.5]}
-        intensity={0.65}
-        color="#ffc87a"
-      />
-
-      {/* Under-bounce — very subtle warm lift from below */}
-      <pointLight position={[0, -1.8, 1.2]} intensity={0.18} color="#ffcfa0" />
-
-      {/*
-        Subtle cool-purple accent from the left-back — Apple's emoji
-        has a faint blue-lilac secondary that adds depth on the shadow side
-      */}
-      <pointLight position={[-2, 1.5, -1.5]} intensity={0.12} color="#c8c0ff" />
-
-      <Suspense fallback={<Loader />}>
-        <HumanBody
-          pins={pins}
-          onRegionClick={onRegionClick}
-          onHover={handleHover}
-          skinColor={skinColor}
+        {/* Lighting */}
+        <hemisphereLight args={['#ffe8d0', '#d4956a', 0.55]} />
+        <directionalLight
+          position={[-2.2, 5, 3.5]} intensity={2.0} color="#fff4e8"
+          castShadow shadow-mapSize-width={2048} shadow-mapSize-height={2048}
+          shadow-bias={-0.0002} shadow-camera-near={0.5} shadow-camera-far={20}
+          shadow-camera-left={-2} shadow-camera-right={2}
+          shadow-camera-top={3}  shadow-camera-bottom={-2}
         />
-        <ContactShadows
-          position={[0, -0.74, 0]}
-          opacity={0.28}
-          scale={1.4}
-          blur={2.5}
-          far={1}
-          color="#8b6550"
-        />
-      </Suspense>
+        <directionalLight position={[3.5, 2, 2]}    intensity={0.50} color="#dceeff" />
+        <directionalLight position={[0.5, 4, -3.5]} intensity={0.65} color="#ffc87a" />
+        <pointLight       position={[0, -1.8, 1.2]} intensity={0.18} color="#ffcfa0" />
+        <pointLight       position={[-2, 1.5, -1.5]} intensity={0.12} color="#c8c0ff" />
 
-      <OrbitControls
-        makeDefault
-        enablePan
-        panSpeed={0.6}
-        screenSpacePanning
-        minDistance={0.4}
-        maxDistance={4.5}
-        minPolarAngle={Math.PI * 0.08}
-        maxPolarAngle={Math.PI * 0.92}
-        dampingFactor={0.08}
-        enableDamping
-      />
-    </Canvas>
+        <Suspense fallback={<Loader />}>
+          <HumanBody
+            pins={pins}
+            onHover={handleHover}
+            skinColor={skinColor}
+            bodyGroupRef={bodyGroupRef}
+            bboxRef={bboxRef}
+          />
+          <ContactShadows
+            position={[0, -0.74, 0]} opacity={0.28}
+            scale={1.4} blur={2.5} far={1} color="#8b6550"
+          />
+        </Suspense>
+
+        <OrbitControls
+          makeDefault enablePan panSpeed={0.6} screenSpacePanning
+          minDistance={0.4} maxDistance={4.5}
+          minPolarAngle={Math.PI * 0.08} maxPolarAngle={Math.PI * 0.92}
+          dampingFactor={0.08} enableDamping
+        />
+      </Canvas>
     </div>
   )
 }

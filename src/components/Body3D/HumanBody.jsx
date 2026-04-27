@@ -11,14 +11,10 @@ function severityColor(sev = 5) {
   return '#ef4444'
 }
 
-const TAP_PX = 14
-
 function makeSkinMat(skinColor) {
   const base  = new THREE.Color(skinColor)
   const sss   = base.clone()
-  sss.r = Math.min(1, sss.r * 1.18)
-  sss.g = Math.min(1, sss.g * 0.96)
-  sss.b = Math.min(1, sss.b * 0.72)
+  sss.r = Math.min(1, sss.r * 1.18); sss.g = Math.min(1, sss.g * 0.96); sss.b = Math.min(1, sss.b * 0.72)
   const sheen = base.clone()
   sheen.r = Math.min(1, sheen.r + (1 - sheen.r) * 0.45)
   sheen.g = Math.min(1, sheen.g + (1 - sheen.g) * 0.32)
@@ -32,105 +28,56 @@ function makeSkinMat(skinColor) {
 }
 
 // ─── FBX model ───────────────────────────────────────────────────────────────
-function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
+// bodyGroupRef / bboxRef are passed from BodyScene so it can raycast for clicks.
+// This component only handles hover labels — clicks are handled in BodyScene.
+function StickmanFBX({ skinColor, onHover, bodyGroupRef, bboxRef }) {
   const fbx      = useFBX('/models/stickman.fbx')
-  const groupRef = useRef()
+  const localRef = useRef()
   const placed   = useRef(false)
-  const bboxRef  = useRef(null)
-  const downRef  = useRef(null)   // {x, y, point} stored on pointerdown
-  const cbRef    = useRef(onBodyClick)
-  const lastFire = useRef(0)
 
-  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
+  // Point the shared bodyGroupRef at our group once mounted
+  useEffect(() => {
+    bodyGroupRef.current = localRef.current
+  })
 
   // Skin material
   useEffect(() => {
     const mat = makeSkinMat(skinColor)
     fbx.traverse(child => {
       if (!child.isMesh) return
-      child.material      = mat
-      child.castShadow    = true
-      child.receiveShadow = true
-      child.frustumCulled = false
+      child.material = mat; child.castShadow = true
+      child.receiveShadow = true; child.frustumCulled = false
     })
   }, [fbx, skinColor])
 
-  // Auto-scale + centre
+  // Auto-scale + centre (runs every frame until placed)
   useEffect(() => {
-    if (placed.current || !groupRef.current) return
-    const bbox = new THREE.Box3().setFromObject(groupRef.current)
+    if (placed.current || !localRef.current) return
+    const bbox = new THREE.Box3().setFromObject(localRef.current)
     const size = new THREE.Vector3(); bbox.getSize(size)
     if (size.y < 0.001) return
-    groupRef.current.scale.setScalar(1.6 / size.y)
-    const bbox2 = new THREE.Box3().setFromObject(groupRef.current)
+    localRef.current.scale.setScalar(1.6 / size.y)
+    const bbox2 = new THREE.Box3().setFromObject(localRef.current)
     const c = new THREE.Vector3(); bbox2.getCenter(c)
-    groupRef.current.position.set(-c.x, 0.1 - c.y, -c.z)
-    bboxRef.current = new THREE.Box3().setFromObject(groupRef.current)
+    localRef.current.position.set(-c.x, 0.1 - c.y, -c.z)
+    bboxRef.current = new THREE.Box3().setFromObject(localRef.current)
     placed.current  = true
   })
 
-  function ensureBbox() {
+  function getOrComputeBbox() {
     if (bboxRef.current) return bboxRef.current
-    if (!groupRef.current) return null
-    const b = new THREE.Box3().setFromObject(groupRef.current)
+    if (!localRef.current) return null
+    const b = new THREE.Box3().setFromObject(localRef.current)
     const s = new THREE.Vector3(); b.getSize(s)
-    if (s.y > 0.001) { bboxRef.current = b; placed.current = true; return b }
+    if (s.y > 0.001) { bboxRef.current = b; return b }
     return null
-  }
-
-  // Central fire — deduped so layer-1 and layer-2 can't both fire
-  function fire(point) {
-    const now = Date.now()
-    if (now - lastFire.current < 500) return
-    lastFire.current = now
-    const part = detectBodyPart(point, bboxRef.current)
-    cbRef.current?.({ ...part, position: point })
-  }
-
-  // Layer 1 — R3F onPointerUp (fires when pointer-up raycasts onto the mesh)
-  // This is the primary path for clean taps on desktop and touch devices.
-  function handlePointerUp(e) {
-    e.stopPropagation()
-    fire(e.point)
-  }
-
-  // Layer 2 — window pointerup (fallback if pointer drifted off mesh before release)
-  // Stored point comes from onPointerDown so we always have the original hit location.
-  useEffect(() => {
-    function onWindowUp(e) {
-      if (!downRef.current) return
-      const { x, y, point } = downRef.current
-      downRef.current = null
-      const dist = Math.sqrt((e.clientX - x) ** 2 + (e.clientY - y) ** 2)
-      if (dist < TAP_PX) fire(point)
-    }
-    window.addEventListener('pointerup', onWindowUp)
-    return () => window.removeEventListener('pointerup', onWindowUp)
-  }, []) // stable — fire reads through refs
-
-  function handlePointerDown(e) {
-    e.stopPropagation()
-    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-  }
-
-  function handlePointerMove(e) {
-    e.stopPropagation()
-    onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label)
-  }
-
-  function handlePointerOut(e) {
-    e.stopPropagation()
-    onBodyHover?.(null)
-    // do NOT clear downRef — drift during release must not kill the tap
   }
 
   return (
     <group
-      ref={groupRef}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerMove={handlePointerMove}
-      onPointerOut={handlePointerOut}
+      ref={localRef}
+      onPointerMove={e => { e.stopPropagation(); onHover?.(detectBodyPart(e.point, getOrComputeBbox()).label) }}
+      onPointerOut={e => { e.stopPropagation(); onHover?.(null) }}
     >
       <primitive object={fbx} />
     </group>
@@ -138,59 +85,24 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
 }
 
 // ─── Geometry fallback ────────────────────────────────────────────────────────
-function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
-  const groupRef = useRef()
-  const bboxRef  = useRef(null)
-  const downRef  = useRef(null)
-  const cbRef    = useRef(onBodyClick)
-  const lastFire = useRef(0)
-
-  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
+function GeometryBody({ skinColor = '#C49272', onHover, bodyGroupRef, bboxRef }) {
+  const localRef = useRef()
 
   useEffect(() => {
-    if (!groupRef.current) return
-    const bbox = new THREE.Box3().setFromObject(groupRef.current)
+    bodyGroupRef.current = localRef.current
+    if (!localRef.current) return
+    const bbox = new THREE.Box3().setFromObject(localRef.current)
     const size = new THREE.Vector3(); bbox.getSize(size)
     if (size.y > 0.001) bboxRef.current = bbox
   }, [])
 
-  function ensureBbox() {
+  function getOrComputeBbox() {
     if (bboxRef.current) return bboxRef.current
-    if (!groupRef.current) return null
-    const b = new THREE.Box3().setFromObject(groupRef.current)
+    if (!localRef.current) return null
+    const b = new THREE.Box3().setFromObject(localRef.current)
     const s = new THREE.Vector3(); b.getSize(s)
     if (s.y > 0.001) { bboxRef.current = b; return b }
     return null
-  }
-
-  function fire(point) {
-    const now = Date.now()
-    if (now - lastFire.current < 500) return
-    lastFire.current = now
-    const part = detectBodyPart(point, bboxRef.current)
-    cbRef.current?.({ ...part, position: point })
-  }
-
-  function handlePointerUp(e) {
-    e.stopPropagation()
-    fire(e.point)
-  }
-
-  useEffect(() => {
-    function onWindowUp(e) {
-      if (!downRef.current) return
-      const { x, y, point } = downRef.current
-      downRef.current = null
-      const dist = Math.sqrt((e.clientX - x) ** 2 + (e.clientY - y) ** 2)
-      if (dist < TAP_PX) fire(point)
-    }
-    window.addEventListener('pointerup', onWindowUp)
-    return () => window.removeEventListener('pointerup', onWindowUp)
-  }, [])
-
-  function handlePointerDown(e) {
-    e.stopPropagation()
-    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
   }
 
   const mat = useMemo(() => makeSkinMat(skinColor), [skinColor])
@@ -219,11 +131,9 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
 
   return (
     <group
-      ref={groupRef}
-      onPointerDown={handlePointerDown}
-      onPointerUp={handlePointerUp}
-      onPointerMove={e => { e.stopPropagation(); onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label) }}
-      onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null) }}
+      ref={localRef}
+      onPointerMove={e => { e.stopPropagation(); onHover?.(detectBodyPart(e.point, getOrComputeBbox()).label) }}
+      onPointerOut={e => { e.stopPropagation(); onHover?.(null) }}
     >
       {parts.map((p, i) => (
         <mesh key={i} position={p.pos} rotation={p.rot || [0,0,0]} material={mat} castShadow frustumCulled={false}>
@@ -244,8 +154,7 @@ function PinMarker({ position, severity = 5 }) {
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
-    if (coreRef.current)
-      coreRef.current.scale.setScalar(1 + Math.sin(t * 2.8) * 0.14)
+    if (coreRef.current) coreRef.current.scale.setScalar(1 + Math.sin(t * 2.8) * 0.14)
     if (glowRef.current) {
       glowRef.current.scale.setScalar(1 + Math.sin(t * 2.8 + Math.PI) * 0.22)
       glowRef.current.material.opacity = 0.18 + Math.sin(t * 2.8) * 0.08
@@ -268,7 +177,10 @@ function PinMarker({ position, severity = 5 }) {
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-export default function HumanBody({ pins = [], onRegionClick, onHover, skinColor = '#C49272' }) {
+// bodyGroupRef / bboxRef are passed from BodyScene so clicks can be handled
+// there with a native DOM onClick + manual Raycaster (much more reliable than
+// R3F synthetic events which OrbitControls can swallow).
+export default function HumanBody({ pins = [], onHover, skinColor = '#C49272', bodyGroupRef, bboxRef }) {
   const groupRef = useRef()
 
   useFrame(({ clock }) => {
@@ -278,8 +190,8 @@ export default function HumanBody({ pins = [], onRegionClick, onHover, skinColor
 
   return (
     <group ref={groupRef}>
-      <Suspense fallback={<GeometryBody skinColor={skinColor} onBodyClick={onRegionClick} onBodyHover={onHover} />}>
-        <StickmanFBX skinColor={skinColor} onBodyClick={onRegionClick} onBodyHover={onHover} />
+      <Suspense fallback={<GeometryBody skinColor={skinColor} onHover={onHover} bodyGroupRef={bodyGroupRef} bboxRef={bboxRef} />}>
+        <StickmanFBX skinColor={skinColor} onHover={onHover} bodyGroupRef={bodyGroupRef} bboxRef={bboxRef} />
       </Suspense>
       {pins.map(pin => (
         <PinMarker key={pin.id} position={pin.position} severity={pin.severity} />

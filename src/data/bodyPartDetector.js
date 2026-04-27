@@ -23,12 +23,13 @@ export function detectBodyPart(point, bbox) {
   const nz = sz > 0 ? (point.z - min.z) / sz : 0.5
 
   const isFront = nz >= 0.48          // front half of body
-  const isRight = nx > 0.54           // viewer's right
-  const isLeft  = nx < 0.46           // viewer's left
+  // Model faces the viewer, so model's RIGHT is on the viewer's LEFT (nx < 0.5)
+  const isRight = nx < 0.46           // model's right = screen left
+  const isLeft  = nx > 0.54           // model's left  = screen right
   const isCentre = !isRight && !isLeft
-  const farSide  = nx > 0.68 || nx < 0.32  // arm region (laterally extended)
-  const isRightArm = nx > 0.68
-  const isLeftArm  = nx < 0.32
+  const farSide    = nx > 0.68 || nx < 0.32   // arm region (laterally extended)
+  const isRightArm = nx < 0.32                 // model's right arm = screen left
+  const isLeftArm  = nx > 0.68                 // model's left arm  = screen right
 
   // ── HEAD ──────────────────────────────────────── ny > 0.87
   if (ny > 0.87) {
@@ -107,7 +108,7 @@ export function detectBodyPart(point, bbox) {
   // ── GROIN / UPPER THIGH ──────────────────────── ny 0.24–0.37
   if (ny > 0.24) {
     if (isCentre && ny > 0.33 && isFront) return { id: 'groin', label: 'Groin' }
-    const side   = isRight || (!isLeft && nx >= 0.5) ? 'Right' : 'Left'
+    const side   = isRight || (!isLeft && nx < 0.5) ? 'Right' : 'Left'
     const sideId = side === 'Right' ? 'right' : 'left'
     if (isFront) return { id: `${sideId}-upper-thigh`,    label: `Upper ${side} Thigh` }
     return              { id: `${sideId}-upper-hamstring`, label: `${side} Hamstring (Upper)` }
@@ -115,7 +116,7 @@ export function detectBodyPart(point, bbox) {
 
   // ── KNEE ─────────────────────────────────────── ny 0.17–0.24
   if (ny > 0.17) {
-    const side   = nx >= 0.5 ? 'Right' : 'Left'
+    const side   = nx < 0.5 ? 'Right' : 'Left'
     const sideId = side === 'Right' ? 'right' : 'left'
     if (isFront) return { id: `${sideId}-knee`,      label: `${side} Knee` }
     return              { id: `${sideId}-knee-back`,  label: `Back of ${side} Knee` }
@@ -123,14 +124,14 @@ export function detectBodyPart(point, bbox) {
 
   // ── LOWER LEG ────────────────────────────────── ny 0.06–0.17
   if (ny > 0.06) {
-    const side   = nx >= 0.5 ? 'Right' : 'Left'
+    const side   = nx < 0.5 ? 'Right' : 'Left'
     const sideId = side === 'Right' ? 'right' : 'left'
     if (isFront) return { id: `${sideId}-shin`, label: `${side} Shin` }
     return              { id: `${sideId}-calf`,  label: `${side} Calf` }
   }
 
   // ── ANKLE / FOOT ─────────────────────────────── ny < 0.06
-  const side   = nx >= 0.5 ? 'Right' : 'Left'
+  const side   = nx < 0.5 ? 'Right' : 'Left'
   const sideId = side === 'Right' ? 'right' : 'left'
   if (ny > 0.025) return { id: `${sideId}-ankle`, label: `${side} Ankle` }
   if (isFront)    return { id: `${sideId}-foot`,   label: `${side} Foot` }

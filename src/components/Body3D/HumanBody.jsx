@@ -128,7 +128,8 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
   function handlePointerOut(e) {
     e.stopPropagation()
     onBodyHover?.(null)
-    downRef.current = null
+    // NOTE: do NOT clear downRef here — the window pointerup listener owns cleanup.
+    // Clearing here would break clicks when the ray briefly exits the mesh on release.
   }
 
   return (
@@ -238,7 +239,7 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
       ref={groupRef}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
-      onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null); downRef.current = null }}
+      onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null) }}
     >
       {parts.map((p, i) => (
         <mesh key={i} position={p.pos} rotation={p.rot || [0,0,0]} material={mat} castShadow frustumCulled={false}>

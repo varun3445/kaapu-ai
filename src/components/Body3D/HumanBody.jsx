@@ -1,19 +1,106 @@
-import { useRef, useState, useEffect, useMemo, Suspense } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useRef, useEffect, useMemo, Suspense } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import { useFBX } from '@react-three/drei'
 import * as THREE from 'three'
 import { detectBodyPart } from '../../data/bodyPartDetector'
 
-// Severity → colour mapping (matches the app's UI convention)
+// Severity → colour mapping
 function severityColor(sev = 5) {
-  if (sev <= 3) return '#22c55e'   // mild  — green
-  if (sev <= 5) return '#f59e0b'   // moderate — amber
-  if (sev <= 7) return '#f97316'   // severe — orange
-  return '#ef4444'                  // very severe — red
+  if (sev <= 3) return '#22c55e'
+  if (sev <= 5) return '#f59e0b'
+  if (sev <= 7) return '#f97316'
+  return '#ef4444'
 }
 
-// Tap threshold: pointer must move < TAP_PX between down and up to count as a tap
+// Maximum pointer movement (px) between down and up to count as a tap
 const TAP_PX = 10
+
+// ─── Custom hook: reliable body-click via raw DOM events + own Raycaster ─────
+//
+// Why not R3F's onPointerDown/Up?
+//   - onPointerUp only fires if the ray is still hitting the mesh at release
+//     (any drift = silent miss)
+//   - OrbitControls can capture the pointer before R3F sees onPointerDown
+//
+// Solution: attach pointerdown to the <canvas> element directly and perform
+// our own intersection test. Window-level pointerup checks drag distance and
+// fires the callback. Nothing depends on R3F's synthetic event pipeline.
+// ─────────────────────────────────────────────────────────────────────────────
+function useBodyClickDetection({ groupRef, bboxRef, onBodyClick }) {
+  const { gl, camera } = useThree()
+  const cbRef = useRef(onBodyClick)
+  useEffect(() => { cbRef.current = onBodyClick }, [onBodyClick])
+
+  useEffect(() => {
+    const canvas = gl.domElement
+    const rc = new THREE.Raycaster()
+    let downPos  = null   // { x, y } in screen px
+    let downPoint = null  // THREE.Vector3 — 3-D hit point at pointerdown
+
+    function getMeshHit(clientX, clientY) {
+      if (!groupRef.current) return null
+      const rect = canvas.getBoundingClientRect()
+      const ndcX =  ((clientX - rect.left)  / rect.width)  * 2 - 1
+      const ndcY = -((clientY - rect.top)   / rect.height) * 2 + 1
+      rc.setFromCamera({ x: ndcX, y: ndcY }, camera)
+      const meshes = []
+      groupRef.current.traverse(o => { if (o.isMesh) meshes.push(o) })
+      return rc.intersectObjects(meshes, false)[0] ?? null
+    }
+
+    function onCanvasDown(e) {
+      const hit = getMeshHit(e.clientX, e.clientY)
+      if (!hit) { downPos = null; return }
+      downPos   = { x: e.clientX, y: e.clientY }
+      downPoint = hit.point.clone()
+    }
+
+    function onWindowUp(e) {
+      if (!downPos) return
+      const dx  = e.clientX - downPos.x
+      const dy  = e.clientY - downPos.y
+      const pt  = downPoint
+      const bbox = bboxRef.current
+      downPos   = null
+      downPoint = null
+      if (Math.sqrt(dx * dx + dy * dy) >= TAP_PX) return   // was a drag
+      const part = detectBodyPart(pt, bbox)
+      cbRef.current?.({ ...part, position: pt })
+    }
+
+    canvas.addEventListener('pointerdown', onCanvasDown)
+    window.addEventListener('pointerup',   onWindowUp)
+    return () => {
+      canvas.removeEventListener('pointerdown', onCanvasDown)
+      window.removeEventListener('pointerup',   onWindowUp)
+    }
+  }, [gl, camera, groupRef, bboxRef]) // all stable refs — effect runs once
+}
+
+// ─── Skin material factory ────────────────────────────────────────────────────
+function makeSkinMaterial(skinColor) {
+  const base  = new THREE.Color(skinColor)
+  const sss   = base.clone()
+  sss.r = Math.min(1, sss.r * 1.18)
+  sss.g = Math.min(1, sss.g * 0.96)
+  sss.b = Math.min(1, sss.b * 0.72)
+  const sheen = base.clone()
+  sheen.r = Math.min(1, sheen.r + (1 - sheen.r) * 0.45)
+  sheen.g = Math.min(1, sheen.g + (1 - sheen.g) * 0.32)
+  sheen.b = Math.min(1, sheen.b + (1 - sheen.b) * 0.28)
+  return new THREE.MeshPhysicalMaterial({
+    color:              base,
+    roughness:          0.78,
+    metalness:          0.00,
+    sheen:              0.30,
+    sheenRoughness:     0.82,
+    sheenColor:         sheen,
+    clearcoat:          0.06,
+    clearcoatRoughness: 0.80,
+    emissive:           sss,
+    emissiveIntensity:  0.045,
+  })
+}
 
 // ─── FBX visual model ────────────────────────────────────────────────────────
 function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
@@ -21,65 +108,29 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
   const groupRef = useRef()
   const placed   = useRef(false)
   const bboxRef  = useRef(null)
-  const downRef  = useRef(null) // {x, y, point} at pointerdown
 
-  // Apply skin material — MeshPhysicalMaterial for Apple-emoji style rendering
+  // Apply skin material
   useEffect(() => {
+    const mat = makeSkinMaterial(skinColor)
     fbx.traverse(child => {
       if (!child.isMesh) return
-
-      const base = new THREE.Color(skinColor)
-
-      // Subsurface-scatter emissive: a slightly warmer (more red, less blue)
-      // version of the skin tone at very low intensity — simulates blood/warmth
-      const sss = base.clone()
-      sss.r = Math.min(1, sss.r * 1.18)
-      sss.g = Math.min(1, sss.g * 0.96)
-      sss.b = Math.min(1, sss.b * 0.72)
-
-      // Sheen colour: a lighter, pinker version for the micro-surface highlight
-      const sheen = base.clone()
-      sheen.r = Math.min(1, sheen.r + (1 - sheen.r) * 0.45)
-      sheen.g = Math.min(1, sheen.g + (1 - sheen.g) * 0.32)
-      sheen.b = Math.min(1, sheen.b + (1 - sheen.b) * 0.28)
-
-      child.material = new THREE.MeshPhysicalMaterial({
-        color:             base,
-        roughness:         0.78,   // skin is fairly matte
-        metalness:         0.00,
-        // Sheen — micro-surface fibre highlight (like skin's fine texture)
-        sheen:             0.30,
-        sheenRoughness:    0.82,
-        sheenColor:        sheen,
-        // Very subtle clearcoat — the slight oily surface layer of skin
-        clearcoat:         0.06,
-        clearcoatRoughness:0.80,
-        // Subsurface-scatter approximation via emissive
-        emissive:          sss,
-        emissiveIntensity: 0.045,
-      })
-      child.castShadow    = true
-      child.receiveShadow = true
-      child.frustumCulled = false   // FBX bbox is often wrong; never cull
+      child.material       = mat
+      child.castShadow     = true
+      child.receiveShadow  = true
+      child.frustumCulled  = false
     })
   }, [fbx, skinColor])
 
-  // Auto-scale once after mount so the model fills ~1.6 units, then cache bbox
+  // Auto-scale + centre once geometry is ready
   useEffect(() => {
     if (placed.current || !groupRef.current) return
     const bbox = new THREE.Box3().setFromObject(groupRef.current)
     const size = new THREE.Vector3(); bbox.getSize(size)
-    if (size.y < 0.001) return   // geometry not ready yet
-
-    const s = 1.6 / size.y
-    groupRef.current.scale.setScalar(s)
-
-    // Re-measure after scaling and centre on origin
+    if (size.y < 0.001) return
+    groupRef.current.scale.setScalar(1.6 / size.y)
     const bbox2 = new THREE.Box3().setFromObject(groupRef.current)
-    const c     = new THREE.Vector3(); bbox2.getCenter(c)
+    const c = new THREE.Vector3(); bbox2.getCenter(c)
     groupRef.current.position.set(-c.x, 0.1 - c.y, -c.z)
-
-    // Final bbox after centering — used by detectBodyPart
     bboxRef.current = new THREE.Box3().setFromObject(groupRef.current)
     placed.current  = true
   })
@@ -93,52 +144,21 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
     return null
   }
 
-  // Keep a stable ref to the callback so the window listener never goes stale
-  const onBodyClickRef = useRef(onBodyClick)
-  useEffect(() => { onBodyClickRef.current = onBodyClick }, [onBodyClick])
+  // DOM-level click detection — completely bypasses R3F event system
+  useBodyClickDetection({ groupRef, bboxRef, onBodyClick })
 
-  // Window-level pointerup: fires even if the pointer drifted off the mesh.
-  // This is the only reliable way to detect a click in OrbitControls scenes.
-  useEffect(() => {
-    function onWindowUp(e) {
-      if (!downRef.current) return
-      const dx   = e.clientX - downRef.current.x
-      const dy   = e.clientY - downRef.current.y
-      if (Math.sqrt(dx * dx + dy * dy) < TAP_PX) {
-        const part = detectBodyPart(downRef.current.point, bboxRef.current)
-        onBodyClickRef.current?.({ ...part, position: downRef.current.point })
-      }
-      downRef.current = null
-    }
-    window.addEventListener('pointerup', onWindowUp)
-    return () => window.removeEventListener('pointerup', onWindowUp)
-  }, []) // stable — reads through refs
-
-  function handlePointerDown(e) {
-    e.stopPropagation()
-    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-  }
-
+  // Hover label — R3F move/out events are fine for hover (no release timing issue)
   function handlePointerMove(e) {
     e.stopPropagation()
-    const part = detectBodyPart(e.point, ensureBbox())
-    onBodyHover?.(part.label)
+    onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label)
   }
-
   function handlePointerOut(e) {
     e.stopPropagation()
     onBodyHover?.(null)
-    // NOTE: do NOT clear downRef here — the window pointerup listener owns cleanup.
-    // Clearing here would break clicks when the ray briefly exits the mesh on release.
   }
 
   return (
-    <group
-      ref={groupRef}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerOut={handlePointerOut}
-    >
+    <group ref={groupRef} onPointerMove={handlePointerMove} onPointerOut={handlePointerOut}>
       <primitive object={fbx} />
     </group>
   )
@@ -148,9 +168,7 @@ function StickmanFBX({ skinColor, onBodyClick, onBodyHover }) {
 function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   const groupRef = useRef()
   const bboxRef  = useRef(null)
-  const downRef  = useRef(null)
 
-  // Compute bbox once geometry is mounted (synchronous — geometry is inline)
   useEffect(() => {
     if (!groupRef.current) return
     const bbox = new THREE.Box3().setFromObject(groupRef.current)
@@ -158,7 +176,7 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
     if (size.y > 0.001) bboxRef.current = bbox
   }, [])
 
-  function ensureGeomBbox() {
+  function ensureBbox() {
     if (bboxRef.current) return bboxRef.current
     if (!groupRef.current) return null
     const b = new THREE.Box3().setFromObject(groupRef.current)
@@ -167,50 +185,10 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
     return null
   }
 
-  const onBodyClickRef = useRef(onBodyClick)
-  useEffect(() => { onBodyClickRef.current = onBodyClick }, [onBodyClick])
+  // DOM-level click detection
+  useBodyClickDetection({ groupRef, bboxRef, onBodyClick })
 
-  useEffect(() => {
-    function onWindowUp(e) {
-      if (!downRef.current) return
-      const dx = e.clientX - downRef.current.x
-      const dy = e.clientY - downRef.current.y
-      if (Math.sqrt(dx * dx + dy * dy) < TAP_PX) {
-        const part = detectBodyPart(downRef.current.point, bboxRef.current)
-        onBodyClickRef.current?.({ ...part, position: downRef.current.point })
-      }
-      downRef.current = null
-    }
-    window.addEventListener('pointerup', onWindowUp)
-    return () => window.removeEventListener('pointerup', onWindowUp)
-  }, [])
-
-  function handlePointerDown(e) {
-    e.stopPropagation()
-    downRef.current = { x: e.clientX, y: e.clientY, point: e.point.clone() }
-  }
-
-  function handlePointerMove(e) {
-    e.stopPropagation()
-    const part = detectBodyPart(e.point, ensureGeomBbox())
-    onBodyHover?.(part.label)
-  }
-
-  const mat = useMemo(() => {
-    const base  = new THREE.Color(skinColor)
-    const sss   = base.clone()
-    sss.r = Math.min(1, sss.r * 1.18); sss.g = Math.min(1, sss.g * 0.96); sss.b = Math.min(1, sss.b * 0.72)
-    const sheen = base.clone()
-    sheen.r = Math.min(1, sheen.r + (1 - sheen.r) * 0.45)
-    sheen.g = Math.min(1, sheen.g + (1 - sheen.g) * 0.32)
-    sheen.b = Math.min(1, sheen.b + (1 - sheen.b) * 0.28)
-    return new THREE.MeshPhysicalMaterial({
-      color: base, roughness: 0.78, metalness: 0,
-      sheen: 0.30, sheenRoughness: 0.82, sheenColor: sheen,
-      clearcoat: 0.06, clearcoatRoughness: 0.80,
-      emissive: sss, emissiveIntensity: 0.045,
-    })
-  }, [skinColor])
+  const mat = useMemo(() => makeSkinMaterial(skinColor), [skinColor])
 
   const parts = [
     { type:'sphere', args:[0.13,24,24],           pos:[0, 0.87, 0] },
@@ -237,8 +215,7 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
   return (
     <group
       ref={groupRef}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
+      onPointerMove={e => { e.stopPropagation(); onBodyHover?.(detectBodyPart(e.point, ensureBbox()).label) }}
       onPointerOut={e => { e.stopPropagation(); onBodyHover?.(null) }}
     >
       {parts.map((p, i) => (
@@ -254,19 +231,16 @@ function GeometryBody({ skinColor = '#C49272', onBodyClick, onBodyHover }) {
 
 // ─── Symptom pin ─────────────────────────────────────────────────────────────
 function PinMarker({ position, severity = 5 }) {
-  const coreRef  = useRef()
-  const glowRef  = useRef()
-  const color    = severityColor(severity)
+  const coreRef = useRef()
+  const glowRef = useRef()
+  const color   = severityColor(severity)
 
   useFrame(({ clock }) => {
     const t = clock.elapsedTime
-    // Core gently pulses in size
     if (coreRef.current)
       coreRef.current.scale.setScalar(1 + Math.sin(t * 2.8) * 0.14)
-    // Outer glow ring breathes opposite phase and fades in/out
     if (glowRef.current) {
-      const s = 1 + Math.sin(t * 2.8 + Math.PI) * 0.22
-      glowRef.current.scale.setScalar(s)
+      glowRef.current.scale.setScalar(1 + Math.sin(t * 2.8 + Math.PI) * 0.22)
       glowRef.current.material.opacity = 0.18 + Math.sin(t * 2.8) * 0.08
     }
   })
@@ -276,47 +250,22 @@ function PinMarker({ position, severity = 5 }) {
 
   return (
     <group position={p}>
-      {/* Outer glow halo */}
       <mesh ref={glowRef}>
         <sphereGeometry args={[0.038, 16, 16]} />
-        <meshStandardMaterial
-          color={color}
-          transparent
-          opacity={0.22}
-          depthWrite={false}
-        />
+        <meshStandardMaterial color={color} transparent opacity={0.22} depthWrite={false} />
       </mesh>
-      {/* Solid core sphere */}
       <mesh ref={coreRef}>
         <sphereGeometry args={[0.026, 16, 16]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={color}
-          emissiveIntensity={0.55}
-          roughness={0.2}
-          metalness={0.1}
-        />
+        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.55} roughness={0.2} metalness={0.1} />
       </mesh>
     </group>
   )
 }
 
 // ─── Main export ──────────────────────────────────────────────────────────────
-/**
- * pins          – Array<{ id, label, position: {x,y,z}, severity: number }>
- * onRegionClick – ({ id, label, position: THREE.Vector3 }) => void
- * onHover       – (labelString | null) => void
- * skinColor     – CSS hex string
- */
-export default function HumanBody({
-  pins = [],
-  onRegionClick,
-  onHover,
-  skinColor = '#C49272',
-}) {
+export default function HumanBody({ pins = [], onRegionClick, onHover, skinColor = '#C49272' }) {
   const groupRef = useRef()
 
-  // Gentle idle sway
   useFrame(({ clock }) => {
     if (groupRef.current)
       groupRef.current.rotation.y = Math.sin(clock.elapsedTime * 0.35) * 0.07
@@ -324,16 +273,10 @@ export default function HumanBody({
 
   return (
     <group ref={groupRef}>
-      {/* Interactive FBX — clicks hit the actual mesh surface */}
       <Suspense fallback={<GeometryBody skinColor={skinColor} onBodyClick={onRegionClick} onBodyHover={onHover} />}>
-        <StickmanFBX
-          skinColor={skinColor}
-          onBodyClick={onRegionClick}
-          onBodyHover={onHover}
-        />
+        <StickmanFBX skinColor={skinColor} onBodyClick={onRegionClick} onBodyHover={onHover} />
       </Suspense>
 
-      {/* Render a severity-coloured sphere at each logged symptom's exact position */}
       {pins.map(pin => (
         <PinMarker key={pin.id} position={pin.position} severity={pin.severity} />
       ))}

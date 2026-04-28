@@ -27,21 +27,21 @@ function CameraCapture({ cameraRef }) {
 export default function BodyScene({ pins = [], onRegionClick, onHover, skinColor = '#C49272' }) {
   const containerRef  = useRef()
   const cameraRef     = useRef()   // filled by CameraCapture every frame
-  const bodyGroupRef  = useRef()   // filled by HumanBody once FBX loads
-  const bboxRef       = useRef()   // filled by HumanBody once placed
-  const downPosRef    = useRef(null) // {x,y} at pointerdown — for drag guard
+  const bodyGroupRef  = useRef()   // filled by BodyColliders (always-present invisible meshes)
+  const bboxRef       = useRef()   // filled by BodyColliders once placed
+  const downPosRef    = useRef(null)
   const lastFireRef   = useRef(0)
 
   const [hovering, setHovering] = useState(false)
 
-  // ── Click handler on the wrapper div ─────────────────────────────────────
-  // Native DOM onClick fires reliably on mouse AND touch (tap = synthesised
-  // click). We do our own THREE.Raycaster so we never touch R3F's event
-  // pipeline, which has been unreliable here.
+  // ── Click handler ─────────────────────────────────────────────────────────
+  // Uses our own THREE.Raycaster against the invisible BodyColliders (regular
+  // Mesh objects) instead of the FBX SkinnedMesh, which Three.js cannot
+  // reliably intersect via a manual raycaster.
   const handleClick = useCallback((e) => {
     if (!cameraRef.current || !bodyGroupRef.current) return
 
-    // Ignore if this was actually a drag (pointer moved > 12 px)
+    // Ignore drags (pointer moved > 12 px between down and click)
     if (downPosRef.current) {
       const dx = e.clientX - downPosRef.current.x
       const dy = e.clientY - downPosRef.current.y
@@ -49,27 +49,21 @@ export default function BodyScene({ pins = [], onRegionClick, onHover, skinColor
     }
     downPosRef.current = null
 
-    // Deduplicate (safety net — shouldn't be needed)
+    // Deduplicate rapid fires
     const now = Date.now()
     if (now - lastFireRef.current < 300) return
     lastFireRef.current = now
 
-    // NDC from click position relative to the canvas
+    // Compute NDC from click position relative to the canvas
     const canvas = containerRef.current?.querySelector('canvas')
     if (!canvas) return
-    const rect   = canvas.getBoundingClientRect()
-    const ndcX   =  ((e.clientX - rect.left) / rect.width)  * 2 - 1
-    const ndcY   = -((e.clientY - rect.top)  / rect.height) * 2 + 1
+    const rect = canvas.getBoundingClientRect()
+    const ndcX =  ((e.clientX - rect.left) / rect.width)  * 2 - 1
+    const ndcY = -((e.clientY - rect.top)  / rect.height) * 2 + 1
 
-    // Force-update world matrices from the scene root.
-    // useFrame() sets rotation.y every animation frame but Three.js only
-    // recomputes matrixWorld during renderer.render().  Between frames the
-    // parent's matrixWorld can be stale, so the raycast would miss — we
-    // walk up to the root and call updateMatrixWorld(true) from there.
+    // Raycast against the invisible collider meshes (bodyGroupRef points to
+    // BodyColliders which contains only regular THREE.Mesh — always works)
     const rc = new THREE.Raycaster()
-    let sceneRoot = bodyGroupRef.current
-    while (sceneRoot.parent) sceneRoot = sceneRoot.parent
-    sceneRoot.updateMatrixWorld(true)
     rc.setFromCamera({ x: ndcX, y: ndcY }, cameraRef.current)
 
     const meshes = []

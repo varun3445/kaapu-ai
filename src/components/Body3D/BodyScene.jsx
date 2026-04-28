@@ -61,9 +61,15 @@ export default function BodyScene({ pins = [], onRegionClick, onHover, skinColor
     const ndcX   =  ((e.clientX - rect.left) / rect.width)  * 2 - 1
     const ndcY   = -((e.clientY - rect.top)  / rect.height) * 2 + 1
 
-    // Raycast against every mesh in the body group
+    // Force-update world matrices from the scene root.
+    // useFrame() sets rotation.y every animation frame but Three.js only
+    // recomputes matrixWorld during renderer.render().  Between frames the
+    // parent's matrixWorld can be stale, so the raycast would miss — we
+    // walk up to the root and call updateMatrixWorld(true) from there.
     const rc = new THREE.Raycaster()
-    bodyGroupRef.current.updateMatrixWorld(true)
+    let sceneRoot = bodyGroupRef.current
+    while (sceneRoot.parent) sceneRoot = sceneRoot.parent
+    sceneRoot.updateMatrixWorld(true)
     rc.setFromCamera({ x: ndcX, y: ndcY }, cameraRef.current)
 
     const meshes = []

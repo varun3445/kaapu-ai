@@ -86,6 +86,15 @@ export function AppProvider({ children }) {
   useEffect(() => { lsSave(LS.skinColor, skinColor) }, [skinColor])
   useEffect(() => { if (currentMember) lsSave(LS.currentMember, currentMember) }, [currentMember])
 
+  // Keep currentMember in sync when the members array is updated (e.g. after updateProfile)
+  useEffect(() => {
+    if (!currentMember) return
+    const updated = members.find(m => m.id === currentMember.id)
+    if (updated && JSON.stringify(updated) !== JSON.stringify(currentMember)) {
+      setCurrentMember(updated)
+    }
+  }, [members]) // eslint-disable-line
+
   // ── Supabase Auth listener ────────────────────────────────────────────────
   const loadingRef = useRef(false) // guard against concurrent _loadUserData calls
 
@@ -542,28 +551,30 @@ export function AppProvider({ children }) {
   }, []) // eslint-disable-line
 
   const updateProfile = useCallback(async (updates) => {
+    // 1. Optimistic local update for currentUser
     setCurrentUser(prev => prev ? { ...prev, ...updates } : prev)
 
-    // Build member-level updates: name, avatar initials, age, gender
+    // 2. Mirror name / age / gender down into every member row for this user
     const memberUpdates = {}
-    if (updates.name)   { memberUpdates.name   = updates.name;   memberUpdates.avatar = updates.name.slice(0, 2).toUpperCase() }
-    if (updates.age)    memberUpdates.age    = parseInt(updates.age) || null
+    if (updates.name)   { memberUpdates.name = updates.name; memberUpdates.avatar = updates.name.slice(0, 2).toUpperCase() }
+    if (updates.age !== undefined)    memberUpdates.age    = parseInt(updates.age) || null
     if (updates.gender) memberUpdates.gender = updates.gender
 
     if (Object.keys(memberUpdates).length > 0) {
-      // Update local state for all members belonging to this user
       setMembers(prev => prev.map(m =>
         m.userId === currentUser?.id ? { ...m, ...memberUpdates } : m
       ))
     }
 
+    // 3. Persist to Supabase — users table (all fields) + members table (profile fields)
     if (!isDemoRef.current && currentUser && supabase) {
-      // Persist user profile
       await sbUpdate('users', currentUser.id, updates)
-      // Propagate to ALL member rows for this user (own family + anyone who added them)
       if (Object.keys(memberUpdates).length > 0) {
         await supabase.from('members').update(memberUpdates).eq('userId', currentUser.id)
       }
+      // 4. Re-read the user row so currentUser reflects what's actually in DB
+      const { data: fresh } = await supabase.from('users').select('*').eq('id', currentUser.id).single()
+      if (fresh) setCurrentUser(fresh)
     }
   }, [currentUser, sbUpdate])
 

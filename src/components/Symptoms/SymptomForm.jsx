@@ -44,6 +44,7 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.18 }}
       className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ paddingTop: '5rem', paddingBottom: '5.5rem' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       {/* Backdrop */}
@@ -55,10 +56,11 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
         animate={{ scale: 1,    opacity: 1, y: 0  }}
         exit={{ scale: 0.94, opacity: 0, y: 12 }}
         transition={{ type: 'spring', damping: 28, stiffness: 340 }}
-        className="relative w-full max-w-md rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+        className="relative w-full max-w-md overflow-hidden shadow-2xl flex flex-col"
         style={{
           background: 'white',
-          maxHeight: 'calc(100dvh - 7rem)',
+          borderRadius: 32,
+          maxHeight: '100%',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -108,7 +110,7 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
                   key={cat.id}
                   type="button"
                   onClick={() => { setCategoryId(cat.id); setTypeIdx(0) }}
-                  className="flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-left transition-all"
+                  className="flex items-center gap-2.5 px-3 py-3 rounded-3xl text-left transition-all"
                   style={{
                     background: categoryId === cat.id ? 'white' : 'white',
                     border: categoryId === cat.id
@@ -166,7 +168,7 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
                   value={customType}
                   onChange={e => setCustomType(e.target.value)}
                   placeholder="e.g. Tingling in fingers"
-                  className="w-full px-4 py-2.5 rounded-xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
+                  className="w-full px-4 py-2.5 rounded-2xl border text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400"
                   style={{ border: '1.5px solid rgba(0,0,0,0.10)' }}
                 />
               </motion.div>
@@ -174,7 +176,7 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
           </AnimatePresence>
 
           {/* Severity */}
-          <div className="bg-white rounded-2xl px-4 py-4" style={{ border: '1.5px solid rgba(0,0,0,0.07)' }}>
+          <div className="bg-white rounded-3xl px-4 py-4" style={{ border: '1.5px solid rgba(0,0,0,0.07)' }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Severity</p>
               <span className="text-sm font-extrabold tabular-nums" style={{ color: SEV_COLOR(severity) }}>
@@ -199,7 +201,7 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
               <select
                 value={duration}
                 onChange={e => setDuration(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                className="w-full px-4 py-2.5 rounded-2xl text-sm appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 style={{ border: '1.5px solid rgba(0,0,0,0.10)' }}
               >
                 {DURATIONS.map(d => <option key={d}>{d}</option>)}
@@ -216,7 +218,7 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
               onChange={e => setNotes(e.target.value)}
               placeholder="Any additional details…"
               rows={2}
-              className="w-full px-4 py-2.5 rounded-xl text-sm resize-none bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200"
+              className="w-full px-4 py-2.5 rounded-2xl text-sm resize-none bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200"
               style={{ border: '1.5px solid rgba(0,0,0,0.10)' }}
             />
           </div>
@@ -225,7 +227,7 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
           {severity >= 7 && (
             <motion.div
               initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-              className="rounded-2xl px-4 py-3 text-xs font-semibold"
+              className="rounded-3xl px-4 py-3 text-xs font-semibold"
               style={{ background: '#fff1f2', border: '1.5px solid #fecdd3', color: '#e11d48' }}
             >
               ⚠️ High severity — consider reaching out to a doctor.
@@ -242,11 +244,10 @@ export default function SymptomForm({ region, onSubmit, onClose }) {
             type="submit"
             form="symptom-form"
             disabled={!categoryId}
-            className="w-full py-3.5 rounded-2xl font-bold text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="w-full py-3.5 font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              background: categoryId
-                ? 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)'
-                : '#e5e7eb',
+              borderRadius: 20,
+              background: categoryId ? 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)' : '#e5e7eb',
               color: categoryId ? 'white' : '#9ca3af',
             }}
           >

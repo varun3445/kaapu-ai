@@ -31,9 +31,7 @@ function AppRoutes() {
         className="min-h-screen flex flex-col items-center justify-center gap-4"
         style={{ background: '#eeeae6' }}
       >
-        <div className="w-16 h-16 rounded-3xl bg-primary-600 flex items-center justify-center shadow-xl animate-pulse">
-          <Heart size={28} className="text-white" fill="white" />
-        </div>
+        <img src="/logo.png" alt="Kaapu" className="w-16 h-16 object-contain animate-pulse" style={{ mixBlendMode: 'multiply' }} />
         <p className="text-sm font-semibold text-gray-400 tracking-wide">Kaapu</p>
       </div>
     )

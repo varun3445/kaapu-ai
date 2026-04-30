@@ -72,8 +72,15 @@ export default function BodyScene({ pins = [], onRegionClick, onHover, skinColor
     const hits = rc.intersectObjects(meshes, false)
     if (!hits.length) return
 
-    const point = hits[0].point
-    const part  = detectBodyPart(point, bboxRef.current)
+    // Push pin outward along the face normal so it sits on the model surface,
+    // not inside it (collider depth doesn't always match the FBX mesh exactly).
+    const hit = hits[0]
+    const faceNormal = hit.face.normal.clone()
+      .transformDirection(hit.object.matrixWorld)
+      .normalize()
+    const point = hit.point.clone().addScaledVector(faceNormal, 0.045)
+
+    const part  = detectBodyPart(hit.point, bboxRef.current)
     onRegionClick?.({ ...part, position: point })
   }, [onRegionClick])
 

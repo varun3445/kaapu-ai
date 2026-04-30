@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext'
 
 const ROLES = [
   { id: 'user',   label: 'Individual', icon: Users,        desc: 'Track health for your family' },
-  { id: 'doctor', label: 'Doctor',     icon: Stethoscope,  desc: 'Monitor your patients' },
+  { id: 'doctor', label: 'Doctor',     icon: Stethoscope,  desc: 'Monitor your patients', disabled: true },
 ]
 
 // ── SVG logos ────────────────────────────────────────────────────────────────
@@ -26,8 +26,10 @@ export default function Auth() {
   const [mode,    setMode]    = useState('login')   // 'login' | 'signup'
   const [role,    setRole]    = useState('user')
   const [form,    setForm]    = useState({ name: '', familyName: '', email: '', password: '', age: '', gender: 'female' })
-  const [showPw,  setShowPw]  = useState(false)
-  const [error,   setError]   = useState('')
+  const [showPw,      setShowPw]      = useState(false)
+  const [consent,     setConsent]     = useState(false)
+  const [showPrivacy, setShowPrivacy] = useState(false)
+  const [error,       setError]       = useState('')
   const [loading, setLoading] = useState(false)
   const [slowHint, setSlowHint] = useState(false)
 
@@ -49,6 +51,10 @@ export default function Auth() {
           setError('Please fill in all required fields.')
           return
         }
+        if (!consent) {
+          setError('Please accept the Privacy Policy to create an account.')
+          return
+        }
         result = await signup({
           name: form.name,
           familyName: form.familyName ? `${form.name} ${form.familyName}` : `${form.name}'s Family`,
@@ -57,6 +63,7 @@ export default function Auth() {
           age: parseInt(form.age) || 30,
           gender: form.gender,
           role,
+          consentGivenAt: new Date().toISOString(),
         })
       }
       if (result?.error) setError(result.error)
@@ -107,9 +114,7 @@ export default function Auth() {
 
       {/* Hero header */}
       <div className="flex flex-col items-center pt-16 pb-8 px-6">
-        <div className="w-16 h-16 rounded-3xl bg-primary-600 flex items-center justify-center shadow-lg mb-4">
-          <Heart size={28} className="text-white" fill="white" />
-        </div>
+        <img src="/logo.png" alt="Kaapu" className="w-28 h-28 object-contain" style={{ mixBlendMode: 'multiply' }} />
         <h1 className="text-2xl font-extrabold text-gray-900">Kaapu</h1>
         <p className="text-sm text-gray-500 mt-1 text-center">
           Because when you can't speak, someone still needs to.
@@ -127,7 +132,7 @@ export default function Auth() {
             {['login', 'signup'].map(m => (
               <button
                 key={m}
-                onClick={() => { setMode(m); setError('') }}
+                onClick={() => { setMode(m); setError(''); setConsent(false) }}
                 className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${
                   mode === m ? 'text-gray-900' : 'text-gray-500'
                 }`}
@@ -186,9 +191,15 @@ export default function Auth() {
                         <button
                           key={r.id}
                           type="button"
-                          onClick={() => setRole(r.id)}
+                          onClick={() => !r.disabled && setRole(r.id)}
+                          disabled={r.disabled}
                           className="p-3 rounded-2xl border-2 text-left transition-all"
-                          style={role === r.id ? {
+                          style={r.disabled ? {
+                            borderColor: 'rgba(0,0,0,0.05)',
+                            background: 'rgba(0,0,0,0.03)',
+                            opacity: 0.45,
+                            cursor: 'not-allowed',
+                          } : role === r.id ? {
                             borderColor: 'rgba(99,102,241,0.5)',
                             background: 'rgba(99,102,241,0.08)',
                           } : {
@@ -196,9 +207,9 @@ export default function Auth() {
                             background: 'rgba(255,255,255,0.45)',
                           }}
                         >
-                          <Icon size={18} className={role === r.id ? 'text-primary-600' : 'text-gray-400'} />
-                          <p className="text-xs font-bold text-gray-800 mt-1">{r.label}</p>
-                          <p className="text-[10px] text-gray-400 leading-tight mt-0.5">{r.desc}</p>
+                          <Icon size={18} className={r.disabled ? 'text-gray-300' : role === r.id ? 'text-primary-600' : 'text-gray-400'} />
+                          <p className={`text-xs font-bold mt-1 ${r.disabled ? 'text-gray-300' : 'text-gray-800'}`}>{r.label}</p>
+                          <p className={`text-[10px] leading-tight mt-0.5 ${r.disabled ? 'text-gray-300' : 'text-gray-400'}`}>{r.disabled ? 'Coming soon' : r.desc}</p>
                         </button>
                       )
                     })}
@@ -256,6 +267,47 @@ export default function Auth() {
                 </button>
               </div>
 
+              {mode === 'signup' && (
+                <label className="flex items-start gap-2.5 cursor-pointer group">
+                  <div className="relative mt-0.5 shrink-0">
+                    <input
+                      type="checkbox"
+                      checked={consent}
+                      onChange={e => { setConsent(e.target.checked); setError('') }}
+                      className="sr-only"
+                    />
+                    <div
+                      className="w-4 h-4 rounded-[5px] border-2 flex items-center justify-center transition-all"
+                      style={consent ? {
+                        background: 'rgba(99,102,241,1)',
+                        borderColor: 'rgba(99,102,241,1)',
+                      } : {
+                        background: 'rgba(255,255,255,0.6)',
+                        borderColor: 'rgba(0,0,0,0.18)',
+                      }}
+                      onClick={() => { setConsent(p => !p); setError('') }}
+                    >
+                      {consent && (
+                        <svg width="9" height="7" viewBox="0 0 9 7" fill="none">
+                          <path d="M1 3.5L3.5 6L8 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-[11px] text-gray-500 leading-relaxed">
+                    I agree to the{' '}
+                    <button
+                      type="button"
+                      className="text-primary-600 font-semibold underline underline-offset-2 hover:text-primary-700"
+                      onClick={e => { e.stopPropagation(); setShowPrivacy(true) }}
+                    >
+                      Privacy Policy
+                    </button>
+                    {' '}and consent to my health data being processed by Kaapu.
+                  </span>
+                </label>
+              )}
+
               {error && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="px-3 py-2 rounded-xl"
@@ -291,6 +343,85 @@ export default function Auth() {
 
         </motion.div>
       </div>
+
+      {/* Privacy Policy overlay */}
+      <AnimatePresence>
+        {showPrivacy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col"
+            style={{ background: '#eeeae6' }}
+          >
+            <div className="flex items-center gap-3 px-4 pt-12 pb-4 border-b border-black/8">
+              <button
+                onClick={() => setShowPrivacy(false)}
+                className="text-sm font-semibold text-primary-600"
+              >
+                ← Back
+              </button>
+              <h2 className="text-base font-bold text-gray-900">Privacy Policy</h2>
+            </div>
+            <div className="flex-1 overflow-y-auto px-5 py-6 space-y-5 text-sm text-gray-700 max-w-lg mx-auto w-full">
+              <p className="text-xs text-gray-400">Last updated: April 2026</p>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">1. Who we are</h3>
+                <p>Kaapu is a family health tracking application. We take privacy seriously, especially because we handle sensitive health data.</p>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">2. What data we collect</h3>
+                <p>We collect your name, email address, age, gender, and the health symptoms you log — including body location, severity, and notes. We also collect your home location if you provide it.</p>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">3. Why we collect it</h3>
+                <p>Your data is used solely to provide the health tracking service: displaying your symptom history, enabling family health management, and (optionally) sharing with your doctor.</p>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">4. Legal basis (GDPR Article 9)</h3>
+                <p>Health data is a special category under GDPR. We process it on the basis of your <strong>explicit consent</strong>, which you give when you create an account. You may withdraw consent at any time by deleting your account.</p>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">5. How we store it</h3>
+                <p>Data is stored securely in Supabase (EU region) with row-level security. Only you and family members you invite can access your data.</p>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">6. Your rights</h3>
+                <ul className="list-disc pl-4 space-y-1">
+                  <li><strong>Access & portability</strong> — download all your data as JSON from the Account page.</li>
+                  <li><strong>Erasure</strong> — delete your account and all associated data from the Account page.</li>
+                  <li><strong>Rectification</strong> — update your profile at any time.</li>
+                  <li><strong>Withdraw consent</strong> — stop using the app and delete your account.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">7. Data sharing</h3>
+                <p>We do not sell or share your data with third parties. Doctors you connect with can only see data you explicitly share.</p>
+              </section>
+
+              <section>
+                <h3 className="font-bold text-gray-900 mb-1">8. Contact</h3>
+                <p>For any privacy questions or requests, contact us at <strong>info@ownflows.com</strong>.</p>
+              </section>
+            </div>
+            <div className="px-5 pb-10 max-w-lg mx-auto w-full">
+              <button
+                onClick={() => setShowPrivacy(false)}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm bg-primary-600 text-white"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Inline style for input fields — glassmorphic */}
       <style>{`

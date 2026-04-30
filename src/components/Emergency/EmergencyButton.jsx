@@ -10,11 +10,13 @@ function EmergencySummaryModal() {
   const {
     activeEmergency, resolveEmergency,
     currentMember, currentConditions, currentMedications, currentSymptoms,
+    currentUser,
   } = useApp()
 
   const ev = activeEmergency
   if (!ev) return null
 
+  const emergencyContacts = (currentUser?.emergencyContacts || []).slice(0, 3)
   const activeSymptoms = currentSymptoms?.filter(s => !s.resolved) || []
   const highSev        = activeSymptoms.filter(s => s.severity >= 7)
   const loc            = ev.location
@@ -151,6 +153,47 @@ function EmergencySummaryModal() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Emergency contacts */}
+          <div className="glass-card rounded-2xl p-4 space-y-3">
+            <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Emergency Contacts</p>
+            {emergencyContacts.length > 0 ? (
+              <div className="space-y-2.5">
+                {emergencyContacts.map((contact, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        i === 0 ? 'bg-rose-50' : i === 1 ? 'bg-amber-50' : 'bg-indigo-50'
+                      }`}>
+                        <Phone size={12} className={
+                          i === 0 ? 'text-rose-500' : i === 1 ? 'text-amber-500' : 'text-indigo-500'
+                        } />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-gray-800 truncate">{contact.name}</p>
+                        {contact.relationship && (
+                          <p className="text-[10px] text-gray-400">{contact.relationship}</p>
+                        )}
+                      </div>
+                    </div>
+                    {contact.phone && (
+                      <a
+                        href={`tel:${contact.phone}`}
+                        className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-[11px] font-bold flex items-center gap-1 hover:bg-emerald-100 transition-colors"
+                      >
+                        <Phone size={10} /> Call
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Phone size={13} className="text-gray-300 flex-shrink-0" />
+                <p className="text-[11px] text-gray-400">No emergency contacts saved. Add them in Profile → Emergency Contacts.</p>
+              </div>
+            )}
           </div>
 
           {/* Resolve */}

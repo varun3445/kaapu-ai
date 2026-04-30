@@ -22,3 +22,7 @@ health-tracker-deploy.zip
 
 # Claude session files
 .claude/
+
+# Capacitor generated native projects — regenerated via `npx cap sync`
+android/
+ios/

@@ -4,9 +4,11 @@ import {
   X, User, Bell, Shield, LogOut, ChevronRight, ChevronLeft,
   Copy, Check as CheckIcon, MapPin, Clock, PauseCircle,
   Eye, EyeOff, Users, BarChart2, Save, Phone, Trash2,
+  Download, AlertTriangle, FileText,
 } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { Avatar } from '../Family/FamilySwitcher'
+import { supabase } from '../../supabase'
 
 // ── Skin tone helpers ─────────────────────────────────────────────────────────
 const SKIN_TONES = [
@@ -61,13 +63,13 @@ function Toggle({ value, onChange }) {
   )
 }
 
-function Input({ label, ...props }) {
+function Input({ label, style: extraStyle, ...props }) {
   return (
     <div>
       {label && <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">{label}</label>}
       <input {...props}
         className="w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
-        style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)' }} />
+        style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)', ...extraStyle }} />
     </div>
   )
 }
@@ -186,15 +188,46 @@ function PrivacyPage({ onBack }) {
   )
 }
 
+// ── Sub-page: Privacy Policy ──────────────────────────────────────────────────
+function PrivacyPolicyPage({ onBack }) {
+  return (
+    <div className="flex flex-col h-full">
+      <BackHeader title="Privacy Policy" onBack={onBack} />
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 text-xs text-gray-600 leading-relaxed">
+        <p className="text-[10px] text-gray-400">Last updated: April 2026</p>
+
+        {[
+          { title: 'Who we are', body: 'Kaapu is a personal and family health tracking application. When we say "we", "our", or "Kaapu", we mean the operator of this service. Your data is stored securely using Supabase, hosted in the EU.' },
+          { title: 'What data we collect', body: 'We collect data you provide directly: your name, email address, age, gender, home location, health symptoms, check-ins, conditions, medications, emergency contacts, and documents you upload. We do not collect data passively beyond what is needed to operate the service.' },
+          { title: 'Why we collect it (legal basis)', body: 'Health data is a "special category" under GDPR Article 9. We process it on the basis of your explicit consent, given at account creation. You may withdraw consent at any time by deleting your account.' },
+          { title: 'How we use your data', body: 'Your data is used only to provide the Kaapu service to you and your connected family members. We do not sell, rent, or share your personal data with third parties for marketing purposes. Emergency contacts you provide may be displayed to family members during an SOS event.' },
+          { title: 'Data retention', body: 'We retain your data for as long as your account is active. When you delete your account, all personal data is permanently erased from our systems within 30 days, including backups.' },
+          { title: 'Your rights (GDPR)', body: 'You have the right to: access your data (Download my data), correct inaccurate data (edit your profile), erase your data (Delete my account), and data portability (your download is in JSON format). To exercise any right, use the controls in your Account settings or contact us.' },
+          { title: 'Third-party services', body: 'We use Supabase for data storage (EU region, SOC 2 certified), and Google OAuth for sign-in. These providers process data only as instructed by us under data processing agreements.' },
+          { title: 'Contact', body: 'For privacy enquiries or to exercise your rights, contact: info@ownflows.com' },
+        ].map(({ title, body }) => (
+          <div key={title}>
+            <p className="text-xs font-extrabold text-gray-800 mb-1">{title}</p>
+            <p>{body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── Sub-page: Account ─────────────────────────────────────────────────────────
-function AccountPage({ onBack }) {
-  const { currentUser, updateProfile } = useApp()
+function AccountPage({ onBack, onOpenPrivacy }) {
+  const { currentUser, updateProfile, logout } = useApp()
   const [name,         setName]         = useState(currentUser?.name          || '')
   const [age,          setAge]          = useState(currentUser?.age?.toString() || '')
   const [gender,       setGender]       = useState(currentUser?.gender        || 'other')
   const [email,        setEmail]        = useState(currentUser?.email         || '')
   const [homeLocation, setHomeLocation] = useState(currentUser?.homeLocation  || '')
   const [saved,        setSaved]        = useState(false)
+  const [downloading,  setDownloading]  = useState(false)
+  const [deleteStep,   setDeleteStep]   = useState(0) // 0=idle 1=confirm 2=deleting
+  const [deleteInput,  setDeleteInput]  = useState('')
 
   async function save() {
     await updateProfile({
@@ -207,10 +240,70 @@ function AccountPage({ onBack }) {
     setSaved(true); setTimeout(() => setSaved(false), 2500)
   }
 
+  async function downloadData() {
+    if (!supabase || !currentUser) return
+    setDownloading(true)
+    try {
+      const fid = currentUser.familyId
+      const uid = currentUser.id
+      const [
+        { data: userData },
+        { data: members },
+        { data: symptoms },
+        { data: checkIns },
+        { data: conditions },
+        { data: medications },
+        { data: documents },
+        { data: emergencyEvents },
+        { data: riskProfiles },
+        { data: familyRequests },
+      ] = await Promise.all([
+        supabase.from('users').select('*').eq('id', uid).single(),
+        supabase.from('members').select('*').eq('familyId', fid),
+        supabase.from('symptoms').select('*').eq('familyId', fid),
+        supabase.from('checkIns').select('*').eq('familyId', fid),
+        supabase.from('conditions').select('*').eq('familyId', fid),
+        supabase.from('medications').select('*').eq('familyId', fid),
+        supabase.from('documents').select('*').eq('familyId', fid),
+        supabase.from('emergencyEvents').select('*').eq('familyId', fid),
+        supabase.from('riskProfiles').select('*').eq('familyId', fid),
+        supabase.from('familyRequests').select('*').or(`fromUserId.eq.${uid},toUserId.eq.${uid}`),
+      ])
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        user: userData,
+        members, symptoms, checkIns, conditions,
+        medications, documents, emergencyEvents,
+        riskProfiles, familyRequests,
+      }
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href = url; a.download = `kaapu-data-${new Date().toISOString().slice(0,10)}.json`
+      a.click(); URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  async function deleteAccount() {
+    if (!supabase) return
+    setDeleteStep(2)
+    try {
+      await supabase.rpc('delete_own_account')
+      logout()
+    } catch (e) {
+      console.error('[deleteAccount]', e)
+      setDeleteStep(1)
+    }
+  }
+
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Account" onBack={onBack} />
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+
+        {/* Personal details */}
         <div>
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Personal Details</p>
           <div className="space-y-3">
@@ -230,15 +323,18 @@ function AccountPage({ onBack }) {
             </div>
           </div>
         </div>
+
         <div>
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Contact</p>
           <Input label="Email Address" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
         </div>
+
         <div>
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Location</p>
           <Input label="Home Location" type="text" placeholder="e.g. London, UK" value={homeLocation} onChange={e => setHomeLocation(e.target.value)} />
           <p className="text-[10px] text-gray-400 mt-1.5 px-1">Used for location-based check-in reminders.</p>
         </div>
+
         <div>
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Health ID</p>
           <div className="glass-card rounded-2xl px-4 py-3 flex items-center gap-3">
@@ -249,7 +345,92 @@ function AccountPage({ onBack }) {
             <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Read-only</span>
           </div>
         </div>
+
         <SaveButton saved={saved} onClick={save} />
+
+        {/* Data & Privacy */}
+        <div>
+          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Data & Privacy</p>
+          <div className="glass-card rounded-2xl overflow-hidden divide-y divide-black/5">
+
+            {/* Privacy policy */}
+            <button onClick={onOpenPrivacy}
+              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left">
+              <div className="w-7 h-7 rounded-lg bg-indigo-50 shadow-sm flex items-center justify-center">
+                <FileText size={13} className="text-indigo-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-gray-700">Privacy Policy</p>
+                <p className="text-[10px] text-gray-400">How we collect and use your data</p>
+              </div>
+              <ChevronRight size={13} className="text-gray-300" />
+            </button>
+
+            {/* Download */}
+            <button onClick={downloadData} disabled={downloading}
+              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left disabled:opacity-50">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 shadow-sm flex items-center justify-center">
+                <Download size={13} className="text-emerald-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-gray-700">Download My Data</p>
+                <p className="text-[10px] text-gray-400">Export everything as JSON (GDPR Art. 20)</p>
+              </div>
+              {downloading && <div className="w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Delete account */}
+        <div>
+          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Danger Zone</p>
+          <div className="glass-card rounded-2xl p-4 border border-rose-100">
+            {deleteStep === 0 && (
+              <button onClick={() => setDeleteStep(1)}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-rose-50 text-rose-600 font-bold text-sm hover:bg-rose-100 transition-colors border border-rose-200">
+                <Trash2 size={14} /> Delete My Account
+              </button>
+            )}
+
+            {deleteStep === 1 && (
+              <div className="space-y-3">
+                <div className="flex items-start gap-2.5">
+                  <AlertTriangle size={16} className="text-rose-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-xs font-bold text-gray-800">This cannot be undone</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">All your health data, symptoms, check-ins, and account will be permanently deleted.</p>
+                  </div>
+                </div>
+                <Input
+                  placeholder='Type DELETE to confirm'
+                  value={deleteInput}
+                  onChange={e => setDeleteInput(e.target.value)}
+                  style={{ border: '1.5px solid #fca5a5' }}
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => { setDeleteStep(0); setDeleteInput('') }}
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-xs font-semibold hover:bg-gray-50 transition-colors">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={deleteAccount}
+                    disabled={deleteInput !== 'DELETE'}
+                    className="flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-xs font-bold disabled:opacity-40 hover:bg-rose-700 transition-colors disabled:cursor-not-allowed">
+                    Delete Forever
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {deleteStep === 2 && (
+              <div className="flex items-center justify-center gap-2 py-3 text-rose-500 text-xs font-semibold">
+                <div className="w-3.5 h-3.5 border-2 border-rose-400 border-t-transparent rounded-full animate-spin" />
+                Deleting your account…
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   )
@@ -267,9 +448,14 @@ function EmergencyContactsPage({ onBack }) {
 
   const [contacts, setContacts] = useState(padded.map(c => ({ ...EMPTY_CONTACT, ...c })))
   const [saved, setSaved]       = useState(false)
+  const [errors, setErrors]     = useState([false, false, false])
 
   function update(idx, field, val) {
     setContacts(prev => prev.map((c, i) => i === idx ? { ...c, [field]: val } : c))
+    // Clear error for this slot when user starts typing the name
+    if (field === 'name' && val.trim()) {
+      setErrors(prev => prev.map((e, i) => i === idx ? false : e))
+    }
   }
 
   function clear(idx) {
@@ -277,6 +463,17 @@ function EmergencyContactsPage({ onBack }) {
   }
 
   async function save() {
+    // Primary (idx 0) and Secondary (idx 1) are required
+    const newErrors = [
+      !contacts[0].name.trim(),
+      !contacts[1].name.trim(),
+      false,
+    ]
+    if (newErrors[0] || newErrors[1]) {
+      setErrors(newErrors)
+      return
+    }
+    setErrors([false, false, false])
     const filled = contacts.filter(c => c.name.trim() || c.phone.trim())
     await updateProfile({ emergencyContacts: filled })
     setSaved(true); setTimeout(() => setSaved(false), 2500)
@@ -299,16 +496,23 @@ function EmergencyContactsPage({ onBack }) {
         </p>
 
         {contacts.map((c, idx) => {
-          const col     = slotColors[idx]
-          const isEmpty = !c.name && !c.phone
+          const col      = slotColors[idx]
+          const isEmpty  = !c.name && !c.phone
+          const required = idx < 2
+          const hasError = errors[idx]
           return (
-            <div key={idx} className={`glass-card rounded-2xl p-4 border ${isEmpty ? 'border-dashed border-gray-200' : col.ring}`}>
+            <div key={idx} className={`glass-card rounded-2xl p-4 border ${hasError ? 'border-rose-400' : isEmpty ? 'border-dashed border-gray-200' : col.ring}`}
+              style={hasError ? { boxShadow: '0 0 0 3px rgba(239,68,68,0.10)' } : undefined}
+            >
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-xl ${col.bg} flex items-center justify-center`}>
-                    <Phone size={13} className={col.icon} />
+                  <div className={`w-7 h-7 rounded-xl ${hasError ? 'bg-rose-50' : col.bg} flex items-center justify-center`}>
+                    <Phone size={13} className={hasError ? 'text-rose-500' : col.icon} />
                   </div>
-                  <p className="text-xs font-bold text-gray-700">{slotLabels[idx]}</p>
+                  <p className="text-xs font-bold text-gray-700">
+                    {slotLabels[idx]}
+                    {required && <span className="text-rose-500 ml-0.5">*</span>}
+                  </p>
                 </div>
                 {!isEmpty && (
                   <button onClick={() => clear(idx)} className="w-6 h-6 rounded-full bg-gray-100 hover:bg-rose-100 flex items-center justify-center transition-colors">
@@ -319,10 +523,11 @@ function EmergencyContactsPage({ onBack }) {
 
               <div className="space-y-2.5">
                 <Input
-                  placeholder="Full name"
+                  placeholder={required ? 'Full name (required)' : 'Full name'}
                   type="text"
                   value={c.name}
                   onChange={e => update(idx, 'name', e.target.value)}
+                  style={hasError ? { border: '1.5px solid #f87171' } : undefined}
                 />
                 <Input
                   placeholder="Phone number"
@@ -342,6 +547,11 @@ function EmergencyContactsPage({ onBack }) {
                   </select>
                 </div>
               </div>
+              {hasError && (
+                <p className="text-[11px] text-rose-500 font-semibold mt-2.5 flex items-center gap-1">
+                  <span>⚠️</span> Name is required for {slotLabels[idx].toLowerCase()}.
+                </p>
+              )}
             </div>
           )
         })}
@@ -410,7 +620,8 @@ export default function ProfilePanel({ open, onClose }) {
                 {page === 'emergency-contacts' && <EmergencyContactsPage onBack={() => setPage(null)} />}
                 {page === 'notifications'      && <NotificationsPage     onBack={() => setPage(null)} />}
                 {page === 'privacy'            && <PrivacyPage           onBack={() => setPage(null)} />}
-                {page === 'account'            && <AccountPage           onBack={() => setPage(null)} />}
+                {page === 'privacy-policy'     && <PrivacyPolicyPage     onBack={() => setPage('account')} />}
+                {page === 'account'            && <AccountPage           onBack={() => setPage(null)} onOpenPrivacy={() => setPage('privacy-policy')} />}
               </motion.div>
             ) : (
               <motion.div key="main" initial={{ x:-40, opacity:0 }} animate={{ x:0, opacity:1 }} exit={{ x:-40, opacity:0 }}

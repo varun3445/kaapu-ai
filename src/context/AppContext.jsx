@@ -507,6 +507,7 @@ export function AppProvider({ children }) {
         id: uid, email: data.email, name: data.name,
         role: data.role || 'user', familyId, uid: uid9,
         age: parseInt(data.age) || null, gender: data.gender || 'other',
+        ...(data.consentGivenAt ? { consentGivenAt: data.consentGivenAt } : {}),
       }
 
       const writes = [

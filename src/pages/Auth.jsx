@@ -302,7 +302,7 @@ export default function Auth() {
                     I agree to the{' '}
                     <button
                       type="button"
-                      className="text-primary-600 font-semibold underline underline-offset-2 hover:text-primary-700"
+                      className="text-primary-600 font-semibold underline underline-offset-2 hover:text-primary-700 py-1 -my-1"
                       onClick={e => { e.stopPropagation(); setShowPrivacy(true) }}
                     >
                       Privacy Policy

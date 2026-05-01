@@ -414,7 +414,7 @@ export function AppProvider({ children }) {
   const sbInsert = useCallback(async (table, row) => {
     if (isDemoRef.current || !supabase) return
     const { error } = await supabase.from(table).insert(row)
-    if (error) console.error(`[sb insert ${table}]`, error)
+    if (error) console.error(`[sb insert ${table}]`, error?.message, error?.code, error?.details)
   }, [])
 
   const sbUpsert = useCallback(async (table, row) => {

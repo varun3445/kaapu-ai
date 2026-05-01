@@ -141,16 +141,61 @@ function NotificationsPage({ onBack }) {
 }
 
 // ── Sub-page: Privacy ─────────────────────────────────────────────────────────
-function PrivacyPage({ onBack }) {
+function PrivacyPage({ onBack, onOpenPrivacy }) {
   const { currentUser, updateProfile } = useApp()
   const defaults = { familyVisible: true, doctorShare: true, analytics: false }
   const [priv, setPriv] = useState({ ...defaults, ...(currentUser?.privacySettings || {}) })
   const [saved, setSaved] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   function toggle(key) { setPriv(p => ({ ...p, [key]: !p[key] })) }
   function save() {
     updateProfile({ privacySettings: priv })
     setSaved(true); setTimeout(() => setSaved(false), 2000)
+  }
+
+  async function downloadData() {
+    if (!supabase || !currentUser) return
+    setDownloading(true)
+    try {
+      const fid = currentUser.familyId
+      const uid = currentUser.id
+      const [
+        { data: userData },
+        { data: members },
+        { data: symptoms },
+        { data: checkIns },
+        { data: conditions },
+        { data: medications },
+        { data: documents },
+        { data: emergencyEvents },
+        { data: riskProfiles },
+        { data: familyRequests },
+      ] = await Promise.all([
+        supabase.from('users').select('*').eq('id', uid).single(),
+        supabase.from('members').select('*').eq('familyId', fid),
+        supabase.from('symptoms').select('*').eq('familyId', fid),
+        supabase.from('checkIns').select('*').eq('familyId', fid),
+        supabase.from('conditions').select('*').eq('familyId', fid),
+        supabase.from('medications').select('*').eq('familyId', fid),
+        supabase.from('documents').select('*').eq('familyId', fid),
+        supabase.from('emergencyEvents').select('*').eq('familyId', fid),
+        supabase.from('riskProfiles').select('*').eq('familyId', fid),
+        supabase.from('familyRequests').select('*').or(`fromUserId.eq.${uid},toUserId.eq.${uid}`),
+      ])
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        user: userData, members, symptoms, checkIns, conditions,
+        medications, documents, emergencyEvents, riskProfiles, familyRequests,
+      }
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href = url; a.download = `kaapu-data-${new Date().toISOString().slice(0,10)}.json`
+      a.click(); URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(false)
+    }
   }
 
   return (
@@ -183,6 +228,33 @@ function PrivacyPage({ onBack }) {
           </div>
         </div>
         <SaveButton saved={saved} onClick={save} />
+        <div>
+          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Your Data</p>
+          <div className="glass-card rounded-2xl overflow-hidden divide-y divide-black/5">
+            <button onClick={onOpenPrivacy}
+              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left">
+              <div className="w-7 h-7 rounded-lg bg-indigo-50 shadow-sm flex items-center justify-center">
+                <FileText size={13} className="text-indigo-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-gray-700">Privacy Policy</p>
+                <p className="text-[10px] text-gray-400">How we collect and use your data</p>
+              </div>
+              <ChevronRight size={13} className="text-gray-300" />
+            </button>
+            <button onClick={downloadData} disabled={downloading}
+              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left disabled:opacity-50">
+              <div className="w-7 h-7 rounded-lg bg-emerald-50 shadow-sm flex items-center justify-center">
+                <Download size={13} className="text-emerald-500" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-semibold text-gray-700">Download My Data</p>
+                <p className="text-[10px] text-gray-400">Export everything as JSON (GDPR Art. 20)</p>
+              </div>
+              {downloading && <div className="w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -217,7 +289,7 @@ function PrivacyPolicyPage({ onBack }) {
 }
 
 // ── Sub-page: Account ─────────────────────────────────────────────────────────
-function AccountPage({ onBack, onOpenPrivacy }) {
+function AccountPage({ onBack }) {
   const { currentUser, updateProfile, logout } = useApp()
   const [name,         setName]         = useState(currentUser?.name          || '')
   const [age,          setAge]          = useState(currentUser?.age?.toString() || '')
@@ -225,8 +297,7 @@ function AccountPage({ onBack, onOpenPrivacy }) {
   const [email,        setEmail]        = useState(currentUser?.email         || '')
   const [homeLocation, setHomeLocation] = useState(currentUser?.homeLocation  || '')
   const [saved,        setSaved]        = useState(false)
-  const [downloading,  setDownloading]  = useState(false)
-  const [deleteStep,   setDeleteStep]   = useState(0) // 0=idle 1=confirm 2=deleting
+  const [deleteStep,   setDeleteStep]   = useState(0)
   const [deleteInput,  setDeleteInput]  = useState('')
 
   async function save() {
@@ -238,52 +309,6 @@ function AccountPage({ onBack, onOpenPrivacy }) {
       homeLocation: homeLocation.trim(),
     })
     setSaved(true); setTimeout(() => setSaved(false), 2500)
-  }
-
-  async function downloadData() {
-    if (!supabase || !currentUser) return
-    setDownloading(true)
-    try {
-      const fid = currentUser.familyId
-      const uid = currentUser.id
-      const [
-        { data: userData },
-        { data: members },
-        { data: symptoms },
-        { data: checkIns },
-        { data: conditions },
-        { data: medications },
-        { data: documents },
-        { data: emergencyEvents },
-        { data: riskProfiles },
-        { data: familyRequests },
-      ] = await Promise.all([
-        supabase.from('users').select('*').eq('id', uid).single(),
-        supabase.from('members').select('*').eq('familyId', fid),
-        supabase.from('symptoms').select('*').eq('familyId', fid),
-        supabase.from('checkIns').select('*').eq('familyId', fid),
-        supabase.from('conditions').select('*').eq('familyId', fid),
-        supabase.from('medications').select('*').eq('familyId', fid),
-        supabase.from('documents').select('*').eq('familyId', fid),
-        supabase.from('emergencyEvents').select('*').eq('familyId', fid),
-        supabase.from('riskProfiles').select('*').eq('familyId', fid),
-        supabase.from('familyRequests').select('*').or(`fromUserId.eq.${uid},toUserId.eq.${uid}`),
-      ])
-      const payload = {
-        exportedAt: new Date().toISOString(),
-        user: userData,
-        members, symptoms, checkIns, conditions,
-        medications, documents, emergencyEvents,
-        riskProfiles, familyRequests,
-      }
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
-      const url  = URL.createObjectURL(blob)
-      const a    = document.createElement('a')
-      a.href = url; a.download = `kaapu-data-${new Date().toISOString().slice(0,10)}.json`
-      a.click(); URL.revokeObjectURL(url)
-    } finally {
-      setDownloading(false)
-    }
   }
 
   async function deleteAccount() {
@@ -347,39 +372,6 @@ function AccountPage({ onBack, onOpenPrivacy }) {
         </div>
 
         <SaveButton saved={saved} onClick={save} />
-
-        {/* Data & Privacy */}
-        <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Data & Privacy</p>
-          <div className="glass-card rounded-2xl overflow-hidden divide-y divide-black/5">
-
-            {/* Privacy policy */}
-            <button onClick={onOpenPrivacy}
-              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left">
-              <div className="w-7 h-7 rounded-lg bg-indigo-50 shadow-sm flex items-center justify-center">
-                <FileText size={13} className="text-indigo-500" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-semibold text-gray-700">Privacy Policy</p>
-                <p className="text-[10px] text-gray-400">How we collect and use your data</p>
-              </div>
-              <ChevronRight size={13} className="text-gray-300" />
-            </button>
-
-            {/* Download */}
-            <button onClick={downloadData} disabled={downloading}
-              className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left disabled:opacity-50">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 shadow-sm flex items-center justify-center">
-                <Download size={13} className="text-emerald-500" />
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-semibold text-gray-700">Download My Data</p>
-                <p className="text-[10px] text-gray-400">Export everything as JSON (GDPR Art. 20)</p>
-              </div>
-              {downloading && <div className="w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />}
-            </button>
-          </div>
-        </div>
 
         {/* Delete account */}
         <div>
@@ -619,9 +611,9 @@ export default function ProfilePanel({ open, onClose }) {
                 transition={{ type:'spring', damping:28, stiffness:320 }} className="flex flex-col flex-1 overflow-y-auto">
                 {page === 'emergency-contacts' && <EmergencyContactsPage onBack={() => setPage(null)} />}
                 {page === 'notifications'      && <NotificationsPage     onBack={() => setPage(null)} />}
-                {page === 'privacy'            && <PrivacyPage           onBack={() => setPage(null)} />}
-                {page === 'privacy-policy'     && <PrivacyPolicyPage     onBack={() => setPage('account')} />}
-                {page === 'account'            && <AccountPage           onBack={() => setPage(null)} onOpenPrivacy={() => setPage('privacy-policy')} />}
+                {page === 'privacy'            && <PrivacyPage           onBack={() => setPage(null)} onOpenPrivacy={() => setPage('privacy-policy')} />}
+                {page === 'privacy-policy'     && <PrivacyPolicyPage     onBack={() => setPage('privacy')} />}
+                {page === 'account'            && <AccountPage           onBack={() => setPage(null)} />}
               </motion.div>
             ) : (
               <motion.div key="main" initial={{ x:-40, opacity:0 }} animate={{ x:0, opacity:1 }} exit={{ x:-40, opacity:0 }}

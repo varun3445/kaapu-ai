@@ -50,26 +50,40 @@ function BodyColliders({ bodyGroupRef, bboxRef, onHover }) {
 
   // Positions mirror GeometryBody; dimensions are slightly enlarged (+0.03–0.05)
   // so these colliders are the outermost surface in every direction.
+  // Calibrated to the stickman FBX: head is ~35% of total height,
+  // torso is compact, arms in T-pose at true shoulder height.
   const parts = [
-    { type: 'sphere', args: [0.17, 8, 8],            pos: [0,     0.87,  0]                          },
-    { type: 'cyl',    args: [0.07, 0.07, 0.13, 8],   pos: [0,     0.73,  0]                          },
-    { type: 'box',    args: [0.40, 0.30, 0.20],       pos: [0,     0.55,  0]                          },
-    { type: 'box',    args: [0.36, 0.22, 0.18],       pos: [0,     0.32,  0]                          },
-    { type: 'box',    args: [0.38, 0.20, 0.18],       pos: [0,     0.15,  0]                          },
-    { type: 'cyl',    args: [0.06, 0.055, 0.28, 8],  pos: [-0.32, 0.44,  0], rot: [0,0,  Math.PI/12] },
-    { type: 'cyl',    args: [0.06, 0.055, 0.28, 8],  pos: [ 0.32, 0.44,  0], rot: [0,0, -Math.PI/12] },
-    { type: 'cyl',    args: [0.05, 0.045, 0.26, 8],  pos: [-0.37, 0.17,  0], rot: [0,0,  Math.PI/14] },
-    { type: 'cyl',    args: [0.05, 0.045, 0.26, 8],  pos: [ 0.37, 0.17,  0], rot: [0,0, -Math.PI/14] },
-    { type: 'box',    args: [0.10, 0.13, 0.07],       pos: [-0.40, 0.03,  0]                          },
-    { type: 'box',    args: [0.10, 0.13, 0.07],       pos: [ 0.40, 0.03,  0]                          },
-    { type: 'cyl',    args: [0.08, 0.08, 0.34, 8],   pos: [-0.11,-0.12,  0]                          },
-    { type: 'cyl',    args: [0.08, 0.08, 0.34, 8],   pos: [ 0.11,-0.12,  0]                          },
-    { type: 'sphere', args: [0.08, 8, 8],             pos: [-0.13,-0.30,  0]                          },
-    { type: 'sphere', args: [0.08, 8, 8],             pos: [ 0.13,-0.30,  0]                          },
-    { type: 'cyl',    args: [0.065, 0.055, 0.32, 8], pos: [-0.13,-0.48,  0]                          },
-    { type: 'cyl',    args: [0.065, 0.055, 0.32, 8], pos: [ 0.13,-0.48,  0]                          },
-    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [-0.13,-0.66, 0.04]                        },
-    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [ 0.13,-0.66, 0.04]                        },
+    // HEAD — large sphere matching stickman proportions
+    { type: 'sphere', args: [0.28, 8, 8],            pos: [0,     0.72,  0]                          },
+    // NECK — very short on this model
+    { type: 'cyl',    args: [0.07, 0.07, 0.07, 8],   pos: [0,     0.42,  0]                          },
+    // UPPER CHEST
+    { type: 'box',    args: [0.38, 0.18, 0.20],       pos: [0,     0.22,  0]                          },
+    // MID TORSO / ABDOMEN
+    { type: 'box',    args: [0.34, 0.16, 0.18],       pos: [0,     0.07,  0]                          },
+    // HIPS / PELVIS
+    { type: 'box',    args: [0.36, 0.14, 0.18],       pos: [0,    -0.06,  0]                          },
+    // T-POSE ARMS — horizontal at true shoulder height y≈0.30
+    { type: 'cyl',    args: [0.08, 0.075, 0.28, 8],  pos: [-0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'cyl',    args: [0.08, 0.075, 0.28, 8],  pos: [ 0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'sphere', args: [0.08, 8, 8],             pos: [-0.47, 0.30, 0]                          },
+    { type: 'sphere', args: [0.08, 8, 8],             pos: [ 0.47, 0.30, 0]                          },
+    { type: 'cyl',    args: [0.07, 0.065, 0.24, 8],  pos: [-0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'cyl',    args: [0.07, 0.065, 0.24, 8],  pos: [ 0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'box',    args: [0.12, 0.10, 0.08],       pos: [-0.73, 0.30, 0]                          },
+    { type: 'box',    args: [0.12, 0.10, 0.08],       pos: [ 0.73, 0.30, 0]                          },
+    // UPPER LEGS
+    { type: 'cyl',    args: [0.08, 0.08, 0.24, 8],   pos: [-0.11,-0.22,  0]                          },
+    { type: 'cyl',    args: [0.08, 0.08, 0.24, 8],   pos: [ 0.11,-0.22,  0]                          },
+    // KNEES
+    { type: 'sphere', args: [0.08, 8, 8],             pos: [-0.13,-0.38,  0]                          },
+    { type: 'sphere', args: [0.08, 8, 8],             pos: [ 0.13,-0.38,  0]                          },
+    // LOWER LEGS
+    { type: 'cyl',    args: [0.065, 0.055, 0.26, 8], pos: [-0.13,-0.55,  0]                          },
+    { type: 'cyl',    args: [0.065, 0.055, 0.26, 8], pos: [ 0.13,-0.55,  0]                          },
+    // FEET
+    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [-0.13,-0.67, 0.04]                        },
+    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [ 0.13,-0.67, 0.04]                        },
   ]
 
   return (
@@ -129,25 +143,37 @@ function GeometryBody({ skinColor = '#C49272' }) {
   const mat = useMemo(() => makeSkinMat(skinColor), [skinColor])
 
   const parts = [
-    { type: 'sphere', args: [0.13, 24, 24],          pos: [0, 0.87, 0] },
-    { type: 'cyl',    args: [0.048, 0.048, 0.10, 16], pos: [0, 0.73, 0] },
-    { type: 'box',    args: [0.32, 0.24, 0.14],       pos: [0, 0.55, 0] },
-    { type: 'box',    args: [0.28, 0.18, 0.12],       pos: [0, 0.32, 0] },
-    { type: 'box',    args: [0.30, 0.14, 0.12],       pos: [0, 0.15, 0] },
-    { type: 'cyl',    args: [0.04, 0.035, 0.24, 16],  pos: [-0.32, 0.44, 0], rot: [0, 0,  Math.PI/12] },
-    { type: 'cyl',    args: [0.04, 0.035, 0.24, 16],  pos: [ 0.32, 0.44, 0], rot: [0, 0, -Math.PI/12] },
-    { type: 'cyl',    args: [0.033, 0.027, 0.22, 16], pos: [-0.37, 0.17, 0], rot: [0, 0,  Math.PI/14] },
-    { type: 'cyl',    args: [0.033, 0.027, 0.22, 16], pos: [ 0.37, 0.17, 0], rot: [0, 0, -Math.PI/14] },
-    { type: 'box',    args: [0.07, 0.10, 0.04],        pos: [-0.40, 0.03, 0] },
-    { type: 'box',    args: [0.07, 0.10, 0.04],        pos: [ 0.40, 0.03, 0] },
-    { type: 'cyl',    args: [0.054, 0.050, 0.30, 16], pos: [-0.11, -0.12, 0] },
-    { type: 'cyl',    args: [0.054, 0.050, 0.30, 16], pos: [ 0.11, -0.12, 0] },
-    { type: 'sphere', args: [0.053, 16, 16],           pos: [-0.13, -0.30, 0] },
-    { type: 'sphere', args: [0.053, 16, 16],           pos: [ 0.13, -0.30, 0] },
-    { type: 'cyl',    args: [0.043, 0.036, 0.28, 16], pos: [-0.13, -0.48, 0] },
-    { type: 'cyl',    args: [0.043, 0.036, 0.28, 16], pos: [ 0.13, -0.48, 0] },
-    { type: 'box',    args: [0.09, 0.055, 0.18],       pos: [-0.13, -0.66, 0.04] },
-    { type: 'box',    args: [0.09, 0.055, 0.18],       pos: [ 0.13, -0.66, 0.04] },
+    // HEAD — large, stickman-proportioned
+    { type: 'sphere', args: [0.24, 24, 24],            pos: [0,     0.72,  0]                          },
+    // NECK — very short
+    { type: 'cyl',    args: [0.048, 0.048, 0.06, 16],  pos: [0,     0.42,  0]                          },
+    // UPPER CHEST
+    { type: 'box',    args: [0.30, 0.14, 0.14],         pos: [0,     0.22,  0]                          },
+    // MID TORSO
+    { type: 'box',    args: [0.26, 0.12, 0.12],         pos: [0,     0.07,  0]                          },
+    // HIPS
+    { type: 'box',    args: [0.28, 0.10, 0.12],         pos: [0,    -0.06,  0]                          },
+    // T-POSE ARMS at true shoulder height y≈0.30
+    { type: 'cyl',    args: [0.05, 0.045, 0.26, 16],   pos: [-0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'cyl',    args: [0.05, 0.045, 0.26, 16],   pos: [ 0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'sphere', args: [0.05, 16, 16],              pos: [-0.47, 0.30, 0]                          },
+    { type: 'sphere', args: [0.05, 16, 16],              pos: [ 0.47, 0.30, 0]                          },
+    { type: 'cyl',    args: [0.04, 0.035, 0.22, 16],   pos: [-0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'cyl',    args: [0.04, 0.035, 0.22, 16],   pos: [ 0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
+    { type: 'box',    args: [0.10, 0.07, 0.05],          pos: [-0.73, 0.30, 0]                          },
+    { type: 'box',    args: [0.10, 0.07, 0.05],          pos: [ 0.73, 0.30, 0]                          },
+    // UPPER LEGS
+    { type: 'cyl',    args: [0.054, 0.050, 0.22, 16],  pos: [-0.11, -0.22, 0]                          },
+    { type: 'cyl',    args: [0.054, 0.050, 0.22, 16],  pos: [ 0.11, -0.22, 0]                          },
+    // KNEES
+    { type: 'sphere', args: [0.053, 16, 16],             pos: [-0.13, -0.38, 0]                          },
+    { type: 'sphere', args: [0.053, 16, 16],             pos: [ 0.13, -0.38, 0]                          },
+    // LOWER LEGS
+    { type: 'cyl',    args: [0.043, 0.036, 0.24, 16],  pos: [-0.13, -0.55, 0]                          },
+    { type: 'cyl',    args: [0.043, 0.036, 0.24, 16],  pos: [ 0.13, -0.55, 0]                          },
+    // FEET
+    { type: 'box',    args: [0.09, 0.055, 0.18],         pos: [-0.13, -0.67, 0.04]                       },
+    { type: 'box',    args: [0.09, 0.055, 0.18],         pos: [ 0.13, -0.67, 0.04]                       },
   ]
 
   return (

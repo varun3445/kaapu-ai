@@ -363,26 +363,36 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
 
     async function fetchRemote() {
       try {
-        // 1. Find the member's self-record in their own family
-        const { data: selfMember } = await supabase
-          .from('members')
-          .select('id')
-          .eq('familyId', member.linkedFamilyId)
-          .eq('userId', member.userId)
-          .single()
-
+        // 1. Find the member's self-record via SECURITY DEFINER RPC
+        // (direct table query blocked by RLS — members policy is own-family only)
+        const { data: selfMembers, error: memErr } = await supabase.rpc(
+          'get_connected_member',
+          { target_family_id: member.linkedFamilyId, target_user_id: member.userId }
+        )
+        if (memErr) console.error('[get_connected_member]', memErr.message)
+        const selfMember = selfMembers?.[0]
         if (!selfMember || cancelled) return
 
-        // 2. Fetch their symptoms and check-ins in parallel
+        // 2. Fetch symptoms and check-ins via SECURITY DEFINER RPCs
+        // (direct table queries blocked by RLS — own-family-only policies)
         const [sympRes, ciRes] = await Promise.all([
-          supabase.from('symptoms').select('*').eq('memberId', selfMember.id),
-          supabase.from('checkIns').select('*').eq('memberId', selfMember.id).order('date', { ascending: false }),
+          supabase.rpc('get_connected_symptoms', {
+            target_family_id: member.linkedFamilyId,
+            target_member_id: selfMember.id,
+          }),
+          supabase.rpc('get_connected_checkins', {
+            target_family_id: member.linkedFamilyId,
+            target_member_id: selfMember.id,
+          }),
         ])
+        if (sympRes.error) console.error('[get_connected_symptoms]', sympRes.error.message)
+        if (ciRes.error)   console.error('[get_connected_checkins]',  ciRes.error.message)
 
         if (cancelled) return
         setRemoteSymptoms(sympRes.data || [])
-        setRemoteCheckIns(ciRes.data   || [])
-      } catch (_) {
+        setRemoteCheckIns((ciRes.data || []).sort((a, b) => new Date(b.date) - new Date(a.date)))
+      } catch (err) {
+        console.error('[fetchRemote connected]', err)
         if (!cancelled) { setRemoteSymptoms([]); setRemoteCheckIns([]) }
       } finally {
         if (!cancelled) setLoadingRemote(false)

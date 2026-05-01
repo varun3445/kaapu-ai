@@ -173,7 +173,8 @@ export default function Header() {
             <div className="relative">
               <button
                 onClick={() => setNotifCentreOpen(true)}
-                className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-gray-500 hover:text-primary-600 transition-colors"
+                aria-label="Notifications"
+                className="w-11 h-11 rounded-full glass-card flex items-center justify-center text-gray-500 hover:text-primary-600 transition-colors"
               >
                 <Bell size={17} />
               </button>
@@ -188,8 +189,8 @@ export default function Header() {
             <div className="relative">
               <button
                 onClick={() => setPeopleOpen(true)}
-                className="w-9 h-9 rounded-full glass-card flex items-center justify-center text-gray-500 hover:text-primary-600 transition-colors"
-                title="Family & Friends"
+                className="w-11 h-11 rounded-full glass-card flex items-center justify-center text-gray-500 hover:text-primary-600 transition-colors"
+                aria-label="Family & Friends"
               >
                 <Users size={16} />
               </button>

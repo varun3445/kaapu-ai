@@ -33,7 +33,7 @@ export default function BottomNav() {
                 }`}>
                   <Icon size={19} strokeWidth={isActive ? 2.5 : 1.8} />
                 </div>
-                <span className={`text-[9px] font-semibold ${isActive ? 'text-gray-700' : ''}`}>
+                <span className={`text-[10px] font-semibold ${isActive ? 'text-gray-700' : ''}`}>
                   {label}
                 </span>
               </>

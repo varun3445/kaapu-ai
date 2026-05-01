@@ -47,8 +47,12 @@ export default function Auth() {
       if (mode === 'login') {
         result = await login(form.email, form.password)
       } else {
-        if (!form.name || !form.email || !form.password) {
-          setError('Please fill in all required fields.')
+        const missing = []
+        if (!form.name) missing.push('name')
+        if (!form.email) missing.push('email')
+        if (!form.password) missing.push('password')
+        if (missing.length > 0) {
+          setError(`Please fill in: ${missing.join(', ')}.`)
           return
         }
         if (!consent) {
@@ -133,7 +137,7 @@ export default function Auth() {
               <button
                 key={m}
                 onClick={() => { setMode(m); setError(''); setConsent(false) }}
-                className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all ${
+                className={`flex-1 py-3 text-sm font-semibold rounded-xl transition-all ${
                   mode === m ? 'text-gray-900' : 'text-gray-500'
                 }`}
                 style={mode === m ? {
@@ -156,7 +160,7 @@ export default function Auth() {
                 if (r?.error) { setError(r.error); setLoading(false) }
               }}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-2xl text-sm font-semibold text-gray-700 transition-all hover:bg-black/5 disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl text-sm font-semibold text-gray-700 transition-all hover:bg-black/5 disabled:opacity-50"
               style={{ background: 'rgba(255,255,255,0.7)', border: '0.75px solid rgba(0,0,0,0.1)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
             >
               <GoogleLogo />
@@ -262,8 +266,8 @@ export default function Auth() {
                   autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 />
                 <button type="button" onClick={() => setShowPw(p => !p)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                  {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                  {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
 
@@ -446,6 +450,15 @@ export default function Auth() {
           border-color: rgba(99,102,241,0.45);
           box-shadow: 0 0 0 3px rgba(99,102,241,0.1), inset 0 1px 0 rgba(255,255,255,0.95);
           background: rgba(255,255,255,0.78);
+        }
+        select.input-field {
+          appearance: none;
+          -webkit-appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 14px center;
+          padding-right: 36px;
+          cursor: pointer;
         }
       `}</style>
     </div>

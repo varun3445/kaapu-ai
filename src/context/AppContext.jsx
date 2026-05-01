@@ -674,8 +674,11 @@ export function AppProvider({ children }) {
     if (isDemoRef.current) {
       targetUser = DEMO_USERS.find(u => u.uid === targetUid)
     } else if (supabase) {
-      const { data } = await supabase.from('users').select('*').eq('uid', targetUid).single()
-      targetUser = data || null
+      // Use SECURITY DEFINER RPC — the users RLS policy only allows reading your
+      // own row, so a direct .eq('uid', ...) query returns 0 rows for other users.
+      const { data, error } = await supabase.rpc('find_user_by_uid', { target_uid: targetUid })
+      if (error) console.error('[find_user_by_uid]', error.message)
+      targetUser = data?.[0] || null
     }
 
     if (!targetUser) return { error: 'No account found with that ID. Please double-check.' }

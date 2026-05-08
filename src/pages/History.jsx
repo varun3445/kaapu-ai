@@ -727,16 +727,10 @@ export default function History() {
           </p>
         </div>
         {mainTab === 'Timeline' && (
-          <div className="flex gap-2">
-            <button onClick={() => setShowRecords(true)}
-              className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors">
-              <FolderOpen size={13} /> Records
-            </button>
-            <button onClick={() => setShowUpload(true)}
-              className="flex items-center gap-1.5 bg-primary-600 text-white text-xs font-bold px-3 py-2 rounded-xl">
-              <Plus size={13} /> Upload
-            </button>
-          </div>
+          <button onClick={() => setShowRecords(true)}
+            className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors">
+            <FolderOpen size={13} /> Records
+          </button>
         )}
       </div>
 

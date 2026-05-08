@@ -13,6 +13,12 @@ const config: CapacitorConfig = {
   android: {
     backgroundColor: '#ffffff',
   },
+  ios: {
+    backgroundColor: '#eeeae6',
+    allowsLinkPreview: false,
+    scrollEnabled: true,
+    limitsNavigationsToAppBoundDomains: true,
+  },
 }
 
 export default config

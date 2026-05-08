@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight, Plus, X, Smartphone, Activity } from 'lucide-react'
+import { ChevronRight, Plus, X, Smartphone, Activity, CheckCircle, Loader } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import ActivityChart from '../components/Dashboard/ActivityChart'
 import DailyCheckIn from '../components/CheckIn/DailyCheckIn'
 import { FEELING_CONFIG, SYMPTOM_CATEGORIES } from '../data/mockData'
 import { format, isToday } from 'date-fns'
+import { useHealthData } from '../hooks/useHealthData'
 
 // ── Daily check-in modal ─────────────────────────────────────────────────────
 // targetDate – Date object (for past days) or undefined (today)
@@ -45,7 +46,7 @@ function CheckInModal({ onClose, targetDate }) {
 }
 
 // ── Connect Health modal ──────────────────────────────────────────────────────
-function ConnectHealthModal({ onClose }) {
+function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, isNative, unavailable, notInstalled }) {
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
@@ -62,7 +63,6 @@ function ConnectHealthModal({ onClose }) {
         transition={{ type: 'spring', damping: 28, stiffness: 320 }}
         className="relative w-full max-w-sm glass-elevated rounded-3xl px-5 pt-5 pb-6"
       >
-        {/* Header */}
         <div className="flex items-center justify-between mb-1">
           <p className="text-sm font-extrabold text-gray-900">Connect Health App</p>
           <button onClick={onClose} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
@@ -73,7 +73,11 @@ function ConnectHealthModal({ onClose }) {
 
         <div className="space-y-3">
           {/* Apple Health */}
-          <button className="w-full flex items-center gap-4 glass-card rounded-2xl p-4 text-left hover:bg-white/80 transition-colors active:scale-[0.98]">
+          <button
+            onClick={isIOS ? onConnect : undefined}
+            disabled={connecting || !isIOS}
+            className={`w-full flex items-center gap-4 glass-card rounded-2xl p-4 text-left transition-colors active:scale-[0.98] ${isIOS ? 'hover:bg-white/80' : 'opacity-50 cursor-default'}`}
+          >
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
               style={{ background: 'linear-gradient(135deg, #ff2d55 0%, #ff6b6b 100%)' }}>
               <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">
@@ -82,13 +86,24 @@ function ConnectHealthModal({ onClose }) {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900">Apple Health</p>
-              <p className="text-xs text-gray-400 mt-0.5">Heart rate, steps, SpO₂, sleep & more</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {isIOS ? 'Heart rate, steps, SpO₂ & calories' : 'iOS only'}
+              </p>
             </div>
-            <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+            {(connecting && isIOS)
+              ? <Loader size={16} className="text-primary-400 animate-spin flex-shrink-0" />
+              : isIOS
+                ? <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+                : <span className="text-[10px] text-gray-300 flex-shrink-0">iOS only</span>
+            }
           </button>
 
           {/* Google Health Connect */}
-          <button className="w-full flex items-center gap-4 glass-card rounded-2xl p-4 text-left hover:bg-white/80 transition-colors active:scale-[0.98]">
+          <button
+            onClick={isAndroid ? onConnect : undefined}
+            disabled={connecting || !isAndroid}
+            className={`w-full flex items-center gap-4 glass-card rounded-2xl p-4 text-left transition-colors active:scale-[0.98] ${isAndroid ? 'hover:bg-white/80' : 'opacity-50 cursor-default'}`}
+          >
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white border border-gray-100">
               <svg viewBox="0 0 24 24" className="w-7 h-7">
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
@@ -99,36 +114,103 @@ function ConnectHealthModal({ onClose }) {
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900">Google Health Connect</p>
-              <p className="text-xs text-gray-400 mt-0.5">Android health data, activity & vitals</p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {isAndroid ? 'Steps, heart rate, SpO₂ & calories' : 'Android only'}
+              </p>
             </div>
-            <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+            {(connecting && isAndroid)
+              ? <Loader size={16} className="text-primary-400 animate-spin flex-shrink-0" />
+              : isAndroid
+                ? <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
+                : <span className="text-[10px] text-gray-300 flex-shrink-0">Android only</span>
+            }
           </button>
-        </div>
 
-        <p className="text-[10px] text-gray-300 text-center mt-4">
-          Coming soon — integration in development
-        </p>
+          {/* Status messages */}
+          {unavailable && (
+            <p className="text-[11px] text-amber-600 bg-amber-50 rounded-xl px-3 py-2 text-center">
+              {isIOS ? 'HealthKit isn\'t available on the simulator — test on a real iPhone.' : 'Health data not available on this device.'}
+            </p>
+          )}
+          {notInstalled && (
+            <p className="text-[11px] text-amber-600 bg-amber-50 rounded-xl px-3 py-2 text-center">
+              Health Connect isn't installed. Install it from the Play Store, then try again.
+            </p>
+          )}
+        </div>
       </motion.div>
     </motion.div>,
     document.body
   )
 }
 
-// ── "Connect Health" placeholder card ────────────────────────────────────────
-function ConnectHealthCard({ icon, label, onConnect }) {
+// ── Web health prompt ─────────────────────────────────────────────────────────
+function WebHealthPrompt() {
+  return (
+    <div className="glass-card rounded-2xl p-5 flex flex-col items-center text-center gap-3">
+      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
+        <Smartphone size={22} className="text-primary-400" />
+      </div>
+      <div>
+        <p className="text-sm font-bold text-gray-800">Health data needs the app</p>
+        <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+          Steps, heart rate, SpO₂ and calories sync from Apple Health on iPhone or Google Health Connect on Android.
+        </p>
+      </div>
+      <div className="flex gap-2 w-full">
+        <a href="https://apps.apple.com" target="_blank" rel="noreferrer"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white"
+          style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)' }}>
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white flex-shrink-0">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+          </svg>
+          App Store
+        </a>
+        <a href="https://play.google.com" target="_blank" rel="noreferrer"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white"
+          style={{ background: 'linear-gradient(135deg, #4285F4 0%, #34A853 100%)' }}>
+          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white flex-shrink-0">
+            <path d="M3 20.5v-17c0-.83.94-1.3 1.6-.8l14 8.5c.6.36.6 1.24 0 1.6l-14 8.5c-.66.5-1.6.03-1.6-.8z"/>
+          </svg>
+          Play Store
+        </a>
+      </div>
+    </div>
+  )
+}
+
+// ── Vitals card — shows real value when connected, connect prompt otherwise ───
+function VitalCard({ icon, label, value, unit, onConnect, connected }) {
   return (
     <div className="glass-card rounded-2xl p-3.5 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-xl">{icon}</span>
-        <Smartphone size={12} className="text-gray-300" />
+        {connected
+          ? <CheckCircle size={12} className="text-emerald-400" />
+          : <Smartphone size={12} className="text-gray-300" />
+        }
       </div>
+      {connected ? (
+        value != null ? (
+          <p className="text-base font-extrabold text-gray-800 leading-none">
+            {value.toLocaleString()}
+            <span className="text-[10px] font-medium text-gray-400 ml-0.5">{unit}</span>
+          </p>
+        ) : (
+          <p className="text-sm font-bold text-gray-300 leading-none">N/A</p>
+        )
+      ) : (
+        <p className="text-[10px] text-gray-300 font-medium leading-none">—</p>
+      )}
       <p className="text-[10px] text-gray-400 font-medium leading-none">{label}</p>
-      <button
-        onClick={onConnect}
-        className="w-6 h-6 rounded-lg bg-primary-50 flex items-center justify-center hover:bg-primary-100 transition-colors"
-      >
-        <Plus size={13} className="text-primary-500" />
-      </button>
+      {!connected && (
+        <button
+          onClick={onConnect}
+          className="w-6 h-6 rounded-lg bg-primary-50 flex items-center justify-center hover:bg-primary-100 transition-colors"
+        >
+          <Plus size={13} className="text-primary-500" />
+        </button>
+      )}
     </div>
   )
 }
@@ -218,16 +300,35 @@ function SymptomPill({ symptom, onResolve }) {
 export default function Dashboard() {
   const navigate  = useNavigate()
   const { currentMember, currentSymptoms, currentCheckIns, resolveSymptom } = useApp()
+  const { connected, vitals, loading: healthLoading, connect, isIOS, isAndroid, isNative } = useHealthData()
+
   // checkInDate: null = closed, Date = which calendar day to log for
-  const [checkInDate, setCheckInDate] = useState(null)
-  const [showConnect, setShowConnect] = useState(false)
+  const [checkInDate,    setCheckInDate]    = useState(null)
+  const [showConnect,    setShowConnect]    = useState(false)
+  const [connecting,     setConnecting]     = useState(false)
+  const [healthUnavail,  setHealthUnavail]  = useState(false)
+  const [notInstalled,   setNotInstalled]   = useState(false)
 
   const activeSymptoms = currentSymptoms.filter(s => !s.resolved)
   const todayCheckIn   = currentCheckIns.find(c => isToday(new Date(c.date)))
   const todayCfg       = todayCheckIn ? FEELING_CONFIG[todayCheckIn.feeling] : null
 
+  async function handleConnect() {
+    setConnecting(true)
+    setHealthUnavail(false)
+    setNotInstalled(false)
+    const result = await connect()
+    setConnecting(false)
+    if (result.success) {
+      setShowConnect(false)
+    } else if (result.reason === 'not-available') {
+      setHealthUnavail(true)
+    } else if (result.reason === 'not-installed') {
+      setNotInstalled(true)
+    }
+  }
+
   function openCheckIn(date) {
-    // date is a Date at midnight local time for that day; pass as-is
     setCheckInDate(date instanceof Date ? date : new Date())
   }
 
@@ -308,34 +409,52 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* ── Steps (connect state) ─────────────────────────────────────────── */}
-      <div className="glass-card rounded-2xl p-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
-            <Activity size={18} className="text-primary-400" />
+      {/* ── Steps ────────────────────────────────────────────────────────── */}
+      {isNative ? (
+        <div className="glass-card rounded-2xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
+              <Activity size={18} className="text-primary-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-gray-500">Steps today</p>
+              {connected && vitals?.steps != null
+                ? <p className="text-base font-extrabold text-gray-800 mt-0.5">{vitals.steps.toLocaleString()}</p>
+                : <p className="text-sm text-gray-300 font-medium mt-0.5">No data yet</p>
+              }
+            </div>
+            {connected
+              ? <CheckCircle size={16} className="text-emerald-400 flex-shrink-0" />
+              : (
+                <button onClick={() => setShowConnect(true)}
+                  className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-colors flex-shrink-0"
+                  style={{ background: 'rgba(99,102,241,0.08)', border: '0.75px solid rgba(99,102,241,0.2)', color: '#6366f1' }}>
+                  <Plus size={12} /> Connect
+                </button>
+              )
+            }
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-gray-500">Steps today</p>
-            <p className="text-sm text-gray-300 font-medium mt-0.5">No data yet</p>
-          </div>
-          <button onClick={() => setShowConnect(true)}
-            className="flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-xl transition-colors flex-shrink-0"
-            style={{ background: 'rgba(99,102,241,0.08)', border: '0.75px solid rgba(99,102,241,0.2)', color: '#6366f1' }}>
-            <Plus size={12} /> Connect
-          </button>
+          {!connected && (
+            <p className="text-[10px] text-gray-300 mt-2.5 pl-[52px]">
+              {isIOS ? 'Sync from Apple Health' : 'Sync from Google Health Connect'}
+            </p>
+          )}
         </div>
-        <p className="text-[10px] text-gray-300 mt-2.5 pl-[52px]">Sync from Apple Health or Google Health Connect</p>
-      </div>
+      ) : (
+        <WebHealthPrompt />
+      )}
 
-      {/* ── Connect Health metrics ────────────────────────────────────────── */}
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">Health Vitals</p>
-        <div className="grid grid-cols-3 gap-2.5">
-          <ConnectHealthCard icon="❤️" label="Heart Rate" onConnect={() => setShowConnect(true)} />
-          <ConnectHealthCard icon="🫁" label="SpO₂"       onConnect={() => setShowConnect(true)} />
-          <ConnectHealthCard icon="🔥" label="Calories"   onConnect={() => setShowConnect(true)} />
+      {/* ── Health Vitals ─────────────────────────────────────────────────── */}
+      {isNative && (
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">Health Vitals</p>
+          <div className="grid grid-cols-3 gap-2.5">
+            <VitalCard icon="❤️" label="Heart Rate" unit="bpm"  value={vitals?.heartRate} connected={connected} onConnect={() => setShowConnect(true)} />
+            <VitalCard icon="🫁" label="SpO₂"       unit="%"    value={vitals?.spo2}      connected={connected} onConnect={() => setShowConnect(true)} />
+            <VitalCard icon="🔥" label="Calories"   unit="kcal" value={vitals?.calories}  connected={connected} onConnect={() => setShowConnect(true)} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ── Activity chart ────────────────────────────────────────────────── */}
       <ActivityChart onConnect={() => setShowConnect(true)} />
@@ -353,7 +472,18 @@ export default function Dashboard() {
 
       {/* ── Connect Health modal ───────────────────────────────────────────── */}
       <AnimatePresence>
-        {showConnect && <ConnectHealthModal onClose={() => setShowConnect(false)} />}
+        {showConnect && (
+          <ConnectHealthModal
+            onClose={() => { setShowConnect(false); setHealthUnavail(false); setNotInstalled(false) }}
+            onConnect={handleConnect}
+            connecting={connecting}
+            isIOS={isIOS}
+            isAndroid={isAndroid}
+            isNative={isNative}
+            unavailable={healthUnavail}
+            notInstalled={notInstalled}
+          />
+        )}
       </AnimatePresence>
     </div>
   )

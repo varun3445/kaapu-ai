@@ -147,7 +147,7 @@ export default function Header() {
 
   return (
     <>
-      <header className="glass border-b border-gray-100 px-4 pt-4 pb-3 z-40 relative">
+      <header className="glass border-b border-gray-100 px-4 pb-3 z-40 relative" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}>
         <div className="flex items-center justify-between max-w-lg mx-auto">
           {/* Profile avatar — opens settings panel */}
           <button onClick={() => setPanelOpen(true)} className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">

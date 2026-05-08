@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, AlertTriangle, MapPin, Loader, RefreshCw } from 'lucide-react'
+import { Capacitor } from '@capacitor/core'
+import { Geolocation } from '@capacitor/geolocation'
 import { useApp } from '../../context/AppContext'
 import { playTick, playFinalBeep, playCancel, startAlarm, stopActiveAlarm } from '../../utils/audio'
 
@@ -18,17 +20,33 @@ export default function EmergencyFlow({ onClose, sentRef }) {
   const timerRef = useRef(null)
 
   // ── Geolocation ───────────────────────────────────────────────────────────
-  const requestLocation = useCallback(() => {
-    if (!navigator.geolocation) { setLocState('unavailable'); return }
+  // Use native Capacitor plugin on device (triggers iOS permission dialog),
+  // fall back to browser API on web.
+  const requestLocation = useCallback(async () => {
     setLocState('requesting')
-    navigator.geolocation.getCurrentPosition(
-      p => {
-        setLocation({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy })
+    try {
+      if (Capacitor.isNativePlatform()) {
+        // Request permission first (shows the iOS system dialog)
+        const perm = await Geolocation.requestPermissions()
+        if (perm.location === 'denied') { setLocState('denied'); return }
+        const pos = await Geolocation.getCurrentPosition({ timeout: 10000, maximumAge: 30000, enableHighAccuracy: true })
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy })
         setLocState('got')
-      },
-      err => setLocState(err.code === 1 ? 'denied' : 'unavailable'),
-      { timeout: 8000, maximumAge: 30000 }
-    )
+      } else {
+        // Web fallback
+        if (!navigator.geolocation) { setLocState('unavailable'); return }
+        navigator.geolocation.getCurrentPosition(
+          p => {
+            setLocation({ lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy })
+            setLocState('got')
+          },
+          err => setLocState(err.code === 1 ? 'denied' : 'unavailable'),
+          { timeout: 8000, maximumAge: 30000 }
+        )
+      }
+    } catch {
+      setLocState('unavailable')
+    }
   }, [])
 
   useEffect(() => {

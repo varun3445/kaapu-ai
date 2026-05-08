@@ -1,6 +1,31 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { supabase, supabaseReady } from '../supabase'
 import { startAlarm, stopActiveAlarm } from '../utils/audio'
+
+// ── Push Notifications (lazy — native iOS + Android via Capacitor) ────────────
+let _pushPlugin = null
+async function getPushPlugin() {
+  if (_pushPlugin) return _pushPlugin
+  if (!Capacitor.isNativePlatform()) return null
+  try {
+    const mod = await import('@capacitor/push-notifications')
+    _pushPlugin = mod.PushNotifications
+    return _pushPlugin
+  } catch {
+    return null
+  }
+}
+
+// Web Push VAPID public key (set VITE_VAPID_PUBLIC_KEY in .env)
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || ''
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const raw = atob(base64)
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)))
+}
 import {
   DEMO_FAMILY, DEMO_MEMBERS, DEMO_SYMPTOMS, DEMO_CHECKINS,
   DEMO_DOCUMENTS, DEMO_CONDITIONS, DEMO_MEDICATIONS, DEMO_RISK_PROFILES,
@@ -76,11 +101,17 @@ export function AppProvider({ children }) {
   const [activeEmergency, setActiveEmergency] = useState(null)
   const [skinColor,       setSkinColorState]  = useState(() => lsLoad(LS.skinColor, '#C49272'))
 
+  // Push notification registration ref (prevent duplicate registrations)
+  const pushRegisteredRef = useRef(false)
+
   // Real-time channel refs
   const channelMembersRef        = useRef(null)
   const channelRequestsRef       = useRef(null)
   const channelEmergencyRef      = useRef(null)
   const channelConnectedEmgRefs  = useRef([]) // one channel per linked family
+  const channelSymptomsRef       = useRef(null)
+  const channelCheckInsRef       = useRef(null)
+  const channelDocumentsRef      = useRef(null)
 
   // ── Persist UI prefs ──────────────────────────────────────────────────────
   useEffect(() => { lsSave(LS.skinColor, skinColor) }, [skinColor])
@@ -170,6 +201,9 @@ export function AppProvider({ children }) {
     setCurrentUser(userData)
     isDemoRef.current = false
     setIsDemoMode(false)
+
+    // Register for push notifications (iOS, Android, Web — best-effort, never blocks load)
+    _registerPush(uid).catch(console.error)
 
     const { familyId } = userData
 
@@ -273,6 +307,60 @@ export function AppProvider({ children }) {
               return prev.map(r => r.id === payload.new.id ? payload.new : r)
             }
             if (payload.eventType === 'DELETE') return prev.filter(r => r.id !== payload.old.id)
+            return prev
+          })
+        }
+      )
+      .subscribe()
+
+    // Real-time: symptoms
+    channelSymptomsRef.current = supabase
+      .channel(`symptoms:${familyId}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'symptoms', filter: `familyId=eq.${familyId}` },
+        (payload) => {
+          setSymptoms(prev => {
+            if (payload.eventType === 'INSERT') {
+              return prev.find(s => s.id === payload.new.id) ? prev : [payload.new, ...prev]
+            }
+            if (payload.eventType === 'UPDATE') return prev.map(s => s.id === payload.new.id ? payload.new : s)
+            if (payload.eventType === 'DELETE') return prev.filter(s => s.id !== payload.old.id)
+            return prev
+          })
+        }
+      )
+      .subscribe()
+
+    // Real-time: check-ins
+    channelCheckInsRef.current = supabase
+      .channel(`checkIns:${familyId}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'checkIns', filter: `familyId=eq.${familyId}` },
+        (payload) => {
+          setCheckIns(prev => {
+            if (payload.eventType === 'INSERT') {
+              return prev.find(c => c.id === payload.new.id) ? prev : [payload.new, ...prev]
+            }
+            if (payload.eventType === 'UPDATE') return prev.map(c => c.id === payload.new.id ? payload.new : c)
+            if (payload.eventType === 'DELETE') return prev.filter(c => c.id !== payload.old.id)
+            return prev
+          })
+        }
+      )
+      .subscribe()
+
+    // Real-time: documents
+    channelDocumentsRef.current = supabase
+      .channel(`documents:${familyId}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'documents', filter: `familyId=eq.${familyId}` },
+        (payload) => {
+          setDocuments(prev => {
+            if (payload.eventType === 'INSERT') {
+              return prev.find(d => d.id === payload.new.id) ? prev : [payload.new, ...prev]
+            }
+            if (payload.eventType === 'UPDATE') return prev.map(d => d.id === payload.new.id ? payload.new : d)
+            if (payload.eventType === 'DELETE') return prev.filter(d => d.id !== payload.old.id)
             return prev
           })
         }
@@ -393,10 +481,87 @@ export function AppProvider({ children }) {
     setCurrentMember(restored)
   }
 
+  // ── Push notification registration ───────────────────────────────────────
+  async function _registerPush(uid) {
+    if (pushRegisteredRef.current) return
+    pushRegisteredRef.current = true // set early to prevent double-registration
+
+    const platform = Capacitor.getPlatform() // 'ios' | 'android' | 'web'
+
+    // ── Native (iOS + Android via Capacitor) ──────────────────────────────
+    if (Capacitor.isNativePlatform()) {
+      const PN = await getPushPlugin()
+      if (!PN) return
+
+      try {
+        const { receive } = await PN.requestPermissions()
+        if (receive !== 'granted') return
+
+        await PN.register()
+
+        // Fires when APNs (iOS) or FCM (Android) returns the device token
+        PN.addListener('registration', async ({ value: token }) => {
+          if (!token || !supabase) return
+          const { error } = await supabase.from('deviceTokens').upsert(
+            { id: `${uid}-${platform}`, userId: uid, token, platform, updatedAt: new Date().toISOString() },
+            { onConflict: 'userId,platform' }
+          )
+          if (error) console.error(`[push registration ${platform}]`, error.message)
+          else console.info(`[push] ${platform} token saved`)
+        })
+
+        // Show incoming foreground push as in-app notification
+        PN.addListener('pushNotificationReceived', (notification) => {
+          const { title, body } = notification
+          setNotifications(prev => {
+            const id = `push-${Date.now()}`
+            return [{ id, type: 'push', message: body || title || 'New notification', timestamp: new Date().toISOString() }, ...prev].slice(0, 30)
+          })
+        })
+      } catch (e) {
+        console.error(`[push setup ${platform}]`, e.message)
+        pushRegisteredRef.current = false
+      }
+      return
+    }
+
+    // ── Web Push via VAPID ────────────────────────────────────────────────
+    if (!VAPID_PUBLIC_KEY) return // not configured
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js')
+      await navigator.serviceWorker.ready
+
+      // Ask for notification permission
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') return
+
+      const subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      })
+
+      if (!supabase) return
+      const { error } = await supabase.from('deviceTokens').upsert(
+        { id: `${uid}-web`, userId: uid, token: JSON.stringify(subscription), platform: 'web', updatedAt: new Date().toISOString() },
+        { onConflict: 'userId,platform' }
+      )
+      if (error) console.error('[web push registration]', error.message)
+      else console.info('[push] web subscription saved')
+    } catch (e) {
+      console.error('[web push setup]', e.message)
+      pushRegisteredRef.current = false
+    }
+  }
+
   function _removeChannels() {
     if (channelMembersRef.current)   { supabase?.removeChannel(channelMembersRef.current);   channelMembersRef.current   = null }
     if (channelRequestsRef.current)  { supabase?.removeChannel(channelRequestsRef.current);  channelRequestsRef.current  = null }
     if (channelEmergencyRef.current) { supabase?.removeChannel(channelEmergencyRef.current); channelEmergencyRef.current = null }
+    if (channelSymptomsRef.current)  { supabase?.removeChannel(channelSymptomsRef.current);  channelSymptomsRef.current  = null }
+    if (channelCheckInsRef.current)  { supabase?.removeChannel(channelCheckInsRef.current);  channelCheckInsRef.current  = null }
+    if (channelDocumentsRef.current) { supabase?.removeChannel(channelDocumentsRef.current); channelDocumentsRef.current = null }
     channelConnectedEmgRefs.current.forEach(ch => supabase?.removeChannel(ch))
     channelConnectedEmgRefs.current = []
   }
@@ -883,6 +1048,20 @@ export function AppProvider({ children }) {
     sbInsert('emergencyEvents', event)
     members.filter(m => m.familyId === currentUser.familyId && m.id !== currentMember.id)
       .forEach(m => pushNotif({ id: `emg-fam-${m.id}-${event.id}`, type: 'emergency', eventId: event.id, message: `🚨 EMERGENCY: ${currentMember.name} has triggered an emergency alert.` }))
+
+    // Fire push notifications to connected family members via Edge Function
+    if (!isDemoRef.current && supabase) {
+      supabase.functions.invoke('send-emergency-push', {
+        body: {
+          familyId:   currentUser.familyId,
+          memberName: currentMember.name,
+          note:       note || null,
+          location:   location || null,
+          eventId:    event.id,
+        },
+      }).catch(e => console.error('[push send]', e.message))
+    }
+
     console.info('[EMERGENCY]', event)
     return event
   }, [currentMember, currentUser, symptoms, conditions, medications, checkIns, members, getRiskProfile, generateHealthID, sbInsert, pushNotif])

@@ -26,3 +26,4 @@ health-tracker-deploy.zip
 # Capacitor generated native projects — regenerated via `npx cap sync`
 android/
 ios/
+.gstack/

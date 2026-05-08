@@ -384,7 +384,7 @@ export default function EmergencyButton() {
             onClick={() => { if (!open) { warmAudio(); sentRef.current = false; setOpen(true) } }}
             className="fixed z-40 flex items-center justify-center shadow-2xl"
             style={{
-              bottom: '5.5rem', right: '1rem',
+              bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem',
               width: 52, height: 52, borderRadius: '50%',
               background: isHighRisk
                 ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'

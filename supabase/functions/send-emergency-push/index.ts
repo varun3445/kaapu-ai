@@ -157,85 +157,26 @@ async function sendFCM(token: string, title: string, body: string, data: Record<
   if (!res.ok) throw new Error(`FCM v1 ${res.status}: ${await res.text()}`)
 }
 
-// ── Web Push (VAPID) ──────────────────────────────────────────────────────────
-function urlB64ToUint8Array(b64: string) {
-  const padding = '='.repeat((4 - (b64.length % 4)) % 4)
-  const base64  = (b64 + padding).replace(/-/g, '+').replace(/_/g, '/')
-  return Uint8Array.from(atob(base64), c => c.charCodeAt(0))
-}
-
-async function buildVAPIDJWT(endpoint: string, expiresIn = 43200) {
-  const url      = new URL(endpoint)
-  const audience = `${url.protocol}//${url.host}`
-  const now      = Math.floor(Date.now() / 1000)
-
-  const pemBody  = VAPID_PRIVATE_KEY.length < 100
-    ? VAPID_PRIVATE_KEY // already raw — need to import as raw EC key
-    : VAPID_PRIVATE_KEY
-
-  // Import VAPID private key (raw base64url EC private key)
-  const keyBytes = urlB64ToUint8Array(VAPID_PRIVATE_KEY)
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyBytes.buffer,
-    { name: 'ECDH', namedCurve: 'P-256' },
-    true,
-    [],
-  ).catch(async () => {
-    // Try pkcs8 fallback
-    return crypto.subtle.importKey(
-      'pkcs8',
-      urlB64ToUint8Array(VAPID_PRIVATE_KEY).buffer,
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      false,
-      ['sign'],
-    )
-  })
-
-  const enc = (obj: unknown) =>
-    btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-  const header  = { typ: 'JWT', alg: 'ES256' }
-  const payload = { aud: audience, exp: now + expiresIn, sub: VAPID_SUBJECT }
-  const sigInput = `${enc(header)}.${enc(payload)}`
-
-  const sig = await crypto.subtle.sign(
-    { name: 'ECDSA', hash: 'SHA-256' },
-    cryptoKey,
-    new TextEncoder().encode(sigInput),
-  )
-  const sigB64 = btoa(String.fromCharCode(...new Uint8Array(sig)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '')
-
-  return `${sigInput}.${sigB64}`
-}
+// ── Web Push (VAPID) via web-push npm package ────────────────────────────────
+// Using the battle-tested web-push library which handles VAPID JWT signing
+// and payload encryption (ECDH + HKDF + AES-GCM) correctly.
+import webpush from 'npm:web-push@3.6.7'
 
 async function sendWebPush(subscriptionJson: string, title: string, body: string, data: Record<string, unknown> = {}) {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
     throw new Error('Web Push (VAPID) not configured')
   }
 
-  const sub     = JSON.parse(subscriptionJson)
-  const payload = JSON.stringify({ title, body, data })
-  const jwt     = await buildVAPIDJWT(sub.endpoint)
+  webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY)
 
-  // For simplicity we send unencrypted (no payload encryption) — the notification
-  // shows via the service worker's `push` event with the data we send.
-  // Full content encryption (RFC 8291) would require implementing ECDH + HKDF.
-  const res = await fetch(sub.endpoint, {
-    method: 'POST',
-    headers: {
-      Authorization: `vapid t=${jwt},k=${VAPID_PUBLIC_KEY}`,
-      'Content-Type': 'application/json',
-      TTL: '86400',
-    },
-    body: payload,
-  })
+  const subscription = JSON.parse(subscriptionJson)
+  const payload      = JSON.stringify({ title, body, data })
 
-  if (!res.ok) {
-    const text = await res.text()
-    // 410 Gone = subscription expired, should be removed
-    if (res.status === 410) throw new Error('SUBSCRIPTION_EXPIRED')
-    throw new Error(`WebPush ${res.status}: ${text}`)
+  try {
+    await webpush.sendNotification(subscription, payload, { TTL: 86400 })
+  } catch (e: any) {
+    if (e.statusCode === 410 || e.statusCode === 404) throw new Error('SUBSCRIPTION_EXPIRED')
+    throw new Error(`WebPush ${e.statusCode}: ${e.body}`)
   }
 }
 

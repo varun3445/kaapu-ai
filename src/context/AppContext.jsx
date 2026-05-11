@@ -813,22 +813,31 @@ export function AppProvider({ children }) {
 
   const removeMember = useCallback((id) => {
     const member = members.find(m => m.id === id)
+
+    // Optimistic: remove from local state immediately
     setMembers(prev => prev.filter(m => m.id !== id))
     if (currentMember?.id === id) setCurrentMember(members.filter(m => m.id !== id && m.familyId === currentUser?.familyId)[0] || null)
 
-    // Delete this user's copy
-    sbDelete('members', id)
+    if (isDemoRef.current || !supabase) return
 
-    // Also delete the mirror record in the other person's family so the
-    // connection disappears on their account too. The mirror record lives in
-    // member.linkedFamilyId with userId = currentUser.id.
-    if (!isDemoRef.current && supabase && member?.linkedFamilyId && currentUser?.id) {
+    if (member?.linkedFamilyId) {
+      // Connected account — use SECURITY DEFINER RPC so both the caller's record
+      // AND the mirror record in the other family are deleted atomically.
+      // Also marks all matching familyRequests as 'disconnected' so they vanish.
       supabase
-        .from('members')
-        .delete()
-        .eq('familyId', member.linkedFamilyId)
-        .eq('userId', currentUser.id)
-        .then(({ error }) => { if (error) console.error('[removeMember mirror]', error) })
+        .rpc('remove_family_connection', { p_member_id: id })
+        .then(({ error }) => { if (error) console.error('[removeMember rpc]', error) })
+
+      // Also optimistically remove the linked family request from local state
+      setFamilyRequests(prev => prev.map(r =>
+        ((r.fromUserId === currentUser?.id && r.toUserId === member.userId) ||
+         (r.fromUserId === member.userId   && r.toUserId === currentUser?.id))
+          ? { ...r, status: 'disconnected' }
+          : r
+      ))
+    } else {
+      // Local-only member (no cross-family link) — plain delete
+      sbDelete('members', id)
     }
   }, [currentMember, members, currentUser, sbDelete])
 
@@ -876,35 +885,34 @@ export function AppProvider({ children }) {
     if (!req) return
 
     if (accept) {
-      let fromUserAge = null, fromUserGender = 'other', fromUserName = req.fromUserName
-
-      if (!isDemoRef.current && supabase) {
-        const { data: fu } = await supabase.from('users').select('*').eq('id', req.fromUserId).single()
-        if (fu) { fromUserAge = fu.age || null; fromUserGender = fu.gender || 'other'; fromUserName = fu.name || req.fromUserName }
-      } else {
-        const dfu = DEMO_USERS.find(u => u.id === req.fromUserId)
-        if (dfu) { fromUserAge = dfu.age || null; fromUserGender = dfu.gender || 'other' }
+      if (isDemoRef.current) {
+        // Demo mode: build both sides locally
+        const colors     = ['#6366f1','#0891b2','#ec4899','#10b981','#f59e0b']
+        const inverseRel = RELATIONSHIP_INVERSE[req.relationship] || req.relationship
+        const dfu        = DEMO_USERS.find(u => u.id === req.fromUserId)
+        const memberForRecipient = {
+          id: `mem-${Date.now()}`, familyId: currentUser.familyId, linkedFamilyId: req.fromFamilyId,
+          userId: req.fromUserId, name: req.fromUserName, relationship: inverseRel,
+          age: dfu?.age || null, gender: dfu?.gender || 'other',
+          avatar: req.fromUserName.slice(0,2).toUpperCase(), avatarColor: colors[Math.floor(Math.random()*colors.length)],
+        }
+        setMembers(prev => prev.find(m => m.id === memberForRecipient.id) ? prev : [...prev, memberForRecipient])
+        setFamilyRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'accepted' } : r))
+      } else if (supabase) {
+        // Use SECURITY DEFINER RPC — inserts both member records (own family + sender's
+        // family mirror) atomically, then marks the request accepted.
+        // Direct inserts would be blocked by members RLS (own-family-only for INSERT).
+        const { data: newMember, error } = await supabase.rpc('accept_family_connection', { p_request_id: requestId })
+        if (error) {
+          console.error('[accept_family_connection]', error.message)
+          return
+        }
+        // Add the new member to local state (realtime will also deliver it, but be fast)
+        if (newMember) {
+          setMembers(prev => prev.find(m => m.id === newMember.id) ? prev : [...prev, newMember])
+        }
+        setFamilyRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'accepted' } : r))
       }
-
-      const colors     = ['#6366f1','#0891b2','#ec4899','#10b981','#f59e0b']
-      const inverseRel = RELATIONSHIP_INVERSE[req.relationship] || req.relationship
-      const myName     = currentMember?.name || currentUser.name
-
-      // linkedFamilyId stores the OTHER user's familyId so each session can
-      // subscribe to emergency events from connected families (cross-account alerts).
-      const memberForRecipient = { id: `mem-${Date.now()}`,   familyId: currentUser.familyId, linkedFamilyId: req.fromFamilyId,     userId: req.fromUserId, name: fromUserName, relationship: inverseRel,        age: fromUserAge,           gender: fromUserGender,              avatar: fromUserName.slice(0,2).toUpperCase(), avatarColor: colors[Math.floor(Math.random()*colors.length)] }
-      const memberForSender    = { id: `mem-${Date.now()+1}`, familyId: req.fromFamilyId,    linkedFamilyId: currentUser.familyId, userId: currentUser.id, name: myName,       relationship: req.relationship, age: currentUser.age||null, gender: currentUser.gender||'other', avatar: myName.slice(0,2).toUpperCase(),       avatarColor: colors[Math.floor(Math.random()*colors.length)] }
-
-      // ── IMPORTANT: insert members FIRST, then update status ──────────────────
-      // The sender's realtime handler queries for the new member the moment it
-      // receives the familyRequests UPDATE. If we update status first the member
-      // won't exist yet and the query returns null.
-      setMembers(prev => [...prev, memberForRecipient])
-      await Promise.all([sbInsert('members', memberForRecipient), sbInsert('members', memberForSender)])
-
-      // Now safe to fire the status update — member is already in Supabase
-      setFamilyRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'accepted' } : r))
-      await sbUpdate('familyRequests', requestId, { status: 'accepted' })
 
       pushNotif({ id: `fam-accept-${requestId}`, type: 'success', forUserId: currentUser.id, message: `✅ You're now connected with ${req.fromUserName} as ${req.relationship}.` })
     } else {
@@ -913,7 +921,7 @@ export function AppProvider({ children }) {
       pushNotif({ id: `fam-reject-${requestId}`, type: 'info', forUserId: currentUser.id, message: `You declined ${req.fromUserName}'s connection request.` })
     }
     dismissNotification(`fam-req-${requestId}`)
-  }, [familyRequests, currentUser, currentMember, sbUpdate, sbInsert, pushNotif, dismissNotification])
+  }, [familyRequests, currentUser, sbUpdate, pushNotif, dismissNotification])
 
   // ── Symptoms ──────────────────────────────────────────────────────────────
   const addSymptom = useCallback((data) => {
@@ -922,8 +930,9 @@ export function AppProvider({ children }) {
   }, [currentMember, currentUser, sbInsert])
 
   const resolveSymptom = useCallback((id) => {
-    setSymptoms(prev => prev.map(s => s.id === id ? { ...s, resolved: true } : s))
-    sbUpdate('symptoms', id, { resolved: true })
+    const resolvedAt = new Date().toISOString()
+    setSymptoms(prev => prev.map(s => s.id === id ? { ...s, resolved: true, resolvedAt } : s))
+    sbUpdate('symptoms', id, { resolved: true, resolvedAt })
   }, [sbUpdate])
 
   const deleteSymptom = useCallback((id) => {

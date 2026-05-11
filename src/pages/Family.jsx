@@ -51,10 +51,12 @@ function ManageSheet({ onClose }) {
   const [confirmRm,    setConfirmRm]    = useState(null)
   const [tab,          setTab]          = useState('members') // 'members' | 'add'
 
-  // Requests sent BY current user (outgoing)
-  const outgoing = familyRequests.filter(r => r.fromUserId === currentUser?.id)
+  // Requests sent BY current user (outgoing) — hide disconnected ones
+  const outgoing = familyRequests.filter(
+    r => r.fromUserId === currentUser?.id && r.status !== 'disconnected'
+  )
 
-  // Requests received BY current user (incoming)
+  // Requests received BY current user (incoming) — pending only, not disconnected
   const incoming = familyRequests.filter(
     r => r.toUserId === currentUser?.id && r.status === 'pending'
   )
@@ -310,6 +312,23 @@ function ManageSheet({ onClose }) {
 }
 
 // ── Health tracking sub-components ────────────────────────────────────────────
+function symptomDurationLabel(symptom) {
+  if (!symptom.resolved) {
+    // Show actual start date instead of stale user-entered text like "Just started"
+    if (symptom.timestamp) {
+      const start = new Date(symptom.timestamp)
+      return isToday(start) ? 'Started today' : `Since ${format(start, 'MMM d')}`
+    }
+    return 'Active'
+  }
+  if (!symptom.resolvedAt) return 'Resolved'
+  const start = new Date(symptom.timestamp);  start.setHours(0,0,0,0)
+  const end   = new Date(symptom.resolvedAt); end.setHours(0,0,0,0)
+  const days  = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1
+  if (days <= 1) return 'Lasted less than a day'
+  return `Lasted ${days} day${days !== 1 ? 's' : ''}`
+}
+
 function SymptomRow({ symptom }) {
   const cat = SYMPTOM_CATEGORIES.find(c => c.id === symptom.category)
   const sev = symptom.severity
@@ -317,8 +336,13 @@ function SymptomRow({ symptom }) {
     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
       <span className="text-base">{cat?.icon}</span>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800">{symptom.bodyLabel}</p>
-        <p className="text-[10px] text-gray-400">{symptom.type} · {symptom.duration}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-xs font-semibold text-gray-800">{symptom.bodyLabel}</p>
+          {symptom.resolved && (
+            <span className="text-[9px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">Resolved</span>
+          )}
+        </div>
+        <p className="text-[10px] text-gray-400">{symptom.type} · {symptomDurationLabel(symptom)}</p>
       </div>
       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
         sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'

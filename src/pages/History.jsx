@@ -844,7 +844,7 @@ export default function History() {
           </p>
         </div>
         {mainTab === 'Timeline' && (
-          <button onClick={() => setShowRecords(true)}
+          <button data-tour="history-records-btn" onClick={() => setShowRecords(true)}
             className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors">
             <FolderOpen size={13} /> Records
           </button>

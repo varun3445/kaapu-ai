@@ -643,7 +643,7 @@ function AccountPage({ onBack }) {
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
 
         {/* Personal details */}
-        <div>
+        <div data-tour="account-personal">
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Personal Details</p>
           <div className="space-y-3">
             <Input label="Full Name" type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
@@ -972,6 +972,16 @@ export default function ProfilePanel({ open, onClose }) {
   }
 
   function handleClose() { setPage(null); onClose() }
+
+  // Tour can navigate to a sub-page (e.g. 'account') via this event
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.page) setPage(e.detail.page)
+      else if (!e.detail?.open) setPage(null)
+    }
+    window.addEventListener('kaapu:tour-profile', handler)
+    return () => window.removeEventListener('kaapu:tour-profile', handler)
+  }, [])
 
   const SETTINGS = [
     { id: 'emergency-contacts', icon: Phone,  label: 'Emergency Contacts', sub: `${(currentUser?.emergencyContacts || []).filter(c=>c.name).length || 'No'} contacts saved`, iconBg: 'bg-rose-50', iconColor: 'text-rose-500' },

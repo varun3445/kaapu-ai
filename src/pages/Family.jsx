@@ -565,7 +565,7 @@ export default function Family() {
   return (
     <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       <div className="flex items-center justify-between mb-4">
-        <div>
+        <div data-tour="family-header">
           <h2 className="text-lg font-extrabold text-gray-900">Connected Accounts</h2>
           <p className="text-xs text-gray-400 mt-0.5">{myFamilyMembers.length} member{myFamilyMembers.length !== 1 ? 's' : ''}</p>
         </div>

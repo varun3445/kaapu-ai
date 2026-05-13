@@ -26,7 +26,7 @@ const STEPS = [
     route: '/',
     target: '[data-tour="checkin"]',
     title: 'Daily Check-in',
-    body: 'Every day, log how you\'re feeling here. Pick a mood, add a note, and Kaapu tracks your wellbeing over time. Your family gets notified if things worsen consistently.',
+    body: "Every day, log how you're feeling here. Pick a mood, add a note, and Kaapu tracks your wellbeing over time. Your family gets notified if things worsen consistently.",
     position: 'bottom',
     icon: '😊',
   },
@@ -35,7 +35,7 @@ const STEPS = [
     route: '/',
     target: '[data-tour="checkin"]',
     title: '7-Day Mood History',
-    body: 'The bar below shows your last 7 days at a glance. Tap any filled day to edit that entry — missed a day? Tap the empty slot to log it retroactively.',
+    body: "The bar below shows your last 7 days at a glance. Tap any filled day to edit that entry — missed a day? Tap the empty slot to log it retroactively.",
     position: 'bottom',
     icon: '📊',
   },
@@ -44,7 +44,7 @@ const STEPS = [
     route: '/',
     target: '[data-tour="emergency-btn"]',
     title: 'Emergency Button',
-    body: 'Press and hold this red button in an emergency. It counts down 3 seconds, then instantly alerts all your connected family members with your GPS location and full health summary.',
+    body: 'Press and hold this red button in an emergency. It counts down 15 seconds, then instantly alerts all your connected family members with your GPS location and full health summary.',
     position: 'top',
     icon: '🚨',
   },
@@ -76,11 +76,20 @@ const STEPS = [
     icon: '📋',
   },
   {
+    id: 'records',
+    route: '/history',
+    target: '[data-tour="history-records-btn"]',
+    title: 'Health Records',
+    body: 'Tap Records to upload and store your medical documents — prescriptions, lab results, X-rays, discharge summaries. They stay private and are always accessible from your timeline.',
+    position: 'bottom',
+    icon: '📁',
+  },
+  {
     id: 'family-overview',
     route: '/family',
-    target: '[data-tour="family-manage-btn"]',
+    target: '[data-tour="family-header"]',
     title: 'People & Family',
-    body: 'This page shows everyone connected to your Kaapu account — family members you\'ve added or who have added you. You can view their recent symptoms and mood without them having to tell you.',
+    body: "This page shows everyone connected to your Kaapu account. You can view their recent symptoms and mood without them having to tell you — great for keeping an eye on elderly parents or young children.",
     position: 'bottom',
     icon: '👨‍👩‍👧',
   },
@@ -89,7 +98,7 @@ const STEPS = [
     route: '/family',
     target: '[data-tour="family-manage-btn"]',
     title: 'Connecting with Family',
-    body: 'Tap Manage → Add by ID, then enter your family member\'s unique Health ID. They\'ll get a connection request to accept. Once connected, you can see each other\'s health updates in real time.',
+    body: "Tap Manage → Add by ID, then enter your family member's unique Health ID. They'll get a connection request to accept. Once connected, you can see each other's health updates in real time.",
     position: 'bottom',
     icon: '🔗',
   },
@@ -101,14 +110,13 @@ const STEPS = [
     body: 'Tap your avatar in the top-left to open your profile. This is where you manage everything — your personal info, emergency contacts, notification preferences, and privacy settings.',
     position: 'bottom',
     icon: '👤',
-    openProfile: true,
   },
   {
     id: 'uid',
     route: '/',
     target: '[data-tour="profile-uid"]',
     title: 'Your Unique Health ID',
-    body: 'This is your unique Kaapu ID — it\'s how others find and connect with you. Tap the copy button and share it with family members so they can add you. Keep it like a phone number.',
+    body: "This is your unique Kaapu ID — it's how others find and connect with you. Tap the copy button and share it with family members so they can add you. Keep it like a phone number.",
     position: 'bottom',
     icon: '🔑',
     openProfile: true,
@@ -116,12 +124,13 @@ const STEPS = [
   {
     id: 'account',
     route: '/',
-    target: '[data-tour="header-profile"]',
+    target: '[data-tour="account-personal"]',
     title: 'Personal Info & Health Stats',
-    body: 'Inside your profile, go to Account to update your height, weight, age, and gender. These are used in your emergency summary — when you press the emergency button, responders see this info instantly.',
+    body: 'Update your height, weight, age, and gender here. These are shown in your emergency summary — when you press the emergency button, responders see this info instantly alongside your symptoms.',
     position: 'bottom',
     icon: '⚖️',
-    closeProfile: true,
+    openProfile: true,
+    profilePage: 'account',
   },
   {
     id: 'done',
@@ -131,6 +140,7 @@ const STEPS = [
     body: "That's Kaapu. Start by logging your first check-in today, then invite a family member using your Health ID from your profile. We'll take care of the rest.",
     position: 'center',
     icon: '❤️',
+    closeProfile: true,
   },
 ]
 
@@ -307,7 +317,7 @@ export default function OnboardingTour({ onDone }) {
   // Open/close profile panel via custom event when step requires it
   useEffect(() => {
     if (step.openProfile) {
-      window.dispatchEvent(new CustomEvent('kaapu:tour-profile', { detail: { open: true } }))
+      window.dispatchEvent(new CustomEvent('kaapu:tour-profile', { detail: { open: true, page: step.profilePage || null } }))
     } else if (step.closeProfile) {
       window.dispatchEvent(new CustomEvent('kaapu:tour-profile', { detail: { open: false } }))
     }

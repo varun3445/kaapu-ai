@@ -242,14 +242,19 @@ function MoodBar({ checkIns, onAddForDay }) {
         if (ci) {
           const cfg = FEELING_CONFIG[ci.feeling]
           return (
-            <div key={dayStr} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-base leading-none">{cfg.emoji}</span>
+            <button
+              key={dayStr}
+              onClick={() => onAddForDay(day)}
+              className="flex-1 flex flex-col items-center gap-1 group"
+              aria-label={`Edit check-in for ${lbl}`}
+            >
+              <span className="text-base leading-none group-active:scale-110 transition-transform">{cfg.emoji}</span>
               <div
-                className={`w-full rounded-lg transition-all ${MOOD_BAR_H[ci.feeling]}`}
+                className={`w-full rounded-lg transition-all group-hover:opacity-75 ${MOOD_BAR_H[ci.feeling]}`}
                 style={{ background: cfg.color + '55', border: `2px solid ${cfg.color}` }}
               />
               <span className="text-[9px] text-gray-400 font-medium">{lbl}</span>
-            </div>
+            </button>
           )
         }
 
@@ -337,6 +342,7 @@ export default function Dashboard() {
 
       {/* ── Today's mood / check-in hero ──────────────────────────────────── */}
       <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
+        data-tour="checkin"
         className="glass-card rounded-3xl p-5">
         <div className="flex items-start justify-between mb-4">
           <div>

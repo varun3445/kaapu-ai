@@ -1,14 +1,265 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   X, User, Bell, Shield, LogOut, ChevronRight, ChevronLeft,
   Copy, Check as CheckIcon, MapPin, Clock, PauseCircle,
   Eye, EyeOff, Users, BarChart2, Save, Phone, Trash2,
-  Download, AlertTriangle, FileText,
+  Download, AlertTriangle, FileText, TrendingUp, TrendingDown, Minus, PlayCircle,
 } from 'lucide-react'
+import { TOUR_KEY } from '../Onboarding/OnboardingTour'
 import { useApp } from '../../context/AppContext'
 import { Avatar } from '../Family/FamilySwitcher'
 import { supabase } from '../../supabase'
+
+// ── Save feedback modal ───────────────────────────────────────────────────────
+function SaveFeedbackModal({ result, onClose }) {
+  useEffect(() => {
+    if (!result) return
+    const t = setTimeout(onClose, 2000)
+    return () => clearTimeout(t)
+  }, [result, onClose])
+
+  return createPortal(
+    <AnimatePresence>
+      {result && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center px-6"
+          onClick={onClose}
+        >
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          <motion.div
+            initial={{ scale: 0.88, opacity: 0, y: 12 }}
+            animate={{ scale: 1,    opacity: 1, y: 0  }}
+            exit={{    scale: 0.88, opacity: 0, y: 12 }}
+            transition={{ type: 'spring', damping: 24, stiffness: 340 }}
+            className="relative flex flex-col items-center gap-3 bg-white rounded-3xl px-8 py-7 shadow-2xl w-full max-w-xs text-center"
+          >
+            {result === 'saved' ? (
+              <>
+                <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center">
+                  <CheckIcon size={26} className="text-emerald-500" />
+                </div>
+                <p className="text-base font-extrabold text-gray-900">Changes saved!</p>
+                <p className="text-xs text-gray-400">Your profile has been updated across all devices.</p>
+              </>
+            ) : (
+              <>
+                <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Save size={22} className="text-gray-400" />
+                </div>
+                <p className="text-base font-extrabold text-gray-900">No changes to save</p>
+                <p className="text-xs text-gray-400">Everything is already up to date.</p>
+              </>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  )
+}
+
+// ── Weight history sheet ──────────────────────────────────────────────────────
+function WeightHistorySheet({ history, units, onClose }) {
+  const { currentUser, updateProfile } = useApp()
+  const isImperial = units === 'imperial'
+
+  const [sorted,     setSorted]     = useState([...history].sort((a, b) => new Date(b.date) - new Date(a.date)))
+  // keep sorted in sync if parent history prop changes (e.g. after delete)
+
+  const [editingIdx, setEditingIdx] = useState(null)   // index in sorted array
+  const [editVal,    setEditVal]    = useState('')
+  const [confirmDel, setConfirmDel] = useState(null)   // index pending delete confirm
+
+  function display(kg) {
+    return isImperial ? `${(kg * 2.20462).toFixed(1)} lbs` : `${kg} kg`
+  }
+  function toKg(val) {
+    const n = parseFloat(val)
+    return isImperial ? parseFloat((n / 2.20462).toFixed(1)) : n
+  }
+
+  async function commitEdit(idx) {
+    const newKg = toKg(editVal)
+    if (!newKg || newKg <= 0) { setEditingIdx(null); return }
+    const updated = sorted.map((e, i) => i === idx ? { ...e, weightKg: newKg } : e)
+    setSorted(updated)
+    setEditingIdx(null)
+    await updateProfile({ weightHistory: updated })
+  }
+
+  async function deleteEntry(idx) {
+    const updated = sorted.filter((_, i) => i !== idx)
+    setSorted(updated)
+    setConfirmDel(null)
+    await updateProfile({ weightHistory: updated })
+  }
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[200] flex items-center justify-center px-5"
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ scale: 0.93, opacity: 0, y: 12 }}
+        animate={{ scale: 1,    opacity: 1, y: 0  }}
+        exit={{    scale: 0.93, opacity: 0, y: 12 }}
+        transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+        className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+        style={{ maxHeight: '80vh' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <h3 className="text-sm font-extrabold text-gray-900">Weight History</h3>
+            <p className="text-xs text-gray-400 mt-0.5">{sorted.length} entr{sorted.length === 1 ? 'y' : 'ies'} · tap ✏️ to edit</p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+            <X size={14} />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto px-5 py-4 space-y-2 flex-1">
+          {sorted.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-3xl mb-2">⚖️</p>
+              <p className="text-sm font-semibold text-gray-600">No history yet</p>
+              <p className="text-xs text-gray-400 mt-1">Save your weight to start tracking</p>
+            </div>
+          ) : sorted.map((entry, i) => {
+            const prev  = sorted[i + 1]
+            const delta = prev ? parseFloat((entry.weightKg - prev.weightKg).toFixed(1)) : null
+            const deltaDisplay = delta === null ? null
+              : isImperial
+                ? `${delta >= 0 ? '+' : ''}${(delta * 2.20462).toFixed(1)} lbs`
+                : `${delta >= 0 ? '+' : ''}${delta} kg`
+            const isGain = delta !== null && delta > 0
+            const isLoss = delta !== null && delta < 0
+            const entryDate = new Date(entry.date)
+            const sameDay   = sorted.filter(e => new Date(e.date).toDateString() === entryDate.toDateString()).length > 1
+            const dateStr   = sameDay
+              ? entryDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' · ' + entryDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+              : entryDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+            const isEditing = editingIdx === i
+            const isDeleting = confirmDel === i
+
+            return (
+              <AnimatePresence key={entry.date + i} mode="wait">
+                {isDeleting ? (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    className="flex items-center gap-3 bg-rose-50 border border-rose-200 rounded-2xl px-4 py-3"
+                  >
+                    <p className="flex-1 text-xs font-semibold text-rose-700">Delete {dateStr} entry?</p>
+                    <button onClick={() => setConfirmDel(null)}
+                      className="text-[10px] font-bold text-gray-500 px-3 py-1.5 rounded-xl bg-white border border-gray-200">
+                      Cancel
+                    </button>
+                    <button onClick={() => deleteEntry(i)}
+                      className="text-[10px] font-bold text-white px-3 py-1.5 rounded-xl bg-rose-500">
+                      Delete
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className={`flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors ${
+                      isEditing ? 'bg-primary-50 border border-primary-200' : 'bg-gray-50'
+                    }`}
+                  >
+                    {/* Date */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-gray-800">{dateStr}</p>
+                      {i === 0 && !isEditing && (
+                        <p className="text-[10px] text-primary-500 font-semibold mt-0.5">Latest</p>
+                      )}
+                    </div>
+
+                    {/* Weight — editable inline */}
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <input
+                            autoFocus
+                            type="number"
+                            value={editVal}
+                            onChange={e => setEditVal(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') commitEdit(i); if (e.key === 'Escape') setEditingIdx(null) }}
+                            className="w-24 px-2 py-1.5 pr-8 rounded-xl text-sm font-bold text-gray-800 border border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200 bg-white"
+                          />
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold">
+                            {isImperial ? 'lbs' : 'kg'}
+                          </span>
+                        </div>
+                        <button onClick={() => commitEdit(i)}
+                          className="w-7 h-7 rounded-xl bg-primary-500 flex items-center justify-center flex-shrink-0">
+                          <CheckIcon size={12} className="text-white" />
+                        </button>
+                        <button onClick={() => setEditingIdx(null)}
+                          className="w-7 h-7 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <X size={12} className="text-gray-500" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Weight + delta */}
+                        <p className="text-sm font-extrabold text-gray-900">{display(entry.weightKg)}</p>
+                        <div className={`flex items-center gap-1 w-[68px] justify-end ${
+                          isGain ? 'text-rose-500' : isLoss ? 'text-emerald-500' : 'text-gray-400'
+                        }`}>
+                          {delta !== null && (
+                            <>
+                              {isGain  ? <TrendingUp  size={12} /> :
+                               isLoss  ? <TrendingDown size={12} /> :
+                                         <Minus size={12} />}
+                              <span className="text-[11px] font-bold">{deltaDisplay}</span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Edit / Delete actions */}
+                        <div className="flex items-center gap-1 ml-1">
+                          <button
+                            onClick={() => { setEditingIdx(i); setEditVal(isImperial ? (entry.weightKg * 2.20462).toFixed(1) : String(entry.weightKg)) }}
+                            className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-primary-50 hover:text-primary-500 flex items-center justify-center transition-colors text-gray-400"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => setConfirmDel(i)}
+                            className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center transition-colors text-gray-400"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )
+          })}
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
+  )
+}
 
 // ── Skin tone helpers ─────────────────────────────────────────────────────────
 const SKIN_TONES = [
@@ -63,13 +314,18 @@ function Toggle({ value, onChange }) {
   )
 }
 
-function Input({ label, style: extraStyle, ...props }) {
+function Input({ label, style: extraStyle, suffix, ...props }) {
   return (
     <div>
       {label && <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">{label}</label>}
-      <input {...props}
-        className="w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
-        style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)', ...extraStyle }} />
+      <div className="relative">
+        <input {...props}
+          className={`w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none transition-all ${suffix ? 'pr-10' : ''}`}
+          style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)', ...extraStyle }} />
+        {suffix && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold pointer-events-none">{suffix}</span>
+        )}
+      </div>
     </div>
   )
 }
@@ -100,10 +356,17 @@ function NotificationsPage({ onBack }) {
   const [checkInTime, setCheckInTime] = useState(currentUser?.checkInTime  || '08:00')
   const [paused,      setPaused]      = useState(currentUser?.checkInPaused || false)
   const [saved,       setSaved]       = useState(false)
+  const [saveResult,  setSaveResult]  = useState(null)
 
   function save() {
-    updateProfile({ checkInTime, checkInPaused: paused })
-    setSaved(true); setTimeout(() => setSaved(false), 2000)
+    const changed =
+      checkInTime !== (currentUser?.checkInTime  || '08:00') ||
+      paused      !== (currentUser?.checkInPaused || false)
+    if (changed) {
+      updateProfile({ checkInTime, checkInPaused: paused })
+      setSaved(true); setTimeout(() => setSaved(false), 2000)
+    }
+    setSaveResult(changed ? 'saved' : 'no-changes')
   }
 
   return (
@@ -135,6 +398,7 @@ function NotificationsPage({ onBack }) {
           </div>
         </div>
         <SaveButton saved={saved} onClick={save} />
+        <SaveFeedbackModal result={saveResult} onClose={() => setSaveResult(null)} />
       </div>
     </div>
   )
@@ -146,12 +410,18 @@ function PrivacyPage({ onBack, onOpenPrivacy }) {
   const defaults = { familyVisible: true, doctorShare: true, analytics: false }
   const [priv, setPriv] = useState({ ...defaults, ...(currentUser?.privacySettings || {}) })
   const [saved, setSaved] = useState(false)
+  const [saveResult, setSaveResult] = useState(null)
   const [downloading, setDownloading] = useState(false)
 
   function toggle(key) { setPriv(p => ({ ...p, [key]: !p[key] })) }
   function save() {
-    updateProfile({ privacySettings: priv })
-    setSaved(true); setTimeout(() => setSaved(false), 2000)
+    const orig = { ...defaults, ...(currentUser?.privacySettings || {}) }
+    const changed = Object.keys(priv).some(k => priv[k] !== orig[k])
+    if (changed) {
+      updateProfile({ privacySettings: priv })
+      setSaved(true); setTimeout(() => setSaved(false), 2000)
+    }
+    setSaveResult(changed ? 'saved' : 'no-changes')
   }
 
   async function downloadData() {
@@ -228,6 +498,7 @@ function PrivacyPage({ onBack, onOpenPrivacy }) {
           </div>
         </div>
         <SaveButton saved={saved} onClick={save} />
+        <SaveFeedbackModal result={saveResult} onClose={() => setSaveResult(null)} />
         <div>
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Your Data</p>
           <div className="glass-card rounded-2xl overflow-hidden divide-y divide-black/5">
@@ -296,19 +567,62 @@ function AccountPage({ onBack }) {
   const [gender,       setGender]       = useState(currentUser?.gender        || 'other')
   const [email,        setEmail]        = useState(currentUser?.email         || '')
   const [homeLocation, setHomeLocation] = useState(currentUser?.homeLocation  || '')
+  // Height stored in cm, Weight stored in kg (metric base)
+  const [heightCm,     setHeightCm]     = useState(currentUser?.heightCm?.toString()  || '')
+  const [weightKg,     setWeightKg]     = useState(currentUser?.weightKg?.toString()  || '')
+  const [units,        setUnits]        = useState(currentUser?.units || 'metric')
   const [saved,        setSaved]        = useState(false)
+  const [saveResult,   setSaveResult]   = useState(null)
+  const [showWtHistory, setShowWtHistory] = useState(false)
   const [deleteStep,   setDeleteStep]   = useState(0)
   const [deleteInput,  setDeleteInput]  = useState('')
 
+  // Derived display values for imperial
+  const heightFt   = heightCm ? Math.floor(parseFloat(heightCm) / 30.48) : ''
+  const heightIn   = heightCm ? Math.round((parseFloat(heightCm) / 2.54) % 12) : ''
+  const weightLbs  = weightKg ? Math.round(parseFloat(weightKg) * 2.20462) : ''
+
+  function handleHeightImperial(ft, inches) {
+    const totalIn = (parseFloat(ft) || 0) * 12 + (parseFloat(inches) || 0)
+    setHeightCm(totalIn ? (totalIn * 2.54).toFixed(1) : '')
+  }
+  function handleWeightLbs(lbs) {
+    setWeightKg(lbs ? (parseFloat(lbs) / 2.20462).toFixed(1) : '')
+  }
+
   async function save() {
-    await updateProfile({
+    const updates = {
       name:         name.trim()  || currentUser?.name,
       age:          age ? parseInt(age) : null,
       gender,
       email:        email.trim() || currentUser?.email,
       homeLocation: homeLocation.trim(),
-    })
-    setSaved(true); setTimeout(() => setSaved(false), 2500)
+      heightCm:     heightCm ? parseFloat(heightCm) : null,
+      weightKg:     weightKg ? parseFloat(weightKg) : null,
+      units,
+    }
+    const changed =
+      updates.name         !== currentUser?.name ||
+      updates.age          !== (currentUser?.age ?? null) ||
+      updates.gender       !== currentUser?.gender ||
+      updates.email        !== currentUser?.email ||
+      updates.homeLocation !== (currentUser?.homeLocation || '') ||
+      updates.heightCm     !== (currentUser?.heightCm ?? null) ||
+      updates.weightKg     !== (currentUser?.weightKg ?? null) ||
+      updates.units        !== (currentUser?.units || 'metric')
+    if (changed) {
+      // If weight changed, always append a new entry so every change is tracked
+      if (updates.weightKg !== (currentUser?.weightKg ?? null) && updates.weightKg !== null) {
+        const existing = Array.isArray(currentUser?.weightHistory) ? currentUser.weightHistory : []
+        updates.weightHistory = [
+          ...existing,
+          { date: new Date().toISOString(), weightKg: updates.weightKg },
+        ]
+      }
+      await updateProfile(updates)
+      setSaved(true); setTimeout(() => setSaved(false), 2500)
+    }
+    setSaveResult(changed ? 'saved' : 'no-changes')
   }
 
   async function deleteAccount() {
@@ -346,6 +660,74 @@ function AccountPage({ onBack }) {
                 </select>
               </div>
             </div>
+
+            {/* Unit toggle */}
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Units</label>
+              <div className="flex bg-gray-100 rounded-xl p-0.5 gap-0.5">
+                {['metric', 'imperial'].map(u => (
+                  <button key={u} onClick={() => setUnits(u)}
+                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all capitalize ${
+                      units === u ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400'
+                    }`}>
+                    {u === 'metric' ? 'Metric (cm / kg)' : 'Imperial (ft / lbs)'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Height */}
+            {units === 'metric' ? (
+              <Input label="Height" type="number" placeholder="175" min={50} max={250}
+                value={heightCm} onChange={e => setHeightCm(e.target.value)}
+                suffix="cm" />
+            ) : (
+              <div>
+                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Height</label>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input type="number" placeholder="5" min={1} max={8}
+                      value={heightFt}
+                      onChange={e => handleHeightImperial(e.target.value, heightIn)}
+                      className="w-full px-3 py-2.5 pr-8 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                      style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)' }} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold">ft</span>
+                  </div>
+                  <div className="relative flex-1">
+                    <input type="number" placeholder="11" min={0} max={11}
+                      value={heightIn}
+                      onChange={e => handleHeightImperial(heightFt, e.target.value)}
+                      className="w-full px-3 py-2.5 pr-8 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                      style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)' }} />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold">in</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Weight */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Weight</label>
+                {(currentUser?.weightHistory?.length > 0) && (
+                  <button
+                    onClick={() => setShowWtHistory(true)}
+                    className="text-[10px] font-semibold text-primary-500 underline underline-offset-2 hover:text-primary-600 transition-colors"
+                  >
+                    History ({currentUser.weightHistory.length})
+                  </button>
+                )}
+              </div>
+              {units === 'metric' ? (
+                <Input type="number" placeholder="70" min={1} max={500}
+                  value={weightKg} onChange={e => setWeightKg(e.target.value)}
+                  suffix="kg" />
+              ) : (
+                <Input type="number" placeholder="154" min={1} max={1100}
+                  value={weightLbs} onChange={e => handleWeightLbs(e.target.value)}
+                  suffix="lbs" />
+              )}
+            </div>
           </div>
         </div>
 
@@ -372,6 +754,16 @@ function AccountPage({ onBack }) {
         </div>
 
         <SaveButton saved={saved} onClick={save} />
+        <SaveFeedbackModal result={saveResult} onClose={() => setSaveResult(null)} />
+        <AnimatePresence>
+          {showWtHistory && (
+            <WeightHistorySheet
+              history={currentUser?.weightHistory || []}
+              units={units}
+              onClose={() => setShowWtHistory(false)}
+            />
+          )}
+        </AnimatePresence>
 
         {/* Delete account */}
         <div>
@@ -440,11 +832,11 @@ function EmergencyContactsPage({ onBack }) {
 
   const [contacts, setContacts] = useState(padded.map(c => ({ ...EMPTY_CONTACT, ...c })))
   const [saved, setSaved]       = useState(false)
+  const [saveResult, setSaveResult] = useState(null)
   const [errors, setErrors]     = useState([false, false, false])
 
   function update(idx, field, val) {
     setContacts(prev => prev.map((c, i) => i === idx ? { ...c, [field]: val } : c))
-    // Clear error for this slot when user starts typing the name
     if (field === 'name' && val.trim()) {
       setErrors(prev => prev.map((e, i) => i === idx ? false : e))
     }
@@ -455,7 +847,6 @@ function EmergencyContactsPage({ onBack }) {
   }
 
   async function save() {
-    // Primary (idx 0) and Secondary (idx 1) are required
     const newErrors = [
       !contacts[0].name.trim(),
       !contacts[1].name.trim(),
@@ -467,8 +858,13 @@ function EmergencyContactsPage({ onBack }) {
     }
     setErrors([false, false, false])
     const filled = contacts.filter(c => c.name.trim() || c.phone.trim())
-    await updateProfile({ emergencyContacts: filled })
-    setSaved(true); setTimeout(() => setSaved(false), 2500)
+    const orig   = (currentUser?.emergencyContacts || [])
+    const changed = JSON.stringify(filled) !== JSON.stringify(orig.slice(0, filled.length))
+    if (changed) {
+      await updateProfile({ emergencyContacts: filled })
+      setSaved(true); setTimeout(() => setSaved(false), 2500)
+    }
+    setSaveResult(changed ? 'saved' : 'no-changes')
   }
 
   const slotLabels = ['Primary Contact', 'Secondary Contact', 'Tertiary Contact']
@@ -556,6 +952,7 @@ function EmergencyContactsPage({ onBack }) {
         </div>
 
         <SaveButton saved={saved} onClick={save} />
+        <SaveFeedbackModal result={saveResult} onClose={() => setSaveResult(null)} />
       </div>
     </div>
   )
@@ -703,6 +1100,18 @@ export default function ProfilePanel({ open, onClose }) {
                       })}
                     </div>
                   </div>
+
+                  {/* Replay tour */}
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem(TOUR_KEY)
+                      handleClose()
+                      setTimeout(() => window.dispatchEvent(new Event('kaapu:start-tour')), 350)
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-primary-200/60 text-primary-600 font-semibold text-sm hover:bg-primary-50 transition-colors glass-card"
+                  >
+                    <PlayCircle size={15} /> Replay App Tour
+                  </button>
 
                   {/* Sign out */}
                   <button onClick={() => { logout(); handleClose() }}

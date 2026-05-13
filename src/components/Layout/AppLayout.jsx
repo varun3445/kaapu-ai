@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import BottomNav from './BottomNav'
@@ -5,10 +6,29 @@ import Header from './Header'
 import NotificationBanner from '../Notifications/NotificationBanner'
 import EmergencyButton from '../Emergency/EmergencyButton'
 import EmergencyBanner from '../Emergency/EmergencyBanner'
+import OnboardingTour, { TOUR_KEY } from '../Onboarding/OnboardingTour'
 import { useApp } from '../../context/AppContext'
 
 export default function AppLayout() {
   const { activeEmergency, currentUser } = useApp()
+  const [showTour, setShowTour] = useState(false)
+
+  // Show tour once for first-time users (after user data loads)
+  useEffect(() => {
+    if (!currentUser) return
+    if (!localStorage.getItem(TOUR_KEY)) {
+      // Small delay so the app renders fully before the overlay appears
+      const t = setTimeout(() => setShowTour(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [currentUser])
+
+  // Allow any component to re-trigger the tour via custom event
+  useEffect(() => {
+    const handler = () => { setShowTour(true) }
+    window.addEventListener('kaapu:start-tour', handler)
+    return () => window.removeEventListener('kaapu:start-tour', handler)
+  }, [])
 
   // Only show the banner (and its "I'm OK" resolve button) when the emergency
   // belongs to THIS user's own family. Connected-family emergencies are handled
@@ -50,6 +70,13 @@ export default function AppLayout() {
 
       {/* Emergency FAB */}
       <EmergencyButton />
+
+      {/* Onboarding tour — shown once on first login, re-triggered from Profile */}
+      <AnimatePresence>
+        {showTour && (
+          <OnboardingTour onDone={() => setShowTour(false)} />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

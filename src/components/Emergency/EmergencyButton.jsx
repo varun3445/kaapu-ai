@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertTriangle, CheckCircle, MapPin, Shield, Pill, Activity, X, Phone } from 'lucide-react'
+import { AlertTriangle, CheckCircle, MapPin, Shield, Pill, Activity, X, Phone, Ruler, Weight } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { warmAudio, stopActiveAlarm } from '../../utils/audio'
 import EmergencyFlow from './EmergencyFlow'
@@ -127,6 +127,38 @@ function EmergencySummaryModal() {
               <div className="flex items-center gap-2">
                 <Activity size={13} className="text-gray-300 flex-shrink-0" />
                 <p className="text-[11px] text-gray-400">No active symptoms logged</p>
+              </div>
+            )}
+
+            {/* Height + Weight side by side */}
+            {(currentUser?.heightCm || currentUser?.weightKg) && (
+              <div className="grid grid-cols-2 gap-2">
+                {currentUser?.heightCm && (
+                  <div className="flex items-start gap-2">
+                    <Ruler size={13} className="text-sky-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-gray-700">Height</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        {currentUser.units === 'imperial'
+                          ? `${Math.floor(currentUser.heightCm / 30.48)}ft ${Math.round((currentUser.heightCm / 2.54) % 12)}in`
+                          : `${currentUser.heightCm} cm`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {currentUser?.weightKg && (
+                  <div className="flex items-start gap-2">
+                    <Weight size={13} className="text-orange-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold text-gray-700">Weight</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">
+                        {currentUser.units === 'imperial'
+                          ? `${Math.round(currentUser.weightKg * 2.20462)} lbs`
+                          : `${currentUser.weightKg} kg`}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -381,6 +413,7 @@ export default function EmergencyButton() {
         {!isActive && !isConnected && (
           <motion.button
             key="fab"
+            data-tour="emergency-btn"
             onClick={() => { if (!open) { warmAudio(); sentRef.current = false; setOpen(true) } }}
             className="fixed z-40 flex items-center justify-center shadow-2xl"
             style={{

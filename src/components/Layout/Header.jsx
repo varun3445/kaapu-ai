@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Bell, X, Users, UserCheck, UserX } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../../context/AppContext'
@@ -139,6 +139,13 @@ export default function Header() {
   } = useApp()
   const [panelOpen,  setPanelOpen]  = useState(false)
   const [peopleOpen, setPeopleOpen] = useState(false)
+
+  // Tour can open/close the profile panel
+  useEffect(() => {
+    const handler = (e) => setPanelOpen(e.detail?.open ?? false)
+    window.addEventListener('kaapu:tour-profile', handler)
+    return () => window.removeEventListener('kaapu:tour-profile', handler)
+  }, [])
 
   const unread         = notifications.filter(n => !n.forUserId || n.forUserId === currentUser?.id).length
   const pendingReqCount = familyRequests.filter(

@@ -570,6 +570,7 @@ export default function Family() {
           <p className="text-xs text-gray-400 mt-0.5">{myFamilyMembers.length} member{myFamilyMembers.length !== 1 ? 's' : ''}</p>
         </div>
         <button
+          data-tour="family-manage-btn"
           onClick={() => setShowManage(true)}
           className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors border border-primary-100"
         >

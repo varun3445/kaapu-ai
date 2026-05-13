@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, isToday, isYesterday, subMonths, subYears } from 'date-fns'
 import {
@@ -7,6 +7,7 @@ import {
   ArrowDownUp, Clock, SlidersHorizontal,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { supabase, supabaseReady } from '../supabase'
 import {
   SYMPTOM_CATEGORIES, FEELING_CONFIG,
   CHRONIC_CONDITION_PRESETS,
@@ -31,6 +32,24 @@ function dateLabel(d) {
   return format(d, 'MMMM d, yyyy')
 }
 
+function symptomDurationLabel(symptom) {
+  if (!symptom.resolved) {
+    // Show actual start date instead of stale user-entered text like "Just started"
+    if (symptom.timestamp) {
+      const start = new Date(symptom.timestamp)
+      return isToday(start) ? 'Started today' : `Since ${format(start, 'MMM d')}`
+    }
+    return 'Active'
+  }
+  if (!symptom.resolvedAt) return 'Resolved'
+  // Count inclusive calendar days: May 1 → May 3 = 3 days (not 2)
+  const start = new Date(symptom.timestamp);  start.setHours(0,0,0,0)
+  const end   = new Date(symptom.resolvedAt); end.setHours(0,0,0,0)
+  const days  = Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1
+  if (days <= 1) return 'Lasted less than a day'
+  return `Lasted ${days} day${days !== 1 ? 's' : ''}`
+}
+
 function groupByDate(items) {
   const g = {}
   items.forEach(i => {
@@ -44,27 +63,41 @@ function groupByDate(items) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Timeline sub-components
 // ─────────────────────────────────────────────────────────────────────────────
-function SymptomCard({ item, onResolve }) {
+function SymptomCard({ item, onResolve, readOnly = false }) {
   const [open, setOpen] = useState(false)
-  const cat = SYMPTOM_CATEGORIES.find(c => c.id === item.category)
-  const sev = item.severity
+  const cat      = SYMPTOM_CATEGORIES.find(c => c.id === item.category)
+  const sev      = item.severity
   const sevColor = sev >= 7 ? '#ef4444' : sev >= 5 ? '#f97316' : '#10b981'
+  const isContinuation = item._dayIndex > 0
   return (
-    <motion.div layout className="glass-card rounded-2xl overflow-hidden">
+    <motion.div layout className={`glass-card rounded-2xl overflow-hidden ${isContinuation ? 'opacity-80' : ''}`}>
       <button className="w-full flex items-center gap-3 p-3.5 text-left" onClick={() => setOpen(o => !o)}>
         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
           style={{ background: (cat?.color || '#6366f1') + '1a' }}>{cat?.icon}</div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-xs font-bold text-gray-800">{item.bodyLabel}</p>
-            {item.resolved && <span className="text-[9px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">Resolved</span>}
+            {isContinuation && (
+              <span className="text-[9px] bg-amber-100 text-amber-600 font-bold px-1.5 py-0.5 rounded-full">
+                Day {item._dayIndex + 1}
+              </span>
+            )}
+            {item.resolved && item._isStart && (
+              <span className="text-[9px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">Resolved</span>
+            )}
+            {item.resolved && isContinuation && (
+              <span className="text-[9px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">Resolved</span>
+            )}
           </div>
-          <p className="text-[11px] text-gray-400">{cat?.label} · {item.type}</p>
+          <p className="text-[11px] text-gray-400">
+            {cat?.label} · {item.type}
+            {isContinuation && <span className="text-gray-300"> · started {format(new Date(item.timestamp), 'MMM d')}</span>}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
             <p className="text-sm font-bold" style={{ color: sevColor }}>{sev}/10</p>
-            <p className="text-[10px] text-gray-300">{item.duration}</p>
+            <p className="text-[10px] text-gray-300">{symptomDurationLabel(item)}</p>
           </div>
           {open ? <ChevronUp size={13} className="text-gray-300" /> : <ChevronDown size={13} className="text-gray-300" />}
         </div>
@@ -76,7 +109,7 @@ function SymptomCard({ item, onResolve }) {
               <div className="grid grid-cols-3 gap-2">
                 {[
                   { l:'Severity', v:`${sev}/10`, c: sevColor },
-                  { l:'Duration', v: item.duration, c:'#374151' },
+                  { l:'Duration', v: symptomDurationLabel(item), c:'#374151' },
                   { l:'Logged',   v: format(new Date(item.timestamp), 'MMM d'), c:'#374151' },
                 ].map(s => (
                   <div key={s.l} className="bg-gray-50 rounded-xl p-2 text-center">
@@ -96,7 +129,7 @@ function SymptomCard({ item, onResolve }) {
                   <p className="text-xs text-rose-600 font-medium">⚠️ You may want to reach out to a doctor for this symptom.</p>
                 </div>
               )}
-              {!item.resolved && (
+              {!item.resolved && !readOnly && (
                 <button onClick={() => onResolve(item.id)}
                   className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
                   <CheckCircle size={13} /> Mark as resolved
@@ -663,7 +696,58 @@ const TIME_RANGES = [
 ]
 
 export default function History() {
-  const { currentSymptoms, currentCheckIns, currentDocuments, resolveSymptom, addDocument } = useApp()
+  const {
+    currentSymptoms, currentCheckIns, currentDocuments,
+    resolveSymptom, addDocument, currentMember,
+  } = useApp()
+
+  // For connected members (linkedFamilyId set), fetch their data via SECURITY DEFINER RPCs
+  // because local state only holds own-family data.
+  const [remoteSymptoms,  setRemoteSymptoms]  = useState(null)
+  const [remoteCheckIns,  setRemoteCheckIns]  = useState(null)
+
+  useEffect(() => {
+    setRemoteSymptoms(null)
+    setRemoteCheckIns(null)
+    if (!currentMember?.linkedFamilyId || !currentMember?.userId) return
+    if (!supabaseReady || !supabase) return
+
+    let cancelled = false
+    async function fetchConnected() {
+      try {
+        const { data: selfMems } = await supabase.rpc('get_connected_member', {
+          target_family_id: currentMember.linkedFamilyId,
+          target_user_id:   currentMember.userId,
+        })
+        const selfId = selfMems?.[0]?.id
+        if (!selfId || cancelled) return
+
+        const [sympRes, ciRes] = await Promise.all([
+          supabase.rpc('get_connected_symptoms', {
+            target_family_id: currentMember.linkedFamilyId,
+            target_member_id: selfId,
+          }),
+          supabase.rpc('get_connected_checkins', {
+            target_family_id: currentMember.linkedFamilyId,
+            target_member_id: selfId,
+          }),
+        ])
+        if (!cancelled) {
+          setRemoteSymptoms(sympRes.data || [])
+          setRemoteCheckIns((ciRes.data || []).sort((a, b) => new Date(b.date) - new Date(a.date)))
+        }
+      } catch (err) {
+        console.error('[History fetchConnected]', err)
+      }
+    }
+    fetchConnected()
+    return () => { cancelled = true }
+  }, [currentMember?.id, currentMember?.linkedFamilyId, currentMember?.userId])
+
+  // Use remote data when viewing a connected member, own data otherwise
+  const symptomsToShow  = currentMember?.linkedFamilyId ? (remoteSymptoms  ?? []) : currentSymptoms
+  const checkInsToShow  = currentMember?.linkedFamilyId ? (remoteCheckIns  ?? []) : currentCheckIns
+  const documentsToShow = currentDocuments  // documents are always own-family
 
   const [mainTab,      setMainTab]      = useState('Timeline')
   const [timelineTab,  setTimelineTab]  = useState('All')
@@ -675,11 +759,44 @@ export default function History() {
   const [sortOrder,    setSortOrder]    = useState('desc')  // 'desc' = newest first
   const [showFilters,  setShowFilters]  = useState(false)
 
-  const allItems = useMemo(() => [
-    ...currentSymptoms.map(s  => ({ ...s, _type:'symptom',  _date: s.timestamp  })),
-    ...currentCheckIns.map(c  => ({ ...c, _type:'checkin',  _date: c.date        })),
-    ...currentDocuments.map(d => ({ ...d, _type:'document', _date: d.uploadedAt  })),
-  ], [currentSymptoms, currentCheckIns, currentDocuments])
+  const allItems = useMemo(() => {
+    // Expand each symptom across every calendar day it was active.
+    // Resolved symptoms: from timestamp → resolvedAt.
+    // Active symptoms: from timestamp → today (so they keep appearing daily until resolved).
+    // Cap at 90 days to avoid runaway expansion.
+    const symptomEntries = []
+    symptomsToShow.forEach(s => {
+      const startDay = new Date(s.timestamp); startDay.setHours(0,0,0,0)
+      let endDay
+      if (s.resolvedAt) {
+        endDay = new Date(s.resolvedAt); endDay.setHours(0,0,0,0)
+      } else if (s.resolved) {
+        endDay = new Date(startDay)           // old data — no resolvedAt, just show start day
+      } else {
+        endDay = new Date(); endDay.setHours(0,0,0,0)  // still active → show up to today
+      }
+
+      let d = new Date(startDay)
+      let idx = 0
+      while (d <= endDay && idx < 90) {
+        symptomEntries.push({
+          ...s,
+          _type:    'symptom',
+          _date:    new Date(d).toISOString(),
+          _dayIndex: idx,           // 0 = first day logged
+          _isStart:  idx === 0,
+        })
+        d = new Date(d); d.setDate(d.getDate() + 1)
+        idx++
+      }
+    })
+
+    return [
+      ...symptomEntries,
+      ...checkInsToShow.map(c  => ({ ...c, _type:'checkin',  _date: c.date       })),
+      ...documentsToShow.map(d => ({ ...d, _type:'document', _date: d.uploadedAt })),
+    ]
+  }, [symptomsToShow, checkInsToShow, documentsToShow])
 
   const filtered = useMemo(() => {
     const now = new Date()
@@ -719,11 +836,11 @@ export default function History() {
   return (
     <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       {/* Page header */}
-      <div className="flex justify-between items-center mb-4">
+      <div data-tour="history-header" className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-lg font-extrabold text-gray-900">Health</h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            {currentSymptoms.length} symptoms · {currentCheckIns.length} check-ins · {currentDocuments.length} records
+            {symptomsToShow.length} symptoms · {checkInsToShow.length} check-ins · {documentsToShow.length} records
           </p>
         </div>
         {mainTab === 'Timeline' && (
@@ -887,7 +1004,7 @@ export default function History() {
                   </div>
                   <div className="space-y-2 ml-4">
                     {items.map(item =>
-                      item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} /> :
+                      item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} readOnly={!!currentMember?.linkedFamilyId} /> :
                       item._type === 'checkin'  ? <CheckInCard   key={item.id} item={item} /> :
                       <DocTimelineCard key={item.id} item={item} onView={setViewDoc} />
                     )}

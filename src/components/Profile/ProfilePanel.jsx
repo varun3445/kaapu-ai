@@ -1035,7 +1035,7 @@ export default function ProfilePanel({ open, onClose }) {
                   </div>
 
                   {/* UID card */}
-                  <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 flex items-center gap-3">
+                  <div data-tour="profile-uid" className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-3 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
                       <p className="text-primary-200 text-[10px] font-semibold uppercase tracking-widest mb-1">Your Health ID</p>
                       <p className="text-white font-extrabold text-xl tracking-[0.2em] font-mono">{uid}</p>

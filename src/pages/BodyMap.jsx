@@ -105,7 +105,7 @@ export default function BodyMap() {
       </AnimatePresence>
 
       {/* 3D canvas */}
-      <div className="flex-1 relative mx-4 rounded-3xl overflow-hidden bg-gradient-to-b from-slate-50 to-indigo-50 shadow-card">
+      <div data-tour="bodymap-canvas" className="flex-1 relative mx-4 rounded-3xl overflow-hidden bg-gradient-to-b from-slate-50 to-indigo-50 shadow-card">
         <BodyScene
           pins={pins}
           onRegionClick={handleRegionClick}

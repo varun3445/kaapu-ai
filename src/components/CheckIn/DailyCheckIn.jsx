@@ -7,9 +7,6 @@ import { useApp } from '../../context/AppContext'
 // targetDate – optional Date object for a past-day check-in (defaults to today)
 export default function DailyCheckIn({ onClose, targetDate }) {
   const { addCheckIn, currentCheckIns } = useApp()
-  const [feeling, setFeeling] = useState(null)
-  const [notes,   setNotes]   = useState('')
-  const [done,    setDone]    = useState(false)
 
   const target   = targetDate instanceof Date ? targetDate : new Date()
   const isPast   = !isToday(target)
@@ -19,6 +16,12 @@ export default function DailyCheckIn({ onClose, targetDate }) {
   const targetEntry = currentCheckIns.find(
     c => new Date(c.date).toDateString() === target.toDateString()
   )
+  const isEdit = !!targetEntry
+
+  // Pre-populate from existing entry so editing is seamless
+  const [feeling, setFeeling] = useState(targetEntry?.feeling ?? null)
+  const [notes,   setNotes]   = useState(targetEntry?.notes   ?? '')
+  const [done,    setDone]    = useState(false)
 
   function handleSubmit() {
     if (!feeling) return
@@ -36,7 +39,7 @@ export default function DailyCheckIn({ onClose, targetDate }) {
         className="flex flex-col items-center py-8 gap-3"
       >
         <div className="text-5xl">{cfg.emoji}</div>
-        <p className="text-base font-semibold text-gray-800">Check-in saved!</p>
+        <p className="text-base font-semibold text-gray-800">{isEdit ? 'Check-in updated!' : 'Check-in saved!'}</p>
         <p className="text-sm text-gray-500">
           {isPast ? `Logged for ${format(target, 'EEE, d MMM')}.` : 'Keep taking care of yourself.'}
         </p>
@@ -46,15 +49,14 @@ export default function DailyCheckIn({ onClose, targetDate }) {
 
   return (
     <div className="py-2">
-      {targetEntry && (
-        <div className="mb-4 px-4 py-2.5 rounded-xl text-xs font-medium"
+      {isEdit && (
+        <div className="mb-4 px-4 py-2.5 rounded-xl text-xs font-medium flex items-center gap-2"
           style={{
             background: FEELING_CONFIG[targetEntry.feeling]?.bg,
             color: FEELING_CONFIG[targetEntry.feeling]?.color
           }}>
-          {isPast ? `${format(target, 'EEE d MMM')}` : "Today"}'s check-in:{' '}
-          {FEELING_CONFIG[targetEntry.feeling]?.emoji} {FEELING_CONFIG[targetEntry.feeling]?.label}
-          {' '}— tap to update
+          <span>{FEELING_CONFIG[targetEntry.feeling]?.emoji}</span>
+          <span>Editing {isPast ? format(target, 'EEE d MMM') : "today"}'s check-in — select a new mood to update</span>
         </div>
       )}
 
@@ -101,7 +103,7 @@ export default function DailyCheckIn({ onClose, targetDate }) {
         disabled={!feeling}
         className="w-full py-3 rounded-2xl font-semibold text-sm bg-primary-600 hover:bg-primary-700 text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Save Check-in
+        {isEdit ? 'Update Check-in' : 'Save Check-in'}
       </button>
     </div>
   )

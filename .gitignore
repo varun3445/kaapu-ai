@@ -27,3 +27,4 @@ health-tracker-deploy.zip
 android/
 ios/
 .gstack/
+.vercel

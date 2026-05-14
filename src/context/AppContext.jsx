@@ -943,6 +943,10 @@ export function AppProvider({ children }) {
   // targetDate is an optional Date object; defaults to now (today's check-in).
   // When a past date is provided we store noon local time for that date so the
   // calendar-day comparison always lands on the right day regardless of timezone.
+  const deleteCheckIn = useCallback((id) => {
+    setCheckIns(prev => prev.filter(c => c.id !== id)); sbDelete('checkIns', id)
+  }, [sbDelete])
+
   const addCheckIn = useCallback((data, targetDate) => {
     const target  = targetDate instanceof Date ? targetDate : new Date()
     const dayStr  = target.toDateString()
@@ -1131,7 +1135,7 @@ export function AppProvider({ children }) {
       currentSymptoms, currentCheckIns, currentDocuments,
       symptoms, checkIns, documents, families,
       addSymptom, resolveSymptom, deleteSymptom,
-      addCheckIn, addDocument,
+      addCheckIn, deleteCheckIn, addDocument,
       doctorPatients, addDoctorPatient,
       notifications, dismissNotification, pushNotif,
       skinColor, setSkinColor,

@@ -17,8 +17,11 @@ const CALLS_URL = `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Cal
 // Normalise to E.164. Assumes UK (+44) if no country code present.
 function normalizePhone(raw: string): string {
   let n = raw.replace(/[\s\-().]/g, '')
-  if (n.startsWith('+'))  return n
   if (n.startsWith('00')) return '+' + n.slice(2)
+  if (n.startsWith('+')) {
+    if (n.startsWith('+440')) return '+44' + n.slice(4)
+    return n
+  }
   if (n.startsWith('0'))  return '+44' + n.slice(1)
   return '+44' + n
 }

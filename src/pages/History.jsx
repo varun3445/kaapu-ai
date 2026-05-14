@@ -1,10 +1,11 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, isToday, isYesterday, subMonths, subYears } from 'date-fns'
 import {
   CheckCircle, ChevronDown, ChevronUp, FileText, Upload,
   X, Plus, FolderOpen, Pill, Heart, Search,
-  ArrowDownUp, Clock, SlidersHorizontal,
+  ArrowDownUp, Clock, SlidersHorizontal, Trash2, Edit3,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
@@ -13,6 +14,35 @@ import {
   CHRONIC_CONDITION_PRESETS,
 } from '../data/mockData'
 import ConditionCard from '../components/Conditions/ConditionCard'
+import DailyCheckIn  from '../components/CheckIn/DailyCheckIn'
+
+function CheckInModal({ onClose, targetDate }) {
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] flex items-center justify-center px-5"
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ scale: 0.94, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.94, opacity: 0 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+        className="relative glass-elevated rounded-3xl w-full max-w-sm p-6"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-base font-bold text-gray-800">
+            {targetDate && !isToday(targetDate) ? `Check-in · ${format(targetDate, 'EEE, d MMM')}` : 'Edit Check-in'}
+          </h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+            <X size={16} />
+          </button>
+        </div>
+        <DailyCheckIn onClose={onClose} targetDate={targetDate} />
+      </motion.div>
+    </motion.div>,
+    document.body
+  )
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers
@@ -63,7 +93,7 @@ function groupByDate(items) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Timeline sub-components
 // ─────────────────────────────────────────────────────────────────────────────
-function SymptomCard({ item, onResolve, readOnly = false }) {
+function SymptomCard({ item, onResolve, onDelete, readOnly = false }) {
   const [open, setOpen] = useState(false)
   const cat      = SYMPTOM_CATEGORIES.find(c => c.id === item.category)
   const sev      = item.severity
@@ -129,12 +159,20 @@ function SymptomCard({ item, onResolve, readOnly = false }) {
                   <p className="text-xs text-rose-600 font-medium">⚠️ You may want to reach out to a doctor for this symptom.</p>
                 </div>
               )}
-              {!item.resolved && !readOnly && (
-                <button onClick={() => onResolve(item.id)}
-                  className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
-                  <CheckCircle size={13} /> Mark as resolved
-                </button>
-              )}
+              <div className="flex items-center justify-between pt-1">
+                {!item.resolved && !readOnly ? (
+                  <button onClick={() => onResolve(item.id)}
+                    className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600">
+                    <CheckCircle size={13} /> Mark as resolved
+                  </button>
+                ) : <span />}
+                {!readOnly && onDelete && (
+                  <button onClick={() => onDelete(item.id)}
+                    className="flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-600">
+                    <Trash2 size={12} /> Delete
+                  </button>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
@@ -143,18 +181,54 @@ function SymptomCard({ item, onResolve, readOnly = false }) {
   )
 }
 
-function CheckInCard({ item }) {
+function CheckInCard({ item, onEdit, onDelete, readOnly = false }) {
+  const [open, setOpen] = useState(false)
   const cfg = FEELING_CONFIG[item.feeling]
   return (
-    <div className="glass-card rounded-2xl p-3.5 flex items-center gap-3">
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-        style={{ background: cfg.bg }}>{cfg.emoji}</div>
-      <div className="flex-1">
-        <p className="text-xs font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
-        {item.notes && <p className="text-[11px] text-gray-400 mt-0.5">{item.notes}</p>}
-      </div>
-      <p className="text-[10px] text-gray-300">{format(new Date(item.date), 'h:mm a')}</p>
-    </div>
+    <motion.div layout className="glass-card rounded-2xl overflow-hidden">
+      <button className="w-full flex items-center gap-3 p-3.5 text-left" onClick={() => setOpen(o => !o)}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+          style={{ background: cfg.bg }}>{cfg.emoji}</div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
+          {item.notes && <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.notes}</p>}
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <p className="text-[10px] text-gray-300">{format(new Date(item.date), 'h:mm a')}</p>
+          {open ? <ChevronUp size={13} className="text-gray-300" /> : <ChevronDown size={13} className="text-gray-300" />}
+        </div>
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div initial={{ height:0, opacity:0 }} animate={{ height:'auto', opacity:1 }} exit={{ height:0, opacity:0 }} className="overflow-hidden">
+            <div className="px-4 pb-4 border-t border-gray-50 pt-3 space-y-3">
+              {item.notes && (
+                <div className="bg-blue-50 rounded-xl px-3 py-2.5">
+                  <p className="text-[10px] text-blue-400 uppercase tracking-wider font-semibold mb-1">Notes</p>
+                  <p className="text-xs text-blue-700">{item.notes}</p>
+                </div>
+              )}
+              {!readOnly && (
+                <div className="flex items-center justify-between pt-1">
+                  {onEdit ? (
+                    <button onClick={() => onEdit(new Date(item.date))}
+                      className="flex items-center gap-1 text-xs font-semibold text-primary-500 hover:text-primary-700">
+                      <Edit3 size={12} /> Edit
+                    </button>
+                  ) : <span />}
+                  {onDelete && (
+                    <button onClick={() => onDelete(item.id)}
+                      className="flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-600">
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 
@@ -698,7 +772,8 @@ const TIME_RANGES = [
 export default function History() {
   const {
     currentSymptoms, currentCheckIns, currentDocuments,
-    resolveSymptom, addDocument, currentMember,
+    resolveSymptom, deleteSymptom, addDocument, currentMember,
+    deleteCheckIn,
   } = useApp()
 
   // For connected members (linkedFamilyId set), fetch their data via SECURITY DEFINER RPCs
@@ -758,6 +833,7 @@ export default function History() {
   const [timeRange,    setTimeRange]    = useState('all')
   const [sortOrder,    setSortOrder]    = useState('desc')  // 'desc' = newest first
   const [showFilters,  setShowFilters]  = useState(false)
+  const [editCheckIn,  setEditCheckIn]  = useState(null)   // Date | null
 
   const allItems = useMemo(() => {
     // Expand each symptom across every calendar day it was active.
@@ -1004,8 +1080,8 @@ export default function History() {
                   </div>
                   <div className="space-y-2 ml-4">
                     {items.map(item =>
-                      item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} readOnly={!!currentMember?.linkedFamilyId} /> :
-                      item._type === 'checkin'  ? <CheckInCard   key={item.id} item={item} /> :
+                      item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} onDelete={!currentMember?.linkedFamilyId ? deleteSymptom : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
+                      item._type === 'checkin'  ? <CheckInCard   key={item.id} item={item} onEdit={!currentMember?.linkedFamilyId ? d => setEditCheckIn(d) : undefined} onDelete={!currentMember?.linkedFamilyId ? deleteCheckIn : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
                       <DocTimelineCard key={item.id} item={item} onView={setViewDoc} />
                     )}
                   </div>
@@ -1035,6 +1111,15 @@ export default function History() {
       </AnimatePresence>
       <AnimatePresence>
         {viewDoc && <DocViewer doc={viewDoc} onClose={() => setViewDoc(null)} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {editCheckIn && (
+          <CheckInModal
+            key={editCheckIn.toDateString()}
+            targetDate={editCheckIn}
+            onClose={() => setEditCheckIn(null)}
+          />
+        )}
       </AnimatePresence>
     </div>
   )

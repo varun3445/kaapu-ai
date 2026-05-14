@@ -43,6 +43,9 @@ async function sendSMS(to: string, body: string) {
   return res.json()
 }
 
+// Twilio trial prepends ~38 chars; keep body under 280 to stay in one SMS segment
+const MAX_SMS = 280
+
 function buildMessage(
   memberName: string,
   note: string | null,
@@ -51,31 +54,19 @@ function buildMessage(
   medications: string[],
   symptoms: string[],
 ) {
-  const lines: string[] = []
+  const parts: string[] = [`🚨 ${memberName} needs help! (Kaapu)`]
 
-  lines.push(`🚨 EMERGENCY — ${memberName} needs help now!`)
+  if (note)     parts.push(`"${note}"`)
+  if (location) parts.push(`📍 maps.google.com/?q=${location.lat.toFixed(4)},${location.lng.toFixed(4)}`)
+  if (symptoms.length)   parts.push(`Symptoms: ${symptoms.slice(0, 2).join(', ')}`)
+  if (conditions.length) parts.push(`Conditions: ${conditions.slice(0, 2).join(', ')}`)
+  if (medications.length) parts.push(`Meds: ${medications.slice(0, 2).join(', ')}`)
 
-  if (note) lines.push(`\n"${note}"`)
+  parts.push(`Open Kaapu for full details.`)
 
-  if (location) {
-    lines.push(`\n📍 Location: https://maps.google.com/?q=${location.lat},${location.lng}`)
-  }
-
-  if (symptoms.length > 0) {
-    lines.push(`\n🩺 Symptoms: ${symptoms.join(', ')}`)
-  }
-
-  if (conditions.length > 0) {
-    lines.push(`⚕️ Conditions: ${conditions.join(', ')}`)
-  }
-
-  if (medications.length > 0) {
-    lines.push(`💊 Medications: ${medications.join(', ')}`)
-  }
-
-  lines.push(`\nOpen Kaapu for the full health summary.`)
-
-  return lines.join('\n')
+  let msg = parts.join('\n')
+  if (msg.length > MAX_SMS) msg = msg.slice(0, MAX_SMS - 3) + '...'
+  return msg
 }
 
 Deno.serve(async (req) => {

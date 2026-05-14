@@ -344,8 +344,8 @@ export default function Dashboard() {
       <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
         data-tour="checkin"
         className="glass-card rounded-3xl p-5 overflow-hidden">
-        <div className="flex items-start justify-between mb-4">
-          <div>
+        <div className="flex items-start justify-between gap-3 mb-4">
+          <div className="min-w-0 flex-1">
             <p className="text-xs text-gray-400 font-medium">How are you feeling?</p>
             {todayCfg ? (
               <div className="flex items-center gap-2 mt-1">
@@ -360,7 +360,7 @@ export default function Dashboard() {
             )}
           </div>
           <button onClick={() => openCheckIn(new Date())}
-            className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors">
+            className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors whitespace-nowrap">
             <Plus size={13} /> Check in
           </button>
         </div>

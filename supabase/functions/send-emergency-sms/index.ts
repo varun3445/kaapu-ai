@@ -12,7 +12,17 @@ const FROM_NUMBER = Deno.env.get('TWILIO_FROM_NUMBER')!
 
 const TWILIO_URL = `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Messages.json`
 
+// Normalise to E.164. Assumes UK (+44) if no country code present.
+function normalizePhone(raw: string): string {
+  let n = raw.replace(/[\s\-().]/g, '')
+  if (n.startsWith('+'))  return n               // already E.164
+  if (n.startsWith('00')) return '+' + n.slice(2) // 0044... → +44...
+  if (n.startsWith('0'))  return '+44' + n.slice(1) // 07... → +447...
+  return '+44' + n                                // bare digits
+}
+
 async function sendSMS(to: string, body: string) {
+  to = normalizePhone(to)
   const params = new URLSearchParams({ To: to, From: FROM_NUMBER, Body: body })
   const res = await fetch(TWILIO_URL, {
     method: 'POST',

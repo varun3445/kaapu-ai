@@ -14,6 +14,15 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 
 const CALLS_URL = `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Calls.json`
 
+// Normalise to E.164. Assumes UK (+44) if no country code present.
+function normalizePhone(raw: string): string {
+  let n = raw.replace(/[\s\-().]/g, '')
+  if (n.startsWith('+'))  return n
+  if (n.startsWith('00')) return '+' + n.slice(2)
+  if (n.startsWith('0'))  return '+44' + n.slice(1)
+  return '+44' + n
+}
+
 // URL of our TwiML endpoint — same Supabase project, different function
 function twimlUrl(memberName: string, note: string | null): string {
   const base = `${SUPABASE_URL}/functions/v1/emergency-twiml`
@@ -23,6 +32,7 @@ function twimlUrl(memberName: string, note: string | null): string {
 }
 
 async function makeCall(to: string, twiml: string) {
+  to = normalizePhone(to)
   const params = new URLSearchParams({ To: to, From: FROM_NUMBER, Url: twiml })
   const res = await fetch(CALLS_URL, {
     method: 'POST',

@@ -918,7 +918,7 @@ function EmergencyContactsPage({ onBack }) {
                   style={hasError ? { border: '1.5px solid #f87171' } : undefined}
                 />
                 <Input
-                  placeholder="Phone number"
+                  placeholder="Phone e.g. +447911123456"
                   type="tel"
                   value={c.phone}
                   onChange={e => update(idx, 'phone', e.target.value)}

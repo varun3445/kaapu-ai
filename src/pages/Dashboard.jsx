@@ -343,7 +343,7 @@ export default function Dashboard() {
       {/* ── Today's mood / check-in hero ──────────────────────────────────── */}
       <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
         data-tour="checkin"
-        className="glass-card rounded-3xl p-5">
+        className="glass-card rounded-3xl p-5 overflow-hidden">
         <div className="flex items-start justify-between mb-4">
           <div>
             <p className="text-xs text-gray-400 font-medium">How are you feeling?</p>

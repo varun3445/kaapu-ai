@@ -638,7 +638,7 @@ function ConditionsPanel() {
 
       {/* Conditions */}
       {currentConditions.length === 0 ? (
-        <div className="text-center py-10 glass-card rounded-3xl">
+        <div className="text-center py-10 px-6 glass-card rounded-3xl">
           <div className="text-5xl mb-3">🏥</div>
           <p className="text-sm font-bold text-gray-600">No conditions recorded</p>
           <p className="text-xs text-gray-400 mt-1">Add chronic conditions to track symptoms and medications</p>

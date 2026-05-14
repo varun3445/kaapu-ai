@@ -1058,8 +1058,10 @@ export function AppProvider({ children }) {
     members.filter(m => m.familyId === currentUser.familyId && m.id !== currentMember.id)
       .forEach(m => pushNotif({ id: `emg-fam-${m.id}-${event.id}`, type: 'emergency', eventId: event.id, message: `🚨 EMERGENCY: ${currentMember.name} has triggered an emergency alert.` }))
 
-    // Fire push notifications to connected family members via Edge Function
+    // Fire push notifications, SMS, and calls in parallel via Edge Functions
     if (!isDemoRef.current && supabase) {
+      const emergencyContacts = (currentUser?.emergencyContacts || []).filter(c => c.phone?.trim())
+
       supabase.functions.invoke('send-emergency-push', {
         body: {
           familyId:   currentUser.familyId,
@@ -1069,6 +1071,25 @@ export function AppProvider({ children }) {
           eventId:    event.id,
         },
       }).catch(e => console.error('[push send]', e.message))
+
+      if (emergencyContacts.length > 0) {
+        supabase.functions.invoke('send-emergency-sms', {
+          body: {
+            memberName:        currentMember.name,
+            note:              note || null,
+            location:          location || null,
+            emergencyContacts,
+          },
+        }).catch(e => console.error('[sms send]', e.message))
+
+        supabase.functions.invoke('make-emergency-call', {
+          body: {
+            memberName:        currentMember.name,
+            note:              note || null,
+            emergencyContacts,
+          },
+        }).catch(e => console.error('[call send]', e.message))
+      }
     }
 
     console.info('[EMERGENCY]', event)

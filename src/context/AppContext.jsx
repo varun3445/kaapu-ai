@@ -1073,12 +1073,19 @@ export function AppProvider({ children }) {
       }).catch(e => console.error('[push send]', e.message))
 
       if (emergencyContacts.length > 0) {
+        const activeConditions  = conditions.filter(c => c.memberId === currentMember.id).map(c => c.name)
+        const activeMedications = medications.filter(m => m.memberId === currentMember.id).map(m => m.name + (m.dosage ? ` ${m.dosage}` : ''))
+        const activeSymptoms    = symptoms.filter(s => s.memberId === currentMember.id && s.status === 'active').map(s => `${s.bodyLabel} (${s.type}, ${s.severity}/10)`)
+
         supabase.functions.invoke('send-emergency-sms', {
           body: {
             memberName:        currentMember.name,
             note:              note || null,
             location:          location || null,
             emergencyContacts,
+            conditions:        activeConditions,
+            medications:       activeMedications,
+            symptoms:          activeSymptoms,
           },
         }).catch(e => console.error('[sms send]', e.message))
 

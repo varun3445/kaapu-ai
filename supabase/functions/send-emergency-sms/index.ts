@@ -15,10 +15,14 @@ const TWILIO_URL = `https://api.twilio.com/2010-04-01/Accounts/${ACCOUNT_SID}/Me
 // Normalise to E.164. Assumes UK (+44) if no country code present.
 function normalizePhone(raw: string): string {
   let n = raw.replace(/[\s\-().]/g, '')
-  if (n.startsWith('+'))  return n               // already E.164
-  if (n.startsWith('00')) return '+' + n.slice(2) // 0044... → +44...
+  if (n.startsWith('00')) return '+' + n.slice(2)   // 0044... → +44...
+  if (n.startsWith('+')) {
+    // Fix +4407... → +447... (user typed +44 then UK local 07...)
+    if (n.startsWith('+440')) return '+44' + n.slice(4)
+    return n
+  }
   if (n.startsWith('0'))  return '+44' + n.slice(1) // 07... → +447...
-  return '+44' + n                                // bare digits
+  return '+44' + n                                   // bare digits
 }
 
 async function sendSMS(to: string, body: string) {
@@ -39,13 +43,38 @@ async function sendSMS(to: string, body: string) {
   return res.json()
 }
 
-function buildMessage(memberName: string, note: string | null, location: { lat: number; lng: number } | null) {
-  const lines = [`🚨 EMERGENCY ALERT from Kaapu`, `${memberName} needs help urgently.`]
-  if (note) lines.push(`Note: "${note}"`)
+function buildMessage(
+  memberName: string,
+  note: string | null,
+  location: { lat: number; lng: number } | null,
+  conditions: string[],
+  medications: string[],
+  symptoms: string[],
+) {
+  const lines: string[] = []
+
+  lines.push(`🚨 EMERGENCY — ${memberName} needs help now!`)
+
+  if (note) lines.push(`\n"${note}"`)
+
   if (location) {
-    lines.push(`📍 Location: https://maps.google.com/?q=${location.lat},${location.lng}`)
+    lines.push(`\n📍 Location: https://maps.google.com/?q=${location.lat},${location.lng}`)
   }
-  lines.push(`Open Kaapu for their full health summary.`)
+
+  if (symptoms.length > 0) {
+    lines.push(`\n🩺 Symptoms: ${symptoms.join(', ')}`)
+  }
+
+  if (conditions.length > 0) {
+    lines.push(`⚕️ Conditions: ${conditions.join(', ')}`)
+  }
+
+  if (medications.length > 0) {
+    lines.push(`💊 Medications: ${medications.join(', ')}`)
+  }
+
+  lines.push(`\nOpen Kaapu for the full health summary.`)
+
   return lines.join('\n')
 }
 
@@ -60,7 +89,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { memberName, note, location, emergencyContacts } = await req.json()
+    const { memberName, note, location, emergencyContacts, conditions = [], medications = [], symptoms = [] } = await req.json()
 
     if (!memberName || !emergencyContacts?.length) {
       return new Response(JSON.stringify({ error: 'Missing memberName or emergencyContacts' }), { status: 400 })
@@ -74,7 +103,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ sent: 0, message: 'No phone numbers found in emergency contacts' }), { status: 200 })
     }
 
-    const message = buildMessage(memberName, note || null, location || null)
+    const message = buildMessage(memberName, note || null, location || null, conditions, medications, symptoms)
 
     const results = await Promise.allSettled(
       contacts.map(c => sendSMS(c.phone.trim(), message))

@@ -567,10 +567,24 @@ function AccountPage({ onBack }) {
   const [gender,       setGender]       = useState(currentUser?.gender        || 'other')
   const [email,        setEmail]        = useState(currentUser?.email         || '')
   const [homeLocation, setHomeLocation] = useState(currentUser?.homeLocation  || '')
-  // Height stored in cm, Weight stored in kg (metric base)
   const [heightCm,     setHeightCm]     = useState(currentUser?.heightCm?.toString()  || '')
   const [weightKg,     setWeightKg]     = useState(currentUser?.weightKg?.toString()  || '')
   const [units,        setUnits]        = useState(currentUser?.units || 'metric')
+
+  // Sync fields when currentUser loads async (e.g. after DB fetch completes)
+  const prevUserId = useRef(null)
+  useEffect(() => {
+    if (!currentUser || currentUser.id === prevUserId.current) return
+    prevUserId.current = currentUser.id
+    setName(currentUser.name          || '')
+    setAge(currentUser.age?.toString() || '')
+    setGender(currentUser.gender      || 'other')
+    setEmail(currentUser.email        || '')
+    setHomeLocation(currentUser.homeLocation  || '')
+    setHeightCm(currentUser.heightCm?.toString()  || '')
+    setWeightKg(currentUser.weightKg?.toString()  || '')
+    setUnits(currentUser.units        || 'metric')
+  }, [currentUser])
   const [saved,        setSaved]        = useState(false)
   const [saveResult,   setSaveResult]   = useState(null)
   const [showWtHistory, setShowWtHistory] = useState(false)

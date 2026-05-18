@@ -689,6 +689,9 @@ export function AppProvider({ children }) {
 
       await Promise.race([Promise.all(writes), deadline])
 
+      // Writes are done — override whatever _loadUserData may have set during the race
+      setCurrentUser(userProfile)
+
       // Fire welcome email — non-blocking, never fails the signup
       supabase.functions
         .invoke('send-welcome-email', { body: { email: data.email, name: data.name } })

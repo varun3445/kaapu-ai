@@ -668,8 +668,13 @@ export function AppProvider({ children }) {
       const familyId = `fam-${uid}`
       const uid9     = generateUID()
 
+      // Combine first + last name into a single full name
+      const fullName   = [data.name, data.familyName].filter(Boolean).join(' ').trim() || data.name
+      const familyName = data.familyName ? `${data.familyName} Family` : `${data.name}'s Family`
+      const avatarInitials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+
       const userProfile = {
-        id: uid, email: data.email, name: data.name,
+        id: uid, email: data.email, name: fullName,
         role: data.role || 'user', familyId, uid: uid9,
         age: parseInt(data.age) || null, gender: data.gender || 'other',
         ...(data.consentGivenAt ? { consentGivenAt: data.consentGivenAt } : {}),
@@ -677,13 +682,13 @@ export function AppProvider({ children }) {
 
       const writes = [
         supabase.from('users').insert(userProfile),
-        supabase.from('families').insert({ id: familyId, name: data.familyName || `${data.name}'s Family` }),
+        supabase.from('families').insert({ id: familyId, name: familyName }),
       ]
       if (data.role !== 'doctor') {
         writes.push(supabase.from('members').insert({
-          id: `mem-${uid}`, familyId, userId: uid, name: data.name,
+          id: `mem-${uid}`, familyId, userId: uid, name: fullName,
           age: parseInt(data.age) || null, gender: data.gender || 'other',
-          relationship: 'Self', avatar: data.name.slice(0, 2).toUpperCase(), avatarColor: '#6366f1',
+          relationship: 'Self', avatar: avatarInitials, avatarColor: '#6366f1',
         }))
       }
 

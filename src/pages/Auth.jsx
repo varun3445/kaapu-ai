@@ -61,7 +61,6 @@ export default function Auth() {
         }
         result = await signup({
           name: form.name,
-          familyName: form.familyName ? `${form.name} ${form.familyName}` : `${form.name}'s Family`,
           email: form.email,
           password: form.password,
           age: parseInt(form.age) || 30,

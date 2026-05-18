@@ -680,6 +680,12 @@ export function AppProvider({ children }) {
         ...(data.consentGivenAt ? { consentGivenAt: data.consentGivenAt } : {}),
       }
 
+      const memberRecord = {
+        id: `mem-${uid}`, familyId, userId: uid, name: fullName,
+        age: parseInt(data.age) || null, gender: data.gender || 'other',
+        relationship: 'Self', avatar: avatarInitials, avatarColor: '#6366f1',
+      }
+
       // Use upsert so our correct data always wins even if _loadUserData
       // created a row from the email prefix during the auth state change race
       const writes = [
@@ -687,19 +693,26 @@ export function AppProvider({ children }) {
         supabase.from('families').upsert({ id: familyId, name: familyName }),
       ]
       if (data.role !== 'doctor') {
-        writes.push(supabase.from('members').upsert({
-          id: `mem-${uid}`, familyId, userId: uid, name: fullName,
-          age: parseInt(data.age) || null, gender: data.gender || 'other',
-          relationship: 'Self', avatar: avatarInitials, avatarColor: '#6366f1',
-        }))
+        writes.push(supabase.from('members').upsert(memberRecord))
       }
 
       await Promise.race([Promise.all(writes), deadline])
+
+      // Update both user and members state so header + profile reflect correct
+      // data immediately, regardless of what _loadUserData wrote during the race
       setCurrentUser(userProfile)
+      if (data.role !== 'doctor') {
+        setMembers(prev => {
+          const id = memberRecord.id
+          return prev.some(m => m.id === id)
+            ? prev.map(m => m.id === id ? { ...m, ...memberRecord } : m)
+            : [...prev, memberRecord]
+        })
+      }
 
       // Fire welcome email — non-blocking, never fails the signup
       supabase.functions
-        .invoke('send-welcome-email', { body: { email: data.email, name: data.name } })
+        .invoke('send-welcome-email', { body: { email: data.email, name: fullName } })
         .catch(e => console.warn('[welcome-email]', e.message))
 
       return { ok: true }

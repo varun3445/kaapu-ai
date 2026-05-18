@@ -1154,7 +1154,7 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      appLoading,
+      appLoading, isDemoMode,
       currentUser, login, signup, logout, signInWithOAuth, updateProfile,
       currentMember, myFamilyMembers, members, addMember, removeMember, switchMember,
       familyRequests, sendFamilyRequest, respondFamilyRequest,

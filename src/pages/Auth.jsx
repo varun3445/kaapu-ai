@@ -149,30 +149,6 @@ export default function Auth() {
             ))}
           </div>
 
-          {/* ── OAuth buttons ── */}
-          <div className="flex flex-col gap-2 mb-5">
-            <button
-              type="button"
-              onClick={async () => {
-                setLoading(true); setError('')
-                const r = await signInWithOAuth('google')
-                if (r?.error) { setError(r.error); setLoading(false) }
-              }}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 py-3 rounded-2xl text-sm font-semibold text-gray-700 transition-all hover:bg-black/5 disabled:opacity-50"
-              style={{ background: 'rgba(255,255,255,0.7)', border: '0.75px solid rgba(0,0,0,0.1)', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
-            >
-              <GoogleLogo />
-              Continue with Google
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 mb-5">
-            <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
-            <span className="text-[11px] text-gray-400 font-medium">or continue with email</span>
-            <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
-          </div>
 
           <AnimatePresence mode="wait">
             <motion.form

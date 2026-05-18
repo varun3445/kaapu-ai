@@ -711,6 +711,7 @@ export function AppProvider({ children }) {
             ? prev.map(m => m.id === id ? { ...m, ...memberRecord } : m)
             : [...prev, memberRecord]
         })
+        setCurrentMember(memberRecord)
       }
 
       // Fire welcome email — non-blocking, never fails the signup

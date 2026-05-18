@@ -289,7 +289,6 @@ export default function Auth() {
                         background: 'rgba(255,255,255,0.6)',
                         borderColor: 'rgba(0,0,0,0.18)',
                       }}
-                      onClick={() => { setConsent(p => !p); setError('') }}
                     >
                       {consent && (
                         <svg width="9" height="7" viewBox="0 0 9 7" fill="none">

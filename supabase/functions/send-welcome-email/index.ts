@@ -32,7 +32,7 @@ Deno.serve(async (req) => {
     const payload: Record<string, unknown> = {
       from:        FROM_EMAIL,
       to:          [email],
-      template_id: 'kaapu-ai-beta-welcome',
+      template_id: '73b2098c-5af9-4e8a-8972-44bb8521803c',
       variables:   { firstName: name.split(' ')[0] },
     }
     if (REPLY_TO) payload.reply_to = REPLY_TO

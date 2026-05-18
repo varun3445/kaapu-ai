@@ -13,12 +13,15 @@ export default function AppLayout() {
   const { activeEmergency, currentUser } = useApp()
   const [showTour, setShowTour] = useState(false)
 
-  // Show tour once for first-time users — depend only on the user ID so rapid
-  // currentUser object updates (optimistic writes, DB re-fetches) don't keep
-  // cancelling and restarting the timer before it fires.
+  // Show tour once for first-time users.
+  // Depends only on user ID (not the whole object) so rapid currentUser updates
+  // don't cancel the timer. Also checks a sessionStorage flag set during signup
+  // so the tour fires reliably even if AppLayout remounts during the gate flow.
   useEffect(() => {
     if (!currentUser?.id) return
-    if (!localStorage.getItem(TOUR_KEY)) {
+    const pendingTour = sessionStorage.getItem('kaapu_show_tour') === '1'
+    if (pendingTour || !localStorage.getItem(TOUR_KEY)) {
+      sessionStorage.removeItem('kaapu_show_tour')
       const t = setTimeout(() => setShowTour(true), 800)
       return () => clearTimeout(t)
     }

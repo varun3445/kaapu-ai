@@ -654,7 +654,10 @@ export function AppProvider({ children }) {
         supabase.auth.signUp({
           email: data.email,
           password: data.password,
-          options: { emailRedirectTo: siteUrl },
+          options: {
+            emailRedirectTo: siteUrl,
+            data: { full_name: (data.name || '').trim() },
+          },
         }),
         deadline,
       ])
@@ -714,6 +717,9 @@ export function AppProvider({ children }) {
       supabase.functions
         .invoke('send-welcome-email', { body: { email: data.email, name: fullName } })
         .catch(e => console.warn('[welcome-email]', e.message))
+
+      // Flag for AppLayout: trigger tour once on first app render after signup
+      sessionStorage.setItem('kaapu_show_tour', '1')
 
       return { ok: true }
     } catch (e) {

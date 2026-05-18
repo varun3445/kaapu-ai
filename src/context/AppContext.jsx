@@ -688,6 +688,12 @@ export function AppProvider({ children }) {
       }
 
       await Promise.race([Promise.all(writes), deadline])
+
+      // Fire welcome email — non-blocking, never fails the signup
+      supabase.functions
+        .invoke('send-welcome-email', { body: { email: data.email, name: data.name } })
+        .catch(e => console.warn('[welcome-email]', e.message))
+
       return { ok: true }
     } catch (e) {
       return { error: e.message === 'timeout' ? 'Connection timed out — please try again.' : 'Sign up failed. Please try again.' }

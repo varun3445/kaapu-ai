@@ -668,9 +668,9 @@ export function AppProvider({ children }) {
       const familyId = `fam-${uid}`
       const uid9     = generateUID()
 
-      // Combine first + last name into a single full name
-      const fullName   = [data.name, data.familyName].filter(Boolean).join(' ').trim() || data.name
-      const familyName = data.familyName ? `${data.familyName} Family` : `${data.name}'s Family`
+      const fullName       = (data.name || '').trim()
+      const lastName       = fullName.split(' ').slice(-1)[0] || fullName
+      const familyName     = `${lastName} Family`
       const avatarInitials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 
       const userProfile = {
@@ -680,12 +680,14 @@ export function AppProvider({ children }) {
         ...(data.consentGivenAt ? { consentGivenAt: data.consentGivenAt } : {}),
       }
 
+      // Use upsert so our correct data always wins even if _loadUserData
+      // created a row from the email prefix during the auth state change race
       const writes = [
-        supabase.from('users').insert(userProfile),
-        supabase.from('families').insert({ id: familyId, name: familyName }),
+        supabase.from('users').upsert(userProfile),
+        supabase.from('families').upsert({ id: familyId, name: familyName }),
       ]
       if (data.role !== 'doctor') {
-        writes.push(supabase.from('members').insert({
+        writes.push(supabase.from('members').upsert({
           id: `mem-${uid}`, familyId, userId: uid, name: fullName,
           age: parseInt(data.age) || null, gender: data.gender || 'other',
           relationship: 'Self', avatar: avatarInitials, avatarColor: '#6366f1',
@@ -693,8 +695,6 @@ export function AppProvider({ children }) {
       }
 
       await Promise.race([Promise.all(writes), deadline])
-
-      // Writes are done — override whatever _loadUserData may have set during the race
       setCurrentUser(userProfile)
 
       // Fire welcome email — non-blocking, never fails the signup

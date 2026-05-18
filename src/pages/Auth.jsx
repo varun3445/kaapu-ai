@@ -221,20 +221,11 @@ export default function Auth() {
 
                   <input
                     type="text"
-                    placeholder={role === 'doctor' ? 'Dr. Full Name *' : 'Your name *'}
+                    placeholder="Full name *"
                     value={form.name}
                     onChange={e => set('name', e.target.value)}
                     className="input-field"
                   />
-                  {role === 'user' && (
-                    <input
-                      type="text"
-                      placeholder="Last name *"
-                      value={form.familyName}
-                      onChange={e => set('familyName', e.target.value)}
-                      className="input-field"
-                    />
-                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <input type="number" placeholder="Age" value={form.age}
                       onChange={e => set('age', e.target.value)} className="input-field" min={1} max={120} />

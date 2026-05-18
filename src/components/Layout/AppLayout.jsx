@@ -13,15 +13,16 @@ export default function AppLayout() {
   const { activeEmergency, currentUser } = useApp()
   const [showTour, setShowTour] = useState(false)
 
-  // Show tour once for first-time users (after user data loads)
+  // Show tour once for first-time users — depend only on the user ID so rapid
+  // currentUser object updates (optimistic writes, DB re-fetches) don't keep
+  // cancelling and restarting the timer before it fires.
   useEffect(() => {
-    if (!currentUser) return
+    if (!currentUser?.id) return
     if (!localStorage.getItem(TOUR_KEY)) {
-      // Small delay so the app renders fully before the overlay appears
       const t = setTimeout(() => setShowTour(true), 800)
       return () => clearTimeout(t)
     }
-  }, [currentUser])
+  }, [currentUser?.id]) // eslint-disable-line
 
   // Allow any component to re-trigger the tour via custom event
   useEffect(() => {

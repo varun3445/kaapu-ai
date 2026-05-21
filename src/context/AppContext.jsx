@@ -387,6 +387,25 @@ export function AppProvider({ children }) {
       )
       .subscribe()
 
+    // Catch-up: surface any broadcasts sent in the last hour that were missed
+    // (handles users who open the app after a nudge was already sent)
+    const seenKey = `kaapu_broadcasts_seen_${uid}`
+    const lastSeen = localStorage.getItem(seenKey) || new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { data: missed } = await supabase
+      .from('broadcasts')
+      .select('*')
+      .gt('created_at', lastSeen)
+      .order('created_at', { ascending: true })
+    if (missed?.length) {
+      missed.forEach(b => pushNotif({
+        id:        `broadcast-${b.id}`,
+        type:      b.type === 'nudge' ? 'info' : (b.type || 'info'),
+        message:   b.message,
+        timestamp: b.created_at,
+      }))
+    }
+    localStorage.setItem(seenKey, new Date().toISOString())
+
     // ── Step 1: Load members first — needed to know linked (connected) families ──
     const safe    = (res) => (res && !res.error ? res.data || [] : [])
     const safeOne = (res) => (res && !res.error ? res.data : null)

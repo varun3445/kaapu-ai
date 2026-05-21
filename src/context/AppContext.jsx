@@ -38,8 +38,10 @@ function generateUID() {
   return `${n.slice(0,3)}.${n.slice(3,6)}.${n.slice(6,9)}`
 }
 
-// localStorage — only for UI prefs (skinColor, active member selection)
-const LS = { skinColor: 'ht_skin_color', currentMember: 'ht_current_member' }
+// localStorage — UI prefs only (member switching was removed)
+const LS = { skinColor: 'ht_skin_color' }
+// Clear any stale member selection left over from before the switcher was removed
+try { localStorage.removeItem('ht_current_member') } catch (_) {}
 const lsLoad = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb } catch { return fb } }
 const lsSave = (k, v)  => { try { localStorage.setItem(k, JSON.stringify(v)) } catch (_) {} }
 
@@ -112,10 +114,11 @@ export function AppProvider({ children }) {
   const channelSymptomsRef       = useRef(null)
   const channelCheckInsRef       = useRef(null)
   const channelDocumentsRef      = useRef(null)
+  const channelBroadcastsRef     = useRef(null)
 
   // ── Persist UI prefs ──────────────────────────────────────────────────────
   useEffect(() => { lsSave(LS.skinColor, skinColor) }, [skinColor])
-  useEffect(() => { if (currentMember) lsSave(LS.currentMember, currentMember) }, [currentMember])
+  // currentMember is always derived from the auth user — no localStorage persistence needed
 
   // Keep currentMember in sync when the members array is updated (e.g. after updateProfile)
   useEffect(() => {
@@ -367,6 +370,23 @@ export function AppProvider({ children }) {
       )
       .subscribe()
 
+    // Real-time: global broadcasts (admin nudges → in-app notifications for everyone)
+    channelBroadcastsRef.current = supabase
+      .channel('broadcasts:global')
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'broadcasts' },
+        (payload) => {
+          const b = payload.new
+          pushNotif({
+            id:        `broadcast-${b.id}`,
+            type:      b.type === 'nudge' ? 'info' : (b.type || 'info'),
+            message:   b.message,
+            timestamp: b.created_at,
+          })
+        }
+      )
+      .subscribe()
+
     // ── Step 1: Load members first — needed to know linked (connected) families ──
     const safe    = (res) => (res && !res.error ? res.data || [] : [])
     const safeOne = (res) => (res && !res.error ? res.data : null)
@@ -475,10 +495,9 @@ export function AppProvider({ children }) {
     setEmergencyEvents(safe(emgRes))
     setFamilyRequests(safe(reqRes))
 
-    // Restore current member selection
-    const savedMem = lsLoad(LS.currentMember, null)
-    const restored = allMems.find(m => m.id === savedMem?.id) || allMems[0] || null
-    setCurrentMember(restored)
+    // Always show the logged-in user's own member — no switching allowed
+    const ownMember = allMems.find(m => m.userId === uid) || null
+    setCurrentMember(ownMember)
   }
 
   // ── Push notification registration ───────────────────────────────────────
@@ -561,7 +580,8 @@ export function AppProvider({ children }) {
     if (channelEmergencyRef.current) { supabase?.removeChannel(channelEmergencyRef.current); channelEmergencyRef.current = null }
     if (channelSymptomsRef.current)  { supabase?.removeChannel(channelSymptomsRef.current);  channelSymptomsRef.current  = null }
     if (channelCheckInsRef.current)  { supabase?.removeChannel(channelCheckInsRef.current);  channelCheckInsRef.current  = null }
-    if (channelDocumentsRef.current) { supabase?.removeChannel(channelDocumentsRef.current); channelDocumentsRef.current = null }
+    if (channelDocumentsRef.current)   { supabase?.removeChannel(channelDocumentsRef.current);   channelDocumentsRef.current   = null }
+    if (channelBroadcastsRef.current)  { supabase?.removeChannel(channelBroadcastsRef.current);  channelBroadcastsRef.current  = null }
     channelConnectedEmgRefs.current.forEach(ch => supabase?.removeChannel(ch))
     channelConnectedEmgRefs.current = []
   }
@@ -843,7 +863,15 @@ export function AppProvider({ children }) {
     return m
   }, [currentUser, sbInsert])
 
-  const switchMember = useCallback((m) => { setCurrentMember(m); lsSave(LS.currentMember, m) }, [])
+  const switchMember = useCallback((m) => { setCurrentMember(m) }, [])
+
+  const isAdmin = currentUser?.role === 'admin'
+
+  const sendBroadcast = useCallback(async ({ message, type = 'nudge' }) => {
+    if (!supabase) return { error: 'Not configured' }
+    const { error } = await supabase.from('broadcasts').insert({ message, type, created_by: currentUser?.id })
+    return error ? { error: error.message } : { ok: true }
+  }, [currentUser?.id])
 
   const removeMember = useCallback((id) => {
     const member = members.find(m => m.id === id)
@@ -1150,7 +1178,17 @@ export function AppProvider({ children }) {
   }, [currentMember, sbUpdate, pushNotif])
 
   // ── Derived ───────────────────────────────────────────────────────────────
-  const myFamilyMembers    = currentUser ? members.filter(m => m.familyId === currentUser.familyId) : []
+  const myFamilyMembers = currentUser
+    ? members
+        .filter(m => m.familyId === currentUser.familyId)
+        .sort((a, b) => {
+          // Self always first
+          if (a.relationship === 'Self') return -1
+          if (b.relationship === 'Self') return 1
+          // Connections in chronological order by ID
+          return a.id < b.id ? -1 : a.id > b.id ? 1 : 0
+        })
+    : []
   const currentSymptoms    = currentMember ? symptoms.filter(s => s.memberId === currentMember.id)    : []
   const currentCheckIns    = currentMember ? checkIns.filter(c => c.memberId === currentMember.id)    : []
   const currentDocuments   = currentMember ? documents.filter(d => d.memberId === currentMember.id)   : []
@@ -1177,6 +1215,7 @@ export function AppProvider({ children }) {
       medications, currentMedications, addMedication, removeMedication,
       riskProfiles, currentRiskProfile, setRiskProfile, getRiskProfile,
       emergencyEvents, activeEmergency, triggerEmergency, resolveEmergency, generateHealthID,
+      isAdmin, sendBroadcast,
     }}>
       {children}
     </AppContext.Provider>

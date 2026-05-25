@@ -839,6 +839,27 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* ── Medications — always visible ── */}
+        {currentMedications.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Medications</p>
+            <div className="space-y-1.5">
+              {currentMedications.map(m => (
+                <div key={m.id}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50">
+                  <Pill size={13} className="text-indigo-400 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-indigo-800 truncate">{m.name}</p>
+                    {(m.dosage || m.frequency) && (
+                      <p className="text-[10px] text-indigo-400">{[m.dosage, m.frequency].filter(Boolean).join(' · ')}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Steps ─────────────────────────────────────────────────────────── */}

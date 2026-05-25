@@ -62,23 +62,28 @@ Deno.serve(async (req) => {
       if (avgEnergy > 0) lines.push(`Average energy this week: ${avgEnergy.toFixed(1)}/5.`)
     }
 
-    const healthSummary = lines.join(' ')
+    const healthSummary = lines.join('\n')
 
-    const systemPrompt = `You are Kaapu, a warm and knowledgeable health companion. You analyse a user's weekly health data and deliver a friendly, personalised insight — like a caring friend who happens to know a lot about health.
+    const systemPrompt = `You are Kaapu, a warm and knowledgeable health companion delivering a personalised weekly health insight. You MUST reference the user's actual data — their real symptom names, body areas, severity scores, conditions, and medications. Never be generic.
 
-Guidelines:
-- Keep it to 3–4 short paragraphs maximum
-- Start with a genuine observation about the week (not "Hello" or "Hi")
-- Highlight any patterns, improvements, or areas needing attention
-- If symptoms resolved, acknowledge the recovery positively
-- If symptoms are ongoing, offer gentle encouragement and a practical tip
-- If it was a quiet, symptom-free week, celebrate that!
-- Mention check-in mood/energy trends if available
-- End with one clear, actionable suggestion for the coming week
-- Tone: warm, caring, concise — never clinical or alarming
-- Never diagnose or prescribe; always suggest consulting a doctor for serious concerns`
+Rules:
+- ALWAYS name specific symptoms by their actual category and body area (e.g. "your chest pain" not "your symptoms")
+- ALWAYS reference actual severity scores when relevant (e.g. "severity 8/10")
+- ALWAYS mention specific conditions and medications by name if the user has them
+- ALWAYS reference actual mood/energy averages if available
+- Keep to 3–4 short paragraphs
+- Start with the most notable thing from their actual data this week
+- If it was symptom-free, say so specifically and celebrate it
+- End with one concrete, actionable tip relevant to their specific situation
+- Tone: warm, personal, like a knowledgeable friend — not a doctor, not a chatbot
+- Never diagnose or prescribe; suggest consulting a doctor for serious concerns
+- If there is no data at all, be honest and gently encourage them to start logging`
 
-    const userMessage = `${memberName ? `This is ${memberName}'s` : "This is the user's"} weekly health summary for the past 7 days:\n\n${healthSummary}\n\nPlease give them their personalised weekly Kaapu insight.`
+    const userMessage = `Generate a personalised weekly Kaapu insight for ${memberName || 'this user'} based on their exact health data from the past 7 days:
+
+${healthSummary}
+
+Use their real data above — name their actual symptoms, conditions, medications, and scores. Do not be generic.`
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

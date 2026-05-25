@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X, Smartphone, Activity, CheckCircle, Loader, RotateCcw, CheckCircle2, Search, Pill, Trash2 } from 'lucide-react'
@@ -446,7 +446,7 @@ function BodyMapModal({ onClose, onSymptomAdded, skinColor }) {
         </div>
 
         {/* 3D canvas */}
-        <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-slate-50 to-indigo-50">
+        <div data-tour="bodymap-canvas" className="flex-1 relative overflow-hidden bg-gradient-to-b from-slate-50 to-indigo-50">
           <BodyScene
             pins={pins}
             onRegionClick={handleRegionClick}
@@ -708,6 +708,18 @@ export default function Dashboard() {
   const [showAddMed,     setShowAddMed]     = useState(false)
   const [selectedCond,   setSelectedCond]   = useState(null)  // condition object | null
 
+  // Allow tour to open/close the body map modal via custom events
+  useEffect(() => {
+    const open  = () => setShowBodyMap(true)
+    const close = () => setShowBodyMap(false)
+    window.addEventListener('kaapu:open-bodymap',  open)
+    window.addEventListener('kaapu:close-bodymap', close)
+    return () => {
+      window.removeEventListener('kaapu:open-bodymap',  open)
+      window.removeEventListener('kaapu:close-bodymap', close)
+    }
+  }, [])
+
   const activeSymptoms = currentSymptoms.filter(s => !s.resolved)
   const todayMood      = calculateMoodFromSymptoms(activeSymptoms)
   const todayCfg       = FEELING_CONFIG[todayMood]
@@ -749,6 +761,7 @@ export default function Dashboard() {
             </div>
           </div>
           <button
+            data-tour="log-pain-btn"
             onClick={() => setShowBodyMap(true)}
             className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors whitespace-nowrap"
           >
@@ -773,7 +786,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="flex items-center gap-1.5">
-            <button onClick={() => setShowAddMed(true)}
+            <button data-tour="add-med-btn" onClick={() => setShowAddMed(true)}
               className="flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors">
               <Pill size={12} /> Med
             </button>

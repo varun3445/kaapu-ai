@@ -32,11 +32,23 @@ export default function AppLayout() {
     }
   }, [currentUser?.id]) // eslint-disable-line
 
-  // Allow re-triggering the tour via custom event
+  // Allow re-triggering the tour via custom event or sessionStorage flag
   useEffect(() => {
-    const handler = () => { setShowTour(true) }
+    const handler = () => {
+      sessionStorage.removeItem('kaapu_show_tour')
+      setShowTour(true)
+    }
     window.addEventListener('kaapu:start-tour', handler)
     return () => window.removeEventListener('kaapu:start-tour', handler)
+  }, [])
+
+  // Also catch the sessionStorage flag on mount (in case event fires before listener attaches)
+  useEffect(() => {
+    if (sessionStorage.getItem('kaapu_show_tour') === '1') {
+      sessionStorage.removeItem('kaapu_show_tour')
+      const t = setTimeout(() => setShowTour(true), 400)
+      return () => clearTimeout(t)
+    }
   }, [])
 
   // Only show the banner (and its "I'm OK" resolve button) when the emergency

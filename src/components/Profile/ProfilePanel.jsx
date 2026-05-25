@@ -5,7 +5,7 @@ import {
   X, User, Bell, Shield, LogOut, ChevronRight, ChevronLeft,
   Copy, Check as CheckIcon, MapPin, Clock, PauseCircle,
   Eye, EyeOff, Users, BarChart2, Save, Phone, Trash2,
-  Download, AlertTriangle, FileText, TrendingUp, TrendingDown, Minus, PlayCircle,
+  Download, AlertTriangle, FileText, TrendingUp, TrendingDown, Minus, Play,
   Megaphone, Send, Pill, Sparkles,
 } from 'lucide-react'
 import { TOUR_KEY } from '../Onboarding/OnboardingTour'
@@ -1240,12 +1240,14 @@ export default function ProfilePanel({ open, onClose }) {
                   <button
                     onClick={() => {
                       localStorage.removeItem(TOUR_KEY)
-                      window.dispatchEvent(new Event('kaapu:start-tour'))
-                      setTimeout(() => handleClose(), 100)
+                      sessionStorage.setItem('kaapu_show_tour', '1')
+                      handleClose()
+                      // Small delay so the panel closes before tour overlay appears
+                      setTimeout(() => window.dispatchEvent(new Event('kaapu:start-tour')), 400)
                     }}
                     className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-primary-200/60 text-primary-600 font-semibold text-sm hover:bg-primary-50 transition-colors glass-card"
                   >
-                    <PlayCircle size={15} /> Replay App Tour
+                    <Play size={14} /> Replay App Tour
                   </button>
 
 

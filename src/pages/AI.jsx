@@ -752,7 +752,7 @@ export default function AI() {
           style={inputBarStyle}
         >
           <div className="flex items-center gap-2">
-            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
+            <div data-tour="ai-chat-input" className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
               <input
                 ref={inputRef}
                 type="text"

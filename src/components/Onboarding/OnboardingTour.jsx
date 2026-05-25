@@ -2,7 +2,7 @@ import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react
 import { createPortal } from 'react-dom'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ChevronRight, Heart, ChevronLeft } from 'lucide-react'
+import { X, ChevronRight, ChevronLeft } from 'lucide-react'
 
 export const TOUR_KEY = 'kaapu_tour_v2_done'
 
@@ -26,18 +26,30 @@ const STEPS = [
     route: '/',
     target: '[data-tour="checkin"]',
     title: 'Daily Check-in',
-    body: "Tap here every day to log how you're feeling. Pick a mood, add a note — Kaapu tracks your wellbeing over time and spots patterns before they become problems.",
+    body: "Tap here every day to log how you're feeling — add a note, rate your energy, and track symptoms. The 7-day bar below auto-records each day so your history is always up to date.",
     position: 'bottom',
     icon: '😊',
+    closeBodyMap: true,
   },
   {
-    id: 'moodbar',
+    id: 'bodymap-intro',
     route: '/',
-    target: '[data-tour="checkin"]',
-    title: '7-Day History',
-    body: "The bar below shows your last 7 days at a glance. Tap any day to review or edit it. Miss a day? Tap the empty slot to log it retroactively.",
-    position: 'bottom',
-    icon: '📊',
+    target: '[data-tour="bodymap-canvas"]',
+    title: 'Body Map',
+    body: "Tap any body part — head, chest, back, limbs — to log a symptom. Rotate the 3D model with one finger, pinch to zoom. Logged symptoms appear as colour-coded pins.",
+    position: 'top',
+    icon: '🫀',
+    openBodyMap: true,
+  },
+  {
+    id: 'bodymap-log',
+    route: '/',
+    target: '[data-tour="bodymap-canvas"]',
+    title: 'Logging a Symptom',
+    body: "Tap a body part and a form slides up — pick the symptom type, severity (1–10), and add notes. Kaapu tracks changes over time and can alert connected family if anything worsens consistently.",
+    position: 'top',
+    icon: '📝',
+    openBodyMap: true,
   },
   {
     id: 'health-mapping',
@@ -47,32 +59,24 @@ const STEPS = [
     body: "Your active symptoms, conditions, and medications all in one place. Add a medication with the Med button, or a new condition with the + button. Tap any condition to see its full details.",
     position: 'top',
     icon: '🗺️',
+    closeBodyMap: true,
   },
   {
-    id: 'bodymap-intro',
-    route: '/body-map',
-    target: '[data-tour="bodymap-canvas"]',
-    title: 'Body Map',
-    body: "Tap any body part — head, chest, back, limbs — to log a symptom. Rotate the 3D model with one finger, pinch to zoom. Logged symptoms appear as colour-coded pins.",
+    id: 'ai-med-lookup',
+    route: '/',
+    target: '[data-tour="add-med-btn"]',
+    title: 'AI Medication Lookup',
+    body: "Tap Med and start typing any medication name — Kaapu's AI instantly identifies it, shows its drug class, and explains exactly what it does. No more googling your prescriptions.",
     position: 'top',
-    icon: '🫀',
-  },
-  {
-    id: 'bodymap-log',
-    route: '/body-map',
-    target: '[data-tour="bodymap-canvas"]',
-    title: 'Logging a Symptom',
-    body: "Tap a body part and a form slides up — pick the symptom type, severity (1–10), and add notes. Kaapu tracks changes over time and alerts you if anything worsens consistently.",
-    position: 'top',
-    icon: '📝',
+    icon: '💊',
   },
   {
     id: 'ai-chat',
     route: '/ai',
-    target: '[data-tour="ai-page"]',
+    target: '[data-tour="ai-chat-input"]',
     title: 'Ask Kaapu',
     body: "Your personal AI health companion. Ask about your conditions, medications, recent symptoms, or general wellness — Kaapu knows your full health history and gives personalised answers.",
-    position: 'bottom',
+    position: 'top',
     icon: '✨',
   },
   {
@@ -311,7 +315,7 @@ function Tooltip({ step, rect, stepIdx, total, ww, wh, onNext, onPrev, onSkip })
                 onClick={onNext}
                 className="flex items-center gap-1.5 text-xs font-bold text-white bg-primary-600 px-4 py-2 rounded-xl hover:bg-primary-700 active:scale-95 transition-all"
               >
-                {isLast ? <><span>Done</span> <Heart size={11} /></> : <><span>Next</span> <ChevronRight size={13} /></>}
+                {isLast ? <span>Done</span> : <><span>Next</span> <ChevronRight size={13} /></>}
               </button>
             </div>
           </div>
@@ -352,12 +356,17 @@ export default function OnboardingTour({ onDone }) {
     }
   }, [stepIdx]) // eslint-disable-line
 
-  // Open/close profile panel via custom event when step requires it
+  // Open/close profile panel and body map via custom events when step requires it
   useEffect(() => {
     if (step.openProfile) {
       window.dispatchEvent(new CustomEvent('kaapu:tour-profile', { detail: { open: true, page: step.profilePage || null } }))
     } else if (step.closeProfile) {
       window.dispatchEvent(new CustomEvent('kaapu:tour-profile', { detail: { open: false } }))
+    }
+    if (step.openBodyMap) {
+      window.dispatchEvent(new Event('kaapu:open-bodymap'))
+    } else if (step.closeBodyMap) {
+      window.dispatchEvent(new Event('kaapu:close-bodymap'))
     }
     // Reset ready state on step change so we wait for the new element
     setReady(false)

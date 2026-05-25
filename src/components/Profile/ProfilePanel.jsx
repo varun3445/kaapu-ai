@@ -1246,40 +1246,6 @@ export default function ProfilePanel({ open, onClose }) {
                     <PlayCircle size={15} /> Replay App Tour
                   </button>
 
-                  {/* Admin: nudge all users */}
-                  {isAdmin && (
-                    <div className="glass-card rounded-2xl p-4 space-y-3" style={{ border: '1px solid rgba(99,102,241,0.18)' }}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-                          <Megaphone size={13} className="text-indigo-500" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-gray-800">Nudge All Users</p>
-                          <p className="text-[10px] text-gray-400">Sends an in-app notification to everyone online</p>
-                        </div>
-                      </div>
-                      <textarea
-                        value={nudgeMsg}
-                        onChange={e => setNudgeMsg(e.target.value)}
-                        rows={2}
-                        className="w-full text-xs text-gray-700 rounded-xl px-3 py-2.5 resize-none focus:outline-none"
-                        style={{ background: 'rgba(255,255,255,0.7)', border: '0.75px solid rgba(0,0,0,0.10)' }}
-                      />
-                      <button
-                        onClick={handleNudge}
-                        disabled={nudgeSending || nudgeSent}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold text-white transition-all disabled:opacity-60"
-                        style={{ background: nudgeSent ? '#10b981' : 'linear-gradient(135deg,#6366f1,#4f46e5)', boxShadow: '0 4px 12px rgba(99,102,241,0.3)' }}
-                      >
-                        {nudgeSent
-                          ? <><CheckIcon size={13} /> Sent!</>
-                          : nudgeSending
-                            ? <><div className="w-3 h-3 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Sending…</>
-                            : <><Send size={13} /> Send Nudge</>
-                        }
-                      </button>
-                    </div>
-                  )}
 
                   {/* Sign out */}
                   <button onClick={() => { logout(); handleClose() }}

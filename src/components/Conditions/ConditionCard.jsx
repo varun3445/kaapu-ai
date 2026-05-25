@@ -13,6 +13,7 @@ const SEVERITY_COLORS = {
 export default function ConditionCard({ condition, medications, symptoms }) {
   const { removeCondition, removeMedication } = useApp()
   const [open, setOpen] = useState(false)
+  const [confirming, setConfirming] = useState(false)
 
   const sev  = SEVERITY_COLORS[condition.severity] || SEVERITY_COLORS.mild
   const meds = medications.filter(m => m.conditionId === condition.id)
@@ -145,12 +146,37 @@ export default function ConditionCard({ condition, medications, symptoms }) {
 
               {/* Remove condition */}
               <button
-                onClick={() => removeCondition(condition.id)}
+                onClick={() => setConfirming(true)}
                 className="flex items-center gap-1.5 text-xs text-rose-500 font-semibold hover:text-rose-700 transition-colors"
               >
                 <Trash2 size={12} />
                 Remove condition
               </button>
+              <AnimatePresence>
+                {confirming && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3">
+                      <p className="text-[11px] font-semibold text-rose-700 mb-0.5">Remove {condition.name}?</p>
+                      <p className="text-[10px] text-rose-400 mb-3 leading-relaxed">
+                        This can't be undone. The condition and all linked data will be permanently removed.
+                      </p>
+                      <div className="flex gap-2">
+                        <button onClick={() => removeCondition(condition.id)}
+                          className="flex-1 py-1.5 rounded-xl bg-rose-500 text-white text-[11px] font-bold">
+                          Yes, remove it
+                        </button>
+                        <button onClick={() => setConfirming(false)}
+                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                          Keep it
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}

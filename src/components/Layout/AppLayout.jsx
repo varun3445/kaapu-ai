@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import BottomNav from './BottomNav'
 import Header from './Header'
@@ -11,7 +11,15 @@ import { useApp } from '../../context/AppContext'
 
 export default function AppLayout() {
   const { activeEmergency, currentUser } = useApp()
+  const navigate = useNavigate()
   const [showTour, setShowTour] = useState(false)
+
+  // Navigate to AI tab when a streak notification is tapped
+  useEffect(() => {
+    const handler = (e) => navigate(e.detail?.path || '/ai')
+    window.addEventListener('kaapu:navigate', handler)
+    return () => window.removeEventListener('kaapu:navigate', handler)
+  }, [navigate])
 
   // Show tour once for first-time users.
   // Depends only on user ID (not the whole object) so rapid currentUser updates

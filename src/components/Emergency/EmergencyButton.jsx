@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertTriangle, CheckCircle, MapPin, Shield, Pill, Activity, X, Phone, Ruler, Weight } from 'lucide-react'
+import { AlertTriangle, CheckCircle, MapPin, Shield, Pill, Activity, X, Phone, Ruler, Weight, Sparkles } from 'lucide-react'
+import { format, isToday, isYesterday } from 'date-fns'
+import { useLocation } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import { warmAudio, stopActiveAlarm } from '../../utils/audio'
 import EmergencyFlow from './EmergencyFlow'
@@ -13,13 +15,37 @@ function EmergencySummaryModal() {
     currentUser,
   } = useApp()
 
+  // ── ALL hooks must come before any early return ──
+  const activeSymptoms = currentSymptoms?.filter(s => !s.resolved) || []
+
+  const uniqueMedications = (currentMedications || []).filter((m, i, arr) =>
+    arr.findIndex(x =>
+      x.name.toLowerCase().replace(/[^a-z0-9]/g, '') ===
+      m.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+    ) === i
+  )
+
+  const [aiSummary, setAiSummary] = useState(null)
+
+  // Symptoms from the past 7 days (including resolved)
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
+  const recentSymptoms = (currentSymptoms || []).filter(s =>
+    new Date(s.timestamp).getTime() >= sevenDaysAgo
+  )
+
+  useEffect(() => {
+    if (!activeEmergency) return
+    setAiSummary(true) // just triggers render — data is derived inline
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeEmergency?.id])
+
+  // ── Early return AFTER all hooks ──
   const ev = activeEmergency
   if (!ev) return null
 
   const emergencyContacts = (currentUser?.emergencyContacts || []).slice(0, 3)
-  const activeSymptoms = currentSymptoms?.filter(s => !s.resolved) || []
-  const highSev        = activeSymptoms.filter(s => s.severity >= 7)
-  const loc            = ev.location
+  const highSev = activeSymptoms.filter(s => s.severity >= 7)
+  const loc     = ev.location
 
   function handleResolve() {
     stopActiveAlarm()
@@ -95,96 +121,113 @@ function EmergencySummaryModal() {
             </p>
           </div>
 
-          {/* Health snapshot */}
+          {/* Kaapu Health Brief — single rich card */}
           <div className="glass-card rounded-2xl p-4 space-y-3">
-            <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Health Summary Shared</p>
+            <div className="flex items-center gap-1.5">
+              <Sparkles size={12} className="text-violet-500 flex-shrink-0" />
+              <p className="text-[10px] font-extrabold text-violet-500 uppercase tracking-wider">Kaapu Health Brief</p>
+            </div>
 
-            {activeSymptoms.length > 0 ? (
-              <div className="flex items-start gap-2">
-                <Activity size={13} className="text-rose-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-700">
-                    Active symptoms
-                    {highSev.length > 0 && (
-                      <span className="ml-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-full">
-                        {highSev.length} high severity
-                      </span>
-                    )}
-                  </p>
-                  <div className="mt-1 space-y-0.5">
+            {/* Active symptoms */}
+            <div className="flex items-start gap-2">
+              <Activity size={13} className={`flex-shrink-0 mt-0.5 ${activeSymptoms.length > 0 ? 'text-rose-500' : 'text-gray-300'}`} />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                  Active now
+                  {highSev.length > 0 && (
+                    <span className="ml-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-full normal-case">
+                      {highSev.length} high severity
+                    </span>
+                  )}
+                </p>
+                {activeSymptoms.length > 0 ? (
+                  <div className="space-y-0.5">
                     {activeSymptoms.map(s => (
-                      <p key={s.id} className={`text-[11px] ${s.severity >= 7 ? 'text-rose-600 font-semibold' : 'text-gray-500'}`}>
+                      <p key={s.id} className={`text-[11px] ${s.severity >= 7 ? 'text-rose-600 font-semibold' : 'text-gray-600'}`}>
                         {s.bodyLabel} — {s.type}
-                        <span className={`ml-1 font-bold ${s.severity >= 7 ? 'text-rose-600' : s.severity >= 5 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        <span className={`ml-1 font-bold ${s.severity >= 7 ? 'text-rose-600' : s.severity >= 5 ? 'text-amber-500' : 'text-emerald-600'}`}>
                           {s.severity}/10
                         </span>
+                        {s.timestamp && <span className="text-gray-400 font-normal"> · since {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>}
+                      </p>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-gray-400">No active symptoms</p>
+                )}
+              </div>
+            </div>
+
+            {/* Past 7 days */}
+            {recentSymptoms.filter(s => s.resolved).length > 0 && (
+              <div className="border-t border-gray-100 pt-3 flex items-start gap-2">
+                <Shield size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">Past 7 days (resolved)</p>
+                  <div className="space-y-0.5">
+                    {recentSymptoms.filter(s => s.resolved).slice(0, 4).map(s => (
+                      <p key={s.id} className="text-[11px] text-gray-500">
+                        {s.bodyLabel} — {s.type}
+                        <span className="ml-1 text-gray-400">· {s.severity}/10</span>
+                        {s.duration ? <span className="text-gray-400"> · {s.duration}</span> : null}
                       </p>
                     ))}
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Activity size={13} className="text-gray-300 flex-shrink-0" />
-                <p className="text-[11px] text-gray-400">No active symptoms logged</p>
-              </div>
             )}
 
-            {/* Height + Weight side by side */}
+            {/* Conditions & Meds */}
+            <div className="border-t border-gray-100 pt-3 grid grid-cols-2 gap-3">
+              <div className="flex items-start gap-1.5">
+                <Shield size={12} className="text-indigo-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-0.5">Conditions</p>
+                  <p className="text-[11px] text-gray-600 leading-relaxed">
+                    {currentConditions?.length > 0 ? currentConditions.map(c => c.name).join(', ') : 'None'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-1.5">
+                <Pill size={12} className="text-teal-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-0.5">Medications</p>
+                  <p className="text-[11px] text-gray-600 leading-relaxed">
+                    {uniqueMedications.length > 0
+                      ? uniqueMedications.map(m => m.dosage ? `${m.name} ${m.dosage}` : m.name).join(', ')
+                      : 'None'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Vitals */}
             {(currentUser?.heightCm || currentUser?.weightKg) && (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="border-t border-gray-100 pt-3 flex gap-4">
                 {currentUser?.heightCm && (
-                  <div className="flex items-start gap-2">
-                    <Ruler size={13} className="text-sky-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-semibold text-gray-700">Height</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        {currentUser.units === 'imperial'
-                          ? `${Math.floor(currentUser.heightCm / 30.48)}ft ${Math.round((currentUser.heightCm / 2.54) % 12)}in`
-                          : `${currentUser.heightCm} cm`}
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <Ruler size={12} className="text-sky-500 flex-shrink-0" />
+                    <p className="text-[11px] text-gray-600">
+                      <span className="font-semibold">Height</span>{' '}
+                      {currentUser.units === 'imperial'
+                        ? `${Math.floor(currentUser.heightCm / 30.48)}ft ${Math.round((currentUser.heightCm / 2.54) % 12)}in`
+                        : `${currentUser.heightCm} cm`}
+                    </p>
                   </div>
                 )}
                 {currentUser?.weightKg && (
-                  <div className="flex items-start gap-2">
-                    <Weight size={13} className="text-orange-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-semibold text-gray-700">Weight</p>
-                      <p className="text-[11px] text-gray-500 mt-0.5">
-                        {currentUser.units === 'imperial'
-                          ? `${Math.round(currentUser.weightKg * 2.20462)} lbs`
-                          : `${currentUser.weightKg} kg`}
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <Weight size={12} className="text-orange-400 flex-shrink-0" />
+                    <p className="text-[11px] text-gray-600">
+                      <span className="font-semibold">Weight</span>{' '}
+                      {currentUser.units === 'imperial'
+                        ? `${Math.round(currentUser.weightKg * 2.20462)} lbs`
+                        : `${currentUser.weightKg} kg`}
+                    </p>
                   </div>
                 )}
               </div>
             )}
-
-            <div className="flex items-start gap-2">
-              <Shield size={13} className="text-indigo-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-semibold text-gray-700">Conditions</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">
-                  {currentConditions?.length > 0
-                    ? currentConditions.map(c => c.name).join(', ')
-                    : 'None on record'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-2">
-              <Pill size={13} className="text-teal-500 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-semibold text-gray-700">Medications</p>
-                <p className="text-[11px] text-gray-500 mt-0.5">
-                  {currentMedications?.length > 0
-                    ? currentMedications.map(m => `${m.name}${m.dosage ? ` ${m.dosage}` : ''}`).join(', ')
-                    : 'None on record'}
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Emergency contacts */}
@@ -385,11 +428,26 @@ export default function EmergencyButton() {
     }
   }, [activeEmergency?.id])
 
+  // Allow AI page's SOS pill button to trigger the emergency flow
+  useEffect(() => {
+    const handler = () => { if (!open) { warmAudio(); sentRef.current = false; setOpen(true) } }
+    window.addEventListener('open-emergency', handler)
+    return () => window.removeEventListener('open-emergency', handler)
+  }, [open])
+
+  const { pathname } = useLocation()
+  const isAIPage      = pathname === '/ai'
+
   const isHighRisk    = currentRiskProfile?.riskLevel === 'high' || currentRiskProfile?.riskLevel === 'critical'
   const isActive      = !!activeEmergency
   // Is the active emergency MINE (my family triggered it) or from a connected family?
   const isMyEmergency = isActive && activeEmergency.familyId === currentUser?.familyId
   const isConnected   = isActive && !isMyEmergency && !dismissed
+
+  // On the AI chat page, pin the FAB just below the header (header ≈ 4.25rem + safe-area-top)
+  const fabPosition = isAIPage
+    ? { top: 'calc(env(safe-area-inset-top, 0px) + 5rem)', right: '1rem' }
+    : { bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }
 
   return (
     <>
@@ -410,14 +468,15 @@ export default function EmergencyButton() {
 
       {/* FAB — hidden whenever any emergency is active (mine or connected) */}
       <AnimatePresence>
-        {!isActive && !isConnected && (
+        {!isActive && !isConnected && !isAIPage && (
+          /* Red circle FAB on all pages except Ask Kaapu */
           <motion.button
             key="fab"
             data-tour="emergency-btn"
             onClick={() => { if (!open) { warmAudio(); sentRef.current = false; setOpen(true) } }}
             className="fixed z-40 flex items-center justify-center shadow-2xl"
             style={{
-              bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem',
+              ...fabPosition,
               width: 52, height: 52, borderRadius: '50%',
               background: isHighRisk
                 ? 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)'

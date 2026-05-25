@@ -5,7 +5,7 @@ import { format, isToday, isYesterday, subMonths, subYears } from 'date-fns'
 import {
   CheckCircle, ChevronDown, ChevronUp, FileText, Upload,
   X, Plus, FolderOpen, Pill, Heart, Search,
-  ArrowDownUp, Clock, SlidersHorizontal, Trash2, Edit3,
+  ArrowDownUp, Clock, SlidersHorizontal, Trash2, Edit3, Loader,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
@@ -14,6 +14,7 @@ import {
   CHRONIC_CONDITION_PRESETS,
 } from '../data/mockData'
 import ConditionCard from '../components/Conditions/ConditionCard'
+import AddMedicationModal from '../components/Medications/AddMedicationModal'
 import DailyCheckIn  from '../components/CheckIn/DailyCheckIn'
 
 function CheckInModal({ onClose, targetDate }) {
@@ -62,9 +63,21 @@ function dateLabel(d) {
   return format(d, 'MMMM d, yyyy')
 }
 
+// Map user-entered duration strings to approximate day counts
+const DURATION_DAYS = {
+  'Just started': 0, 'A few hours': 0, '1 day': 1,
+  '2–3 days': 2, '1 week': 7, '2+ weeks': 14, 'Ongoing': 30,
+}
+
 function symptomDurationLabel(symptom) {
   if (!symptom.resolved) {
-    // Show actual start date instead of stale user-entered text like "Just started"
+    // Use the user-entered duration if it carries real meaning
+    const d = symptom.duration || ''
+    if (d && d !== 'Just started' && d !== 'A few hours') {
+      // Show "For 1 week", "For 2–3 days", etc.
+      return `For ${d.toLowerCase()}`
+    }
+    // Fallback: show when it was logged
     if (symptom.timestamp) {
       const start = new Date(symptom.timestamp)
       return isToday(start) ? 'Started today' : `Since ${format(start, 'MMM d')}`
@@ -95,6 +108,7 @@ function groupByDate(items) {
 // ─────────────────────────────────────────────────────────────────────────────
 function SymptomCard({ item, onResolve, onDelete, readOnly = false }) {
   const [open, setOpen] = useState(false)
+  const [confirming, setConfirming] = useState(false)
   const cat      = SYMPTOM_CATEGORIES.find(c => c.id === item.category)
   const sev      = item.severity
   const sevColor = sev >= 7 ? '#ef4444' : sev >= 5 ? '#f97316' : '#10b981'
@@ -167,12 +181,37 @@ function SymptomCard({ item, onResolve, onDelete, readOnly = false }) {
                   </button>
                 ) : <span />}
                 {!readOnly && onDelete && (
-                  <button onClick={() => onDelete(item.id)}
+                  <button onClick={() => setConfirming(true)}
                     className="flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-600">
                     <Trash2 size={12} /> Delete
                   </button>
                 )}
               </div>
+              <AnimatePresence>
+                {confirming && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3 mt-1">
+                      <p className="text-[11px] font-semibold text-rose-700 mb-0.5">Delete this symptom?</p>
+                      <p className="text-[10px] text-rose-400 mb-3 leading-relaxed">
+                        This can't be undone. The entry will be permanently removed from your health history.
+                      </p>
+                      <div className="flex gap-2">
+                        <button onClick={() => onDelete(item.id)}
+                          className="flex-1 py-1.5 rounded-xl bg-rose-500 text-white text-[11px] font-bold">
+                          Yes, delete it
+                        </button>
+                        <button onClick={() => setConfirming(false)}
+                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                          Keep it
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
@@ -183,6 +222,7 @@ function SymptomCard({ item, onResolve, onDelete, readOnly = false }) {
 
 function CheckInCard({ item, onEdit, onDelete, readOnly = false }) {
   const [open, setOpen] = useState(false)
+  const [confirming, setConfirming] = useState(false)
   const cfg = FEELING_CONFIG[item.feeling]
   return (
     <motion.div layout className="glass-card rounded-2xl overflow-hidden">
@@ -217,13 +257,38 @@ function CheckInCard({ item, onEdit, onDelete, readOnly = false }) {
                     </button>
                   ) : <span />}
                   {onDelete && (
-                    <button onClick={() => onDelete(item.id)}
+                    <button onClick={() => setConfirming(true)}
                       className="flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-600">
                       <Trash2 size={12} /> Delete
                     </button>
                   )}
                 </div>
               )}
+              <AnimatePresence>
+                {confirming && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3 mt-1">
+                      <p className="text-[11px] font-semibold text-rose-700 mb-0.5">Delete this check-in?</p>
+                      <p className="text-[10px] text-rose-400 mb-3 leading-relaxed">
+                        This can't be undone. The entry will be permanently removed from your health history.
+                      </p>
+                      <div className="flex gap-2">
+                        <button onClick={() => onDelete(item.id)}
+                          className="flex-1 py-1.5 rounded-xl bg-rose-500 text-white text-[11px] font-bold">
+                          Yes, delete it
+                        </button>
+                        <button onClick={() => setConfirming(false)}
+                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                          Keep it
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
@@ -232,13 +297,43 @@ function CheckInCard({ item, onEdit, onDelete, readOnly = false }) {
   )
 }
 
-function DocViewer({ doc, onClose }) {
-  const type  = DOC_TYPES.find(t => t.id === doc.docType) || DOC_TYPES[5]
-  const url   = doc.fileUrl || ''
-  const isImg = /\.(jpe?g|png|svg)$/i.test(url) || url.startsWith('blob:') && doc.fileName && /\.(jpe?g|png)$/i.test(doc.fileName)
-  const isPdf = /\.pdf$/i.test(url) || url.startsWith('blob:') && doc.fileName?.toLowerCase().endsWith('.pdf')
+function DocViewer({ doc, onClose, onDelete }) {
+  const type    = DOC_TYPES.find(t => t.id === doc.docType) || DOC_TYPES[5]
+  const url     = doc.fileUrl || ''
+  // Strip query string (signed URLs have ?token=…) and use fileName as primary signal
+  const urlPath = url.split('?')[0]
+  const nameHint = (doc.fileName || urlPath.split('/').pop() || '').toLowerCase()
+  const isImg = /\.(jpe?g|png|svg)$/.test(nameHint)
+  const isPdf = nameHint.endsWith('.pdf')
 
-  return (
+  // Fetch PDF as local blob to bypass cross-origin iframe restrictions
+  const [pdfBlob, setPdfBlob] = useState(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
+  useEffect(() => {
+    if (!isPdf || !url) return
+    let revoke
+    setPdfLoading(true)
+    fetch(url)
+      .then(r => r.blob())
+      .then(b => {
+        revoke = URL.createObjectURL(b)
+        setPdfBlob(revoke)
+        setPdfLoading(false)
+      })
+      .catch(() => setPdfLoading(false))
+    return () => { if (revoke) URL.revokeObjectURL(revoke) }
+  }, [url, isPdf])
+
+  function handleDelete() {
+    onDelete(doc.id)
+    onClose()
+  }
+
+  function handleOpenExternal() {
+    window.open(url, '_blank')
+  }
+
+  return createPortal(
     <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
       className="fixed inset-0 z-[100] flex flex-col bg-gray-900">
       <div className="bg-gray-900 px-4 pt-5 pb-3 flex items-center gap-3 flex-shrink-0">
@@ -249,7 +344,12 @@ function DocViewer({ doc, onClose }) {
           <p className="text-sm font-bold text-white truncate">{doc.name}</p>
           <p className="text-[11px] text-gray-400">{type.label} · {format(new Date(doc.uploadedAt), 'MMM d, yyyy')}</p>
         </div>
-        <span className="text-lg">{type.icon}</span>
+        <button
+          onClick={handleDelete}
+          className="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center hover:bg-rose-500/40 transition-colors"
+        >
+          <Trash2 size={14} className="text-rose-400" />
+        </button>
       </div>
       <div className="flex-1 overflow-auto bg-gray-100">
         {url ? (
@@ -259,27 +359,64 @@ function DocViewer({ doc, onClose }) {
                 style={{ maxHeight: '80vh' }} />
             </div>
           ) : isPdf ? (
-            <iframe src={url} title={doc.name} className="w-full h-full border-none" style={{ minHeight: '80vh' }} />
+            <div className="flex flex-col h-full">
+              {pdfLoading && (
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-400">
+                  <Loader size={28} className="animate-spin text-primary-400" />
+                  <p className="text-sm text-gray-400">Loading PDF…</p>
+                </div>
+              )}
+              {!pdfLoading && pdfBlob && (
+                <iframe
+                  src={pdfBlob}
+                  title={doc.name}
+                  className="flex-1 w-full border-none"
+                  style={{ minHeight: '75vh' }}
+                />
+              )}
+              {!pdfLoading && !pdfBlob && (
+                <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6">
+                  <FileText size={48} className="text-gray-300" />
+                  <p className="text-sm font-semibold text-gray-600">Couldn't load preview</p>
+                  <button onClick={handleOpenExternal}
+                    className="flex items-center gap-2 bg-primary-600 text-white text-sm font-bold px-5 py-3 rounded-2xl">
+                    Open PDF ↗
+                  </button>
+                </div>
+              )}
+              <div className="bg-gray-800 px-4 py-2 flex-shrink-0 flex items-center justify-between gap-3">
+                <p className="text-[11px] text-gray-400 truncate flex-1">{doc.fileName}</p>
+                <button onClick={handleOpenExternal}
+                  className="flex-shrink-0 flex items-center gap-1.5 text-xs text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-colors">
+                  Open externally ↗
+                </button>
+              </div>
+            </div>
           ) : (
             <div className="flex items-start justify-center min-h-full p-3">
               <img src={url} alt={doc.name} className="max-w-full rounded-xl shadow-xl bg-white" />
             </div>
           )
         ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400">
-            <FileText size={48} />
-            <p className="text-sm font-medium">Preview not available</p>
-            {doc.notes && <p className="text-xs text-gray-500 max-w-xs text-center">{doc.notes}</p>}
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400 p-6">
+            <FileText size={48} className="text-gray-300" />
+            <p className="text-sm font-semibold text-gray-600">Preview not available</p>
+            <p className="text-xs text-gray-400 text-center max-w-xs">
+              File previews are only available during the session they were uploaded.
+              The document metadata has been saved.
+            </p>
+            {doc.notes && <p className="text-xs text-gray-500 max-w-xs text-center italic">"{doc.notes}"</p>}
           </div>
         )}
       </div>
-      {doc.notes && (
+      {doc.notes && url && (
         <div className="bg-white px-4 py-3 border-t border-gray-100 flex-shrink-0">
           <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">Notes</p>
           <p className="text-xs text-gray-600">{doc.notes}</p>
         </div>
       )}
-    </motion.div>
+    </motion.div>,
+    document.body
   )
 }
 
@@ -298,13 +435,15 @@ function DocTimelineCard({ item, onView }) {
   )
 }
 
-const ACCEPTED_TYPES = '.jpg,.jpeg,.png,.pdf'
-const ACCEPTED_MIME  = ['image/jpeg', 'image/png', 'application/pdf']
+const ACCEPTED_TYPES = '.jpg,.jpeg,.png'
+const ACCEPTED_MIME  = ['image/jpeg', 'image/png']
 
 function UploadModal({ onClose, onSave }) {
+  const today = format(new Date(), 'yyyy-MM-dd')
   const [name,    setName]    = useState('')
   const [docType, setDocType] = useState('lab')
   const [notes,   setNotes]   = useState('')
+  const [docDate, setDocDate] = useState(today)
   const [file,    setFile]    = useState(null)
   const [fileUrl, setFileUrl] = useState(null)
   const [fileErr, setFileErr] = useState('')
@@ -327,11 +466,16 @@ function UploadModal({ onClose, onSave }) {
   function handleSubmit(e) {
     e.preventDefault()
     if (!name) return
-    onSave({ name, docType, notes, fileName: file?.name, fileUrl })
+    // Use the user-chosen date (noon UTC to avoid timezone day shifts)
+    const uploadedAt = docDate
+      ? new Date(docDate + 'T12:00:00').toISOString()
+      : new Date().toISOString()
+    // Pass the raw File object so AppContext can upload it to Supabase Storage
+    onSave({ name, docType, notes, fileName: file?.name, fileUrl, file: file || undefined, uploadedAt })
     onClose()
   }
 
-  return (
+  return createPortal(
     <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
       className="fixed inset-0 z-[100] flex items-center justify-center px-4"
       onClick={e => { if (e.target === e.currentTarget) onClose() }}>
@@ -355,12 +499,17 @@ function UploadModal({ onClose, onSave }) {
               ? <p className="text-sm font-medium text-primary-600">{file.name}</p>
               : <>
                   <p className="text-sm text-gray-500 font-medium">Tap to upload</p>
-                  <p className="text-xs text-gray-300 mt-0.5">JPEG, PNG or PDF only</p>
+                  <p className="text-xs text-gray-300 mt-0.5">JPEG or PNG only</p>
                 </>}
             {fileErr && <p className="text-xs text-rose-500 mt-1 font-medium">{fileErr}</p>}
           </div>
           <input type="text" placeholder="Document name *" value={name} onChange={e => setName(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" />
+          <div>
+            <label className="text-xs font-semibold text-gray-500 block mb-1.5">Document Date</label>
+            <input type="date" value={docDate} max={today} onChange={e => setDocDate(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white" />
+          </div>
           <div className="grid grid-cols-3 gap-2">
             {DOC_TYPES.map(t => (
               <button key={t.id} type="button" onClick={() => setDocType(t.id)}
@@ -377,12 +526,14 @@ function UploadModal({ onClose, onSave }) {
           </button>
         </form>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   )
 }
 
-function RecordsOverlay({ documents, onClose, onAdd, onView }) {
-  return (
+function RecordsOverlay({ documents, onClose, onAdd, onView, onDelete }) {
+  const [confirmDocId, setConfirmDocId] = useState(null)
+  return createPortal(
     <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
       className="fixed inset-0 z-50 bg-surface flex flex-col">
       <div className="bg-white border-b border-gray-100 px-4 pt-5 pb-4 flex items-center justify-between">
@@ -412,22 +563,58 @@ function RecordsOverlay({ documents, onClose, onAdd, onView }) {
           documents.map(d => {
             const type = DOC_TYPES.find(t => t.id === d.docType) || DOC_TYPES[5]
             return (
-              <button key={d.id} onClick={() => onView(d)}
-                className="w-full glass-card rounded-2xl p-4 flex items-center gap-3 text-left hover:bg-white/80 transition-colors">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                  style={{ background: type.color + '1a' }}>{type.icon}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-800 truncate">{d.name}</p>
-                  <p className="text-xs text-gray-400">{type.label} · {format(new Date(d.uploadedAt), 'MMM d, yyyy')}</p>
-                  {d.notes && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{d.notes}</p>}
+              <div key={d.id} className="glass-card rounded-2xl overflow-hidden">
+                <button onClick={() => onView(d)}
+                  className="w-full p-4 flex items-center gap-3 text-left hover:bg-white/80 transition-colors">
+                  <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                    style={{ background: type.color + '1a' }}>{type.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-800 truncate">{d.name}</p>
+                    <p className="text-xs text-gray-400">{type.label} · {format(new Date(d.uploadedAt), 'MMM d, yyyy')}</p>
+                    {d.notes && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{d.notes}</p>}
+                  </div>
+                  <span className="text-[10px] text-primary-500 font-semibold bg-primary-50 px-2 py-1 rounded-full flex-shrink-0">View</span>
+                </button>
+                <div className="border-t border-gray-50 px-4 pt-2 pb-1 flex justify-end">
+                  <button
+                    onClick={() => setConfirmDocId(d.id)}
+                    className="flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-600 transition-colors"
+                  >
+                    <Trash2 size={11} /> Delete
+                  </button>
                 </div>
-                <span className="text-[10px] text-primary-500 font-semibold bg-primary-50 px-2 py-1 rounded-full flex-shrink-0">View</span>
-              </button>
+                <AnimatePresence>
+                  {confirmDocId === d.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="mx-3 mb-3 rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3">
+                        <p className="text-[11px] font-semibold text-rose-700 mb-0.5">Delete this record?</p>
+                        <p className="text-[10px] text-rose-400 mb-3 leading-relaxed">
+                          This can't be undone. The document will be permanently removed from your health records.
+                        </p>
+                        <div className="flex gap-2">
+                          <button onClick={() => { onDelete(d.id); setConfirmDocId(null) }}
+                            className="flex-1 py-1.5 rounded-xl bg-rose-500 text-white text-[11px] font-bold">
+                            Yes, delete it
+                          </button>
+                          <button onClick={() => setConfirmDocId(null)}
+                            className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                            Keep it
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )
           })
         )}
       </div>
-    </motion.div>
+    </motion.div>,
+    document.body
   )
 }
 
@@ -592,72 +779,6 @@ function AddConditionModal({ onClose }) {
   )
 }
 
-function AddMedicationModal({ onClose, conditions }) {
-  const { addMedication } = useApp()
-  const [name,      setName]      = useState('')
-  const [dosage,    setDosage]    = useState('')
-  const [frequency, setFrequency] = useState('')
-  const [condId,    setCondId]    = useState(conditions[0]?.id || '')
-
-  const FREQS = ['Once daily','Twice daily','Three times daily','As needed (PRN)','Weekly','Other']
-
-  function handleSave(e) {
-    e.preventDefault()
-    if (!name) return
-    addMedication({ name, dosage, frequency, conditionId: condId || null })
-    onClose()
-  }
-
-  return (
-    <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center px-4"
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <motion.div
-        initial={{ scale: 0.93, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.93, opacity: 0 }}
-        transition={{ type:'spring', damping:28, stiffness:320 }}
-        className="relative glass-elevated rounded-3xl w-full max-w-md overflow-y-auto"
-        style={{ maxHeight: '88vh' }}>
-        <div className="flex justify-between items-center px-5 pt-5 pb-3">
-          <h2 className="text-sm font-extrabold text-gray-800">Add Medication</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-            <X size={14} />
-          </button>
-        </div>
-        <form onSubmit={handleSave} className="px-5 pb-8 space-y-3">
-          <input type="text" placeholder="Medication name *" value={name}
-            onChange={e => setName(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400" />
-          <input type="text" placeholder="Dosage (e.g. 100mcg, 5mg)" value={dosage}
-            onChange={e => setDosage(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400" />
-          <div className="flex flex-wrap gap-2">
-            {FREQS.map(f => (
-              <button key={f} type="button" onClick={() => setFrequency(f)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-xl border-2 transition-all ${
-                  frequency === f ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-100 text-gray-400'
-                }`}>{f}</button>
-            ))}
-          </div>
-          {conditions.length > 0 && (
-            <select value={condId} onChange={e => setCondId(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 bg-white">
-              <option value="">Not linked to condition</option>
-              {conditions.map(c => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-              ))}
-            </select>
-          )}
-          <button type="submit" disabled={!name}
-            className="w-full py-3 rounded-2xl bg-primary-600 text-white font-extrabold text-sm disabled:opacity-40">
-            Add Medication
-          </button>
-        </form>
-      </motion.div>
-    </motion.div>
-  )
-}
-
 // Inline conditions panel (no outer page wrapper / heading)
 function ConditionsPanel() {
   const {
@@ -761,7 +882,6 @@ function ConditionsPanel() {
 // Main Health page
 // ─────────────────────────────────────────────────────────────────────────────
 const TIMELINE_TABS = ['All', 'Symptoms', 'Check-ins', 'Records']
-const MAIN_TABS     = ['Timeline', 'Conditions']
 
 const TIME_RANGES = [
   { id: 'all', label: 'Forever' },
@@ -772,7 +892,7 @@ const TIME_RANGES = [
 export default function History() {
   const {
     currentSymptoms, currentCheckIns, currentDocuments,
-    resolveSymptom, deleteSymptom, addDocument, currentMember,
+    resolveSymptom, deleteSymptom, addDocument, deleteDocument, currentMember,
     deleteCheckIn,
   } = useApp()
 
@@ -824,7 +944,6 @@ export default function History() {
   const checkInsToShow  = currentMember?.linkedFamilyId ? (remoteCheckIns  ?? []) : currentCheckIns
   const documentsToShow = currentDocuments  // documents are always own-family
 
-  const [mainTab,      setMainTab]      = useState('Timeline')
   const [timelineTab,  setTimelineTab]  = useState('All')
   const [showRecords,  setShowRecords]  = useState(false)
   const [showUpload,   setShowUpload]   = useState(false)
@@ -919,28 +1038,15 @@ export default function History() {
             {symptomsToShow.length} symptoms · {checkInsToShow.length} check-ins · {documentsToShow.length} records
           </p>
         </div>
-        {mainTab === 'Timeline' && (
-          <button data-tour="history-records-btn" onClick={() => setShowRecords(true)}
+        <button data-tour="history-records-btn" onClick={() => setShowRecords(true)}
             className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors">
             <FolderOpen size={13} /> Records
           </button>
-        )}
       </div>
 
-      {/* Main tab switcher */}
-      <div className="flex glass-card rounded-2xl p-1 mb-5 gap-1">
-        {MAIN_TABS.map(t => (
-          <button key={t} onClick={() => setMainTab(t)}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
-              mainTab === t ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}>{t}</button>
-        ))}
-      </div>
-
-      {/* ── Timeline tab ── */}
-      {mainTab === 'Timeline' && (
-        <>
-          {/* Sub-tabs */}
+      {/* ── Timeline ── */}
+      <>
+        {/* Sub-tabs */}
           <div className="flex bg-gray-100 rounded-2xl p-1 mb-3 gap-1 overflow-x-auto">
             {TIMELINE_TABS.map(t => (
               <button key={t} onClick={() => setTimelineTab(t)}
@@ -1089,11 +1195,7 @@ export default function History() {
               ))}
             </div>
           )}
-        </>
-      )}
-
-      {/* ── Conditions tab ── */}
-      {mainTab === 'Conditions' && <ConditionsPanel />}
+      </>
 
       {/* Overlays */}
       <AnimatePresence>
@@ -1103,6 +1205,7 @@ export default function History() {
             onClose={() => setShowRecords(false)}
             onAdd={() => { setShowRecords(false); setShowUpload(true) }}
             onView={d => { setShowRecords(false); setViewDoc(d) }}
+            onDelete={deleteDocument}
           />
         )}
       </AnimatePresence>
@@ -1110,7 +1213,7 @@ export default function History() {
         {showUpload && <UploadModal onClose={() => setShowUpload(false)} onSave={data => addDocument(data)} />}
       </AnimatePresence>
       <AnimatePresence>
-        {viewDoc && <DocViewer doc={viewDoc} onClose={() => setViewDoc(null)} />}
+        {viewDoc && <DocViewer doc={viewDoc} onClose={() => setViewDoc(null)} onDelete={deleteDocument} />}
       </AnimatePresence>
       <AnimatePresence>
         {editCheckIn && (

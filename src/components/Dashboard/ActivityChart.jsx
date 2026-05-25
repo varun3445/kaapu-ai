@@ -2,7 +2,11 @@ import { Smartphone } from 'lucide-react'
 
 export default function ActivityChart({ onConnect }) {
   return (
-    <div className="glass-card rounded-2xl p-5">
+    <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
+      {/* Coming soon overlay */}
+      <div className="absolute inset-0 rounded-2xl bg-white/85 backdrop-blur-md z-10 flex flex-col items-center justify-center gap-1.5">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">Coming Soon</span>
+      </div>
       {/* Header */}
       <div className="flex justify-between items-start mb-5">
         <div>

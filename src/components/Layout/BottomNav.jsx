@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Activity, BookOpen, Users } from 'lucide-react'
+import { Home, BookOpen, Users, Sparkles } from 'lucide-react'
 
 const links = [
-  { to: '/',         icon: Home,     label: 'Home',     tour: null             },
-  { to: '/body-map', icon: Activity, label: 'Body Map', tour: 'nav-bodymap'   },
-  { to: '/history',  icon: BookOpen, label: 'Health',   tour: null             },
-  { to: '/family',   icon: Users,    label: 'People',   tour: 'nav-family'    },
+  { to: '/',        icon: Home,      label: 'Home',     tour: null         },
+  { to: '/history', icon: BookOpen,  label: 'Timeline', tour: null         },
+  { to: '/ai',      icon: Sparkles,  label: 'Ask Kaapu', tour: null         },
+  { to: '/family',  icon: Users,     label: 'People',   tour: 'nav-family' },
 ]
 
 export default function BottomNav() {

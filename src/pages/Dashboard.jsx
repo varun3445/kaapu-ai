@@ -1,53 +1,210 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { createPortal } from 'react-dom'
-import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight, Plus, X, Smartphone, Activity, CheckCircle, Loader } from 'lucide-react'
+import { Plus, X, Smartphone, Activity, CheckCircle, Loader, RotateCcw, CheckCircle2, Search, Pill, Trash2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
+import { calculateMoodFromSymptoms } from '../context/AppContext'
 import ActivityChart from '../components/Dashboard/ActivityChart'
-import DailyCheckIn from '../components/CheckIn/DailyCheckIn'
-import { FEELING_CONFIG, SYMPTOM_CATEGORIES } from '../data/mockData'
+import BodyScene from '../components/Body3D/BodyScene'
+import SymptomForm from '../components/Symptoms/SymptomForm'
+import { FEELING_CONFIG, SYMPTOM_CATEGORIES, CHRONIC_CONDITION_PRESETS } from '../data/mockData'
+import ConditionCard from '../components/Conditions/ConditionCard'
+import AddMedicationModal from '../components/Medications/AddMedicationModal'
 import { format, isToday } from 'date-fns'
 import { useHealthData } from '../hooks/useHealthData'
 
-// ── Daily check-in modal ─────────────────────────────────────────────────────
-// targetDate – Date object (for past days) or undefined (today)
-function CheckInModal({ onClose, targetDate }) {
-  const isPast   = targetDate && !isToday(targetDate)
-  const title    = isPast ? `Check-in · ${format(targetDate, 'EEE, d MMM')}` : 'Daily Check-in'
+// ── Per-day symptom helpers ───────────────────────────────────────────────────
+function getSymptomsForDay(day, allSymptoms, memberId) {
+  const dayStart = new Date(day); dayStart.setHours(0, 0, 0, 0)
+  const dayEnd   = new Date(day); dayEnd.setHours(23, 59, 59, 999)
+  return allSymptoms.filter(s => {
+    if (s.memberId !== memberId) return false
+    const start = new Date(s.timestamp)
+    if (start > dayEnd) return false
+    if (s.resolved) {
+      if (!s.resolvedAt) return start >= dayStart && start <= dayEnd
+      return new Date(s.resolvedAt) >= dayStart
+    }
+    return true
+  })
+}
+
+function getMoodForDay(day, allSymptoms, memberId) {
+  return calculateMoodFromSymptoms(getSymptomsForDay(day, allSymptoms, memberId))
+}
+
+// ── Day detail modal ──────────────────────────────────────────────────────────
+function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain }) {
+  const daySymptoms = getSymptomsForDay(day, symptoms, memberId)
+  const mood = calculateMoodFromSymptoms(daySymptoms)
+  const cfg  = FEELING_CONFIG[mood]
+  const isPast = !isToday(day)
+  const title = isToday(day) ? 'Today' : format(day, 'EEEE, d MMM')
+
+  // Score breakdown
+  const severe   = daySymptoms.filter(s => s.severity >= 7)
+  const moderate = daySymptoms.filter(s => s.severity >= 5 && s.severity < 7)
+  const minor    = daySymptoms.filter(s => s.severity < 5)
+  const score    = severe.length * 4 + moderate.length * 2 + minor.length
 
   return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center px-5"
+      className="fixed inset-0 z-[70] flex items-end justify-center px-3 pb-4"
+      style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <motion.div
-        initial={{ scale: 0.94, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.94, opacity: 0 }}
-        transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-        className="relative glass-elevated rounded-3xl w-full max-w-sm p-6"
+        initial={{ y: 40, opacity: 0 }}
+        animate={{ y: 0,  opacity: 1 }}
+        exit={{   y: 40, opacity: 0 }}
+        transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+        className="relative w-full max-w-lg rounded-3xl overflow-hidden"
+        style={{ background: 'white', boxShadow: '0 -4px 40px rgba(0,0,0,0.18)' }}
+        onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base font-bold text-gray-800">{title}</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-            <X size={16} />
+        {/* Header */}
+        <div className="px-5 pt-5 pb-4 flex items-center justify-between"
+          style={{ background: cfg.bg }}>
+          <div className="flex items-center gap-3">
+            <span className="text-4xl">{cfg.emoji}</span>
+            <div>
+              <p className="text-xs font-semibold" style={{ color: cfg.color }}>{title}</p>
+              <p className="text-lg font-extrabold text-gray-800">{cfg.label}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/60 flex items-center justify-center">
+            <X size={15} className="text-gray-600" />
           </button>
         </div>
-        <DailyCheckIn onClose={onClose} targetDate={targetDate} />
+
+        <div className="px-5 py-4 space-y-4">
+          {/* Score pill */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-gray-500">Pain score:</span>
+            <span className="text-xs font-bold px-2.5 py-1 rounded-full"
+              style={{ background: cfg.color + '18', color: cfg.color }}>
+              {score} pt{score !== 1 ? 's' : ''} → {cfg.label}
+            </span>
+            {score > 0 && (
+              <span className="text-[10px] text-gray-400">
+                {severe.length > 0 && `${severe.length} severe (×4)`}
+                {moderate.length > 0 && `${severe.length > 0 ? ' · ' : ''}${moderate.length} moderate (×2)`}
+                {minor.length > 0 && `${(severe.length + moderate.length) > 0 ? ' · ' : ''}${minor.length} minor (×1)`}
+              </span>
+            )}
+          </div>
+
+          {/* Symptom list */}
+          {daySymptoms.length > 0 ? (
+            <div>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+                Active symptoms this day
+              </p>
+              <div className="space-y-2 max-h-52 overflow-y-auto">
+                {daySymptoms.map(s => {
+                  const cat = SYMPTOM_CATEGORIES.find(c => c.id === s.category)
+                  const sev = s.severity
+                  const stillActive = !s.resolved
+                  return (
+                    <div key={s.id} className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
+                        style={{ background: (cat?.color || '#6366f1') + '22' }}>{cat?.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-gray-800 truncate">{s.bodyLabel}</p>
+                        <p className="text-[10px] text-gray-400">{s.type} · sev {sev}/10</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                          sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+                        }`}>{sev >= 7 ? 'Severe' : sev >= 5 ? 'Mod' : 'Minor'}</span>
+                        {stillActive && (
+                          <button
+                            onClick={() => onResolve(s.id)}
+                            className="flex items-center gap-1 text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg hover:bg-emerald-100 transition-colors"
+                          >
+                            <CheckCircle size={11} /> Resolve
+                          </button>
+                        )}
+                        {!stillActive && (
+                          <span className="text-[10px] text-gray-300 font-medium">Resolved</span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 p-4 rounded-2xl bg-emerald-50">
+              <span className="text-2xl">✨</span>
+              <div>
+                <p className="text-sm font-bold text-emerald-700">No symptoms this day</p>
+                <p className="text-xs text-emerald-500">That's why the mood was Great!</p>
+              </div>
+            </div>
+          )}
+
+          {/* Actions */}
+          {!isPast && (
+            <button
+              onClick={() => { onClose(); onLogPain() }}
+              className="w-full py-3 rounded-2xl text-sm font-bold text-white transition-colors"
+              style={{ background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)' }}
+            >
+              + Log Pain on Body Map
+            </button>
+          )}
+        </div>
       </motion.div>
     </motion.div>,
     document.body
   )
 }
 
+// ── Mood streak bar (symptom-derived, tappable) ───────────────────────────────
+const MOOD_BAR_H = { great: 'h-14', good: 'h-10', okay: 'h-7', bad: 'h-4', terrible: 'h-2' }
+
+function MoodBar({ symptoms, memberId, onDayPress }) {
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(today.getDate() - (6 - i))
+    return d
+  })
+
+  return (
+    <div className="flex items-end gap-1.5">
+      {days.map((day) => {
+        const dayStr = day.toDateString()
+        const lbl    = isToday(day) ? 'Today' : format(day, 'EEE')
+        const mood   = getMoodForDay(day, symptoms, memberId)
+        const cfg    = FEELING_CONFIG[mood]
+        return (
+          <button
+            key={dayStr}
+            onClick={() => onDayPress(day)}
+            className="flex-1 flex flex-col items-center gap-1 active:scale-95 transition-transform"
+          >
+            <span className="text-base leading-none">{cfg.emoji}</span>
+            <div
+              className={`w-full rounded-lg transition-all ${MOOD_BAR_H[mood]}`}
+              style={{ background: cfg.color + '55', border: `2px solid ${cfg.color}` }}
+            />
+            <span className="text-[9px] text-gray-400 font-medium">{lbl}</span>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Connect Health modal ──────────────────────────────────────────────────────
 function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, isNative, unavailable, notInstalled }) {
-  return createPortal(
+  return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -70,7 +227,6 @@ function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, 
           </button>
         </div>
         <p className="text-xs text-gray-400 mb-4">Sync vitals automatically from your phone.</p>
-
         <div className="space-y-3">
           {/* Apple Health */}
           <button
@@ -86,18 +242,14 @@ function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, 
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900">Apple Health</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {isIOS ? 'Heart rate, steps, SpO₂ & calories' : 'iOS only'}
-              </p>
+              <p className="text-xs text-gray-400 mt-0.5">{isIOS ? 'Heart rate, steps, SpO₂ & calories' : 'iOS only'}</p>
             </div>
             {(connecting && isIOS)
               ? <Loader size={16} className="text-primary-400 animate-spin flex-shrink-0" />
               : isIOS
-                ? <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
-                : <span className="text-[10px] text-gray-300 flex-shrink-0">iOS only</span>
-            }
+                ? <span className="text-gray-300 flex-shrink-0">›</span>
+                : <span className="text-[10px] text-gray-300 flex-shrink-0">iOS only</span>}
           </button>
-
           {/* Google Health Connect */}
           <button
             onClick={isAndroid ? onConnect : undefined}
@@ -114,22 +266,17 @@ function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, 
             </div>
             <div className="flex-1">
               <p className="text-sm font-bold text-gray-900">Google Health Connect</p>
-              <p className="text-xs text-gray-400 mt-0.5">
-                {isAndroid ? 'Steps, heart rate, SpO₂ & calories' : 'Android only'}
-              </p>
+              <p className="text-xs text-gray-400 mt-0.5">{isAndroid ? 'Steps, heart rate, SpO₂ & calories' : 'Android only'}</p>
             </div>
             {(connecting && isAndroid)
               ? <Loader size={16} className="text-primary-400 animate-spin flex-shrink-0" />
               : isAndroid
-                ? <ChevronRight size={16} className="text-gray-300 flex-shrink-0" />
-                : <span className="text-[10px] text-gray-300 flex-shrink-0">Android only</span>
-            }
+                ? <span className="text-gray-300 flex-shrink-0">›</span>
+                : <span className="text-[10px] text-gray-300 flex-shrink-0">Android only</span>}
           </button>
-
-          {/* Status messages */}
           {unavailable && (
             <p className="text-[11px] text-amber-600 bg-amber-50 rounded-xl px-3 py-2 text-center">
-              {isIOS ? 'HealthKit isn\'t available on the simulator — test on a real iPhone.' : 'Health data not available on this device.'}
+              {isIOS ? "HealthKit isn't available on the simulator — test on a real iPhone." : 'Health data not available on this device.'}
             </p>
           )}
           {notInstalled && (
@@ -139,15 +286,18 @@ function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, 
           )}
         </div>
       </motion.div>
-    </motion.div>,
-    document.body
+    </motion.div>
   )
 }
 
 // ── Web health prompt ─────────────────────────────────────────────────────────
 function WebHealthPrompt() {
   return (
-    <div className="glass-card rounded-2xl p-5 flex flex-col items-center text-center gap-3">
+    <div className="glass-card rounded-2xl p-5 flex flex-col items-center text-center gap-3 relative overflow-hidden">
+      {/* Coming soon overlay */}
+      <div className="absolute inset-0 rounded-2xl bg-white/85 backdrop-blur-md z-10 flex flex-col items-center justify-center gap-1.5">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">Coming Soon</span>
+      </div>
       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
         <Smartphone size={22} className="text-primary-400" />
       </div>
@@ -179,101 +329,27 @@ function WebHealthPrompt() {
   )
 }
 
-// ── Vitals card — shows real value when connected, connect prompt otherwise ───
+// ── Vitals card ───────────────────────────────────────────────────────────────
 function VitalCard({ icon, label, value, unit, onConnect, connected }) {
   return (
     <div className="glass-card rounded-2xl p-3.5 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-xl">{icon}</span>
-        {connected
-          ? <CheckCircle size={12} className="text-emerald-400" />
-          : <Smartphone size={12} className="text-gray-300" />
-        }
+        {connected ? <CheckCircle size={12} className="text-emerald-400" /> : <Smartphone size={12} className="text-gray-300" />}
       </div>
       {connected ? (
-        value != null ? (
-          <p className="text-base font-extrabold text-gray-800 leading-none">
-            {value.toLocaleString()}
-            <span className="text-[10px] font-medium text-gray-400 ml-0.5">{unit}</span>
-          </p>
-        ) : (
-          <p className="text-sm font-bold text-gray-300 leading-none">N/A</p>
-        )
+        value != null
+          ? <p className="text-base font-extrabold text-gray-800 leading-none">{value.toLocaleString()}<span className="text-[10px] font-medium text-gray-400 ml-0.5">{unit}</span></p>
+          : <p className="text-sm font-bold text-gray-300 leading-none">N/A</p>
       ) : (
         <p className="text-[10px] text-gray-300 font-medium leading-none">—</p>
       )}
       <p className="text-[10px] text-gray-400 font-medium leading-none">{label}</p>
       {!connected && (
-        <button
-          onClick={onConnect}
-          className="w-6 h-6 rounded-lg bg-primary-50 flex items-center justify-center hover:bg-primary-100 transition-colors"
-        >
+        <button onClick={onConnect} className="w-6 h-6 rounded-lg bg-primary-50 flex items-center justify-center hover:bg-primary-100 transition-colors">
           <Plus size={13} className="text-primary-500" />
         </button>
       )}
-    </div>
-  )
-}
-
-// ── Mood streak mini-bar ──────────────────────────────────────────────────────
-const MOOD_BAR_H = { great: 'h-14', good: 'h-10', okay: 'h-7', bad: 'h-4', terrible: 'h-2' }
-
-// Always shows 7 consecutive calendar days (today + 6 prior).
-// Days with a check-in show the bar; empty days show a tappable placeholder.
-function MoodBar({ checkIns, onAddForDay }) {
-  // Build today's date at midnight local time, then go back 6 days
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today)
-    d.setDate(today.getDate() - (6 - i)) // [today-6 … today]
-    return d
-  })
-
-  return (
-    <div className="flex items-end gap-1.5">
-      {days.map((day) => {
-        const dayStr = day.toDateString()
-        const lbl    = isToday(day) ? 'Today' : format(day, 'EEE')
-        // Latest check-in for this calendar day
-        const ci = checkIns
-          .filter(c => new Date(c.date).toDateString() === dayStr)
-          .sort((a, b) => new Date(b.date) - new Date(a.date))[0] || null
-
-        if (ci) {
-          const cfg = FEELING_CONFIG[ci.feeling]
-          return (
-            <button
-              key={dayStr}
-              onClick={() => onAddForDay(day)}
-              className="flex-1 flex flex-col items-center gap-1 group"
-              aria-label={`Edit check-in for ${lbl}`}
-            >
-              <span className="text-base leading-none group-active:scale-110 transition-transform">{cfg.emoji}</span>
-              <div
-                className={`w-full rounded-lg transition-all group-hover:opacity-75 ${MOOD_BAR_H[ci.feeling]}`}
-                style={{ background: cfg.color + '55', border: `2px solid ${cfg.color}` }}
-              />
-              <span className="text-[9px] text-gray-400 font-medium">{lbl}</span>
-            </button>
-          )
-        }
-
-        // Empty slot — tappable
-        return (
-          <button
-            key={dayStr}
-            onClick={() => onAddForDay(day)}
-            className="flex-1 flex flex-col items-center gap-1 group"
-            aria-label={`Add check-in for ${lbl}`}
-          >
-            <span className="text-base leading-none text-transparent group-hover:text-primary-300 transition-colors select-none">+</span>
-            <div className="w-full h-4 rounded-lg bg-gray-100 border-2 border-dashed border-gray-200 group-hover:border-primary-300 group-hover:bg-primary-50 transition-all flex items-center justify-center">
-              <Plus size={8} className="text-gray-300 group-hover:text-primary-400 transition-colors" />
-            </div>
-            <span className="text-[9px] text-gray-300 font-medium group-hover:text-gray-400 transition-colors">{lbl}</span>
-          </button>
-        )
-      })}
     </div>
   )
 }
@@ -302,89 +378,410 @@ function SymptomPill({ symptom, onResolve }) {
   )
 }
 
+// ── Body map modal ────────────────────────────────────────────────────────────
+function BodyMapModal({ onClose, onSymptomAdded, skinColor }) {
+  const [selectedRegion, setSelectedRegion] = useState(null)
+  const [showForm,       setShowForm]       = useState(false)
+  const [hoverLabel,     setHoverLabel]     = useState(null)
+  const { currentSymptoms, resolveSymptom } = useApp()
+
+  const activeSymptoms = currentSymptoms.filter(s => !s.resolved)
+  const pins = useMemo(() =>
+    activeSymptoms
+      .filter(s => s.pinPosition)
+      .map(s => ({ id: s.id, label: s.bodyLabel, position: s.pinPosition, severity: s.severity })),
+    [activeSymptoms]
+  )
+
+  function handleRegionClick({ id, label, position }) {
+    setSelectedRegion({ id, label, position })
+    setShowForm(true)
+  }
+
+  function handleFormSubmit(data) {
+    onSymptomAdded({ ...data, pinPosition: selectedRegion?.position })
+    setShowForm(false)
+    setSelectedRegion(null)
+  }
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[60] flex items-end justify-center px-3 pb-4"
+      style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal card — bottom sheet style */}
+      <motion.div
+        initial={{ y: 60, opacity: 0 }}
+        animate={{ y: 0,  opacity: 1 }}
+        exit={{   y: 60, opacity: 0 }}
+        transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+        className="relative w-full max-w-lg flex flex-col rounded-3xl overflow-hidden"
+        style={{
+          background: 'white',
+          height: '82vh',
+          boxShadow: '0 -4px 40px rgba(0,0,0,0.18)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="px-5 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-gray-100">
+          <div>
+            <h2 className="text-base font-bold text-gray-800">Body Map</h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {activeSymptoms.length > 0
+                ? `${activeSymptoms.length} active symptom${activeSymptoms.length !== 1 ? 's' : ''} · tap to log more`
+                : 'Tap the body to log a symptom'}
+            </p>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* 3D canvas */}
+        <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-slate-50 to-indigo-50">
+          <BodyScene
+            pins={pins}
+            onRegionClick={handleRegionClick}
+            onHover={setHoverLabel}
+            skinColor={skinColor}
+          />
+          <AnimatePresence>
+            {hoverLabel && !showForm && (
+              <motion.div
+                key={hoverLabel}
+                initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                className="absolute top-3 left-1/2 -translate-x-1/2 bg-gray-900/80 text-white text-[11px] font-semibold px-3 py-1.5 rounded-full pointer-events-none backdrop-blur-sm"
+              >
+                {hoverLabel}
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {selectedRegion && !showForm && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}
+                className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-primary-600 text-white text-xs font-semibold px-4 py-2 rounded-full shadow-lg"
+              >
+                {selectedRegion.label} selected
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[10px] text-gray-400 font-medium">
+            <RotateCcw size={10} /> Rotate · Pan · Zoom
+          </div>
+        </div>
+
+        {/* Active symptoms list */}
+        {activeSymptoms.length > 0 && (
+          <div className="flex-shrink-0 px-4 pt-3 pb-4 border-t border-gray-100 max-h-44 overflow-y-auto">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Active Symptoms</p>
+            <div className="space-y-2">
+              {activeSymptoms.map(s => (
+                <SymptomPill key={s.id} symptom={s} onResolve={resolveSymptom} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Symptom form */}
+        <AnimatePresence>
+          {showForm && selectedRegion && (
+            <SymptomForm
+              region={{ id: selectedRegion.id, label: selectedRegion.label }}
+              onSubmit={handleFormSubmit}
+              onClose={() => { setShowForm(false); setSelectedRegion(null) }}
+            />
+          )}
+        </AnimatePresence>
+      </motion.div>
+    </motion.div>,
+    document.body
+  )
+}
+
+// ── Add Condition modal ───────────────────────────────────────────────────────
+function AddConditionModal({ onClose }) {
+  const { addCondition } = useApp()
+  const [query,      setQuery]      = useState('')
+  const [selected,   setSelected]   = useState(null)
+  const [severity,   setSeverity]   = useState('mild')
+  const [diagDate,   setDiagDate]   = useState('')
+  const [notes,      setNotes]      = useState('')
+  const [linkedCats, setLinkedCats] = useState([])
+  const [step,       setStep]       = useState('pick')
+
+  const filtered = CHRONIC_CONDITION_PRESETS.filter(p =>
+    p.name.toLowerCase().includes(query.toLowerCase())
+  )
+
+  function selectPreset(p) {
+    setSelected(p)
+    const cat = SYMPTOM_CATEGORIES.find(c => c.id === p.category)
+    if (cat) setLinkedCats([cat.id])
+    setStep('details')
+  }
+
+  function handleSave() {
+    if (!selected) return
+    addCondition({ name: selected.name, icon: selected.icon, icd: selected.icd, severity, diagnosedDate: diagDate || null, notes, linkedCategories: linkedCats })
+    onClose()
+  }
+
+  function toggleCat(catId) {
+    setLinkedCats(prev => prev.includes(catId) ? prev.filter(c => c !== catId) : [...prev, catId])
+  }
+
+  return createPortal(
+    <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+      className="fixed inset-0 z-[80] flex items-center justify-center px-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ scale:0.93, opacity:0 }} animate={{ scale:1, opacity:1 }} exit={{ scale:0.93, opacity:0 }}
+        transition={{ type:'spring', damping:28, stiffness:320 }}
+        className="relative w-full max-w-md flex flex-col rounded-3xl overflow-hidden"
+        style={{ background:'white', maxHeight:'88vh', boxShadow:'0 -4px 40px rgba(0,0,0,0.18)' }}>
+        <div className="flex justify-between items-center px-5 pt-5 pb-3 flex-shrink-0 border-b border-gray-100">
+          <div>
+            <h2 className="text-sm font-extrabold text-gray-800">{step === 'pick' ? 'Add Condition' : selected?.name}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{step === 'pick' ? 'Select from common conditions' : 'Fill in details'}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {step === 'details' && <button onClick={() => setStep('pick')} className="text-xs text-primary-500 font-semibold">← Back</button>}
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X size={14} /></button>
+          </div>
+        </div>
+
+        {step === 'pick' && (
+          <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6">
+            <div className="relative mb-3">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              <input type="text" placeholder="Search conditions…" value={query} onChange={e => setQuery(e.target.value)}
+                className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" />
+            </div>
+            <div className="space-y-2">
+              {filtered.map(p => (
+                <button key={p.name} onClick={() => selectPreset(p)}
+                  className="w-full flex items-center gap-3 p-3 rounded-2xl border border-gray-100 hover:bg-gray-50 transition-all text-left">
+                  <span className="text-2xl">{p.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-gray-800">{p.name}</p>
+                    <p className="text-[11px] text-gray-400">ICD: {p.icd} · {p.category}</p>
+                  </div>
+                  <span className="text-primary-400 text-lg">›</span>
+                </button>
+              ))}
+              {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-6">No matches found</p>}
+            </div>
+          </div>
+        )}
+
+        {step === 'details' && selected && (
+          <div className="flex-1 overflow-y-auto px-5 pt-4 space-y-4 pb-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 block mb-2">Severity</label>
+              <div className="grid grid-cols-3 gap-2">
+                {['mild','moderate','severe'].map(s => (
+                  <button key={s} type="button" onClick={() => setSeverity(s)}
+                    className={`py-2.5 rounded-xl text-xs font-bold border-2 transition-all capitalize ${
+                      severity === s
+                        ? s === 'mild' ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
+                          : s === 'moderate' ? 'border-amber-400 bg-amber-50 text-amber-700'
+                          : 'border-rose-400 bg-rose-50 text-rose-700'
+                        : 'border-gray-100 text-gray-400'
+                    }`}>{s}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Diagnosis Date (optional)</label>
+              <input type="date" value={diagDate} onChange={e => setDiagDate(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400" />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 block mb-2">Monitor Symptom Categories</label>
+              <div className="flex flex-wrap gap-2">
+                {SYMPTOM_CATEGORIES.filter(c => c.id !== 'other').map(cat => (
+                  <button key={cat.id} type="button" onClick={() => toggleCat(cat.id)}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-xl border-2 transition-all"
+                    style={linkedCats.includes(cat.id) ? { background: cat.color+'18', borderColor: cat.color, color: cat.color } : { borderColor:'#e5e7eb', color:'#9ca3af' }}>
+                    {cat.icon} {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Clinical Notes (optional)</label>
+              <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Triggers, management strategy, doctor notes…" rows={3}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:border-primary-400" />
+            </div>
+          </div>
+        )}
+
+        {step === 'details' && (
+          <div className="flex-shrink-0 px-5 py-4 border-t border-gray-100">
+            <button onClick={handleSave} className="w-full py-3 rounded-2xl bg-primary-600 text-white font-extrabold text-sm hover:bg-primary-700 transition-colors">
+              Add {selected?.name}
+            </button>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>,
+    document.body
+  )
+}
+
+// ── Condition detail modal ────────────────────────────────────────────────────
+function ConditionDetailModal({ condition, onClose, onAddMed }) {
+  const { currentMedications, currentSymptoms } = useApp()
+  return createPortal(
+    <motion.div
+      initial={{ opacity:0 }}
+      animate={{ opacity:1 }}
+      exit={{ opacity:0 }}
+      className="fixed inset-0 z-[80] flex items-end justify-center px-3 pb-4"
+      style={{ paddingBottom:'max(1rem, env(safe-area-inset-bottom))' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
+    >
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <motion.div
+        initial={{ y:40, opacity:0 }} animate={{ y:0, opacity:1 }} exit={{ y:40, opacity:0 }}
+        transition={{ type:'spring', damping:30, stiffness:320 }}
+        className="relative w-full max-w-lg rounded-3xl overflow-hidden"
+        style={{ background:'white', maxHeight:'80vh', boxShadow:'0 -4px 40px rgba(0,0,0,0.18)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-gray-100 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">{condition.icon}</span>
+            <div>
+              <p className="text-sm font-extrabold text-gray-800">{condition.name}</p>
+              <p className="text-[11px] text-gray-400 capitalize">{condition.severity} · ICD {condition.icd}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+            <X size={15} className="text-gray-500" />
+          </button>
+        </div>
+        <div className="overflow-y-auto" style={{ maxHeight:'65vh' }}>
+          <div className="p-4">
+            <ConditionCard condition={condition} medications={currentMedications} symptoms={currentSymptoms} />
+          </div>
+          <div className="px-4 pb-5">
+            <button
+              onClick={() => { onClose(); onAddMed() }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold border-2 border-dashed border-primary-200 text-primary-500 hover:bg-primary-50 transition-colors"
+            >
+              <Pill size={14} /> Add Medication to this Condition
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body
+  )
+}
+
+// ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const navigate  = useNavigate()
-  const { currentMember, currentSymptoms, currentCheckIns, resolveSymptom } = useApp()
+  const {
+    currentMember, currentSymptoms, addSymptom, resolveSymptom, skinColor,
+    currentConditions, removeCondition, currentMedications, addCondition, addMedication,
+  } = useApp()
   const { connected, vitals, loading: healthLoading, connect, isIOS, isAndroid, isNative } = useHealthData()
 
-  // checkInDate: null = closed, Date = which calendar day to log for
-  const [checkInDate,    setCheckInDate]    = useState(null)
+  const [showBodyMap,    setShowBodyMap]    = useState(false)
+  const [selectedDay,    setSelectedDay]    = useState(null)   // Date | null — for day detail
   const [showConnect,    setShowConnect]    = useState(false)
   const [connecting,     setConnecting]     = useState(false)
   const [healthUnavail,  setHealthUnavail]  = useState(false)
   const [notInstalled,   setNotInstalled]   = useState(false)
+  const [showAddCond,    setShowAddCond]    = useState(false)
+  const [showAddMed,     setShowAddMed]     = useState(false)
+  const [selectedCond,   setSelectedCond]   = useState(null)  // condition object | null
 
   const activeSymptoms = currentSymptoms.filter(s => !s.resolved)
-  const todayCheckIn   = currentCheckIns.find(c => isToday(new Date(c.date)))
-  const todayCfg       = todayCheckIn ? FEELING_CONFIG[todayCheckIn.feeling] : null
+  const todayMood      = calculateMoodFromSymptoms(activeSymptoms)
+  const todayCfg       = FEELING_CONFIG[todayMood]
 
   async function handleConnect() {
-    setConnecting(true)
-    setHealthUnavail(false)
-    setNotInstalled(false)
+    setConnecting(true); setHealthUnavail(false); setNotInstalled(false)
     const result = await connect()
     setConnecting(false)
-    if (result.success) {
-      setShowConnect(false)
-    } else if (result.reason === 'not-available') {
-      setHealthUnavail(true)
-    } else if (result.reason === 'not-installed') {
-      setNotInstalled(true)
-    }
+    if (result.success)                       setShowConnect(false)
+    else if (result.reason === 'not-available') setHealthUnavail(true)
+    else if (result.reason === 'not-installed') setNotInstalled(true)
   }
 
-  function openCheckIn(date) {
-    setCheckInDate(date instanceof Date ? date : new Date())
+  function handleSymptomAdded(data) {
+    addSymptom(data)
+    // Keep body map open so user can log multiple points
   }
 
   return (
     <div className="px-4 pt-4 pb-6 space-y-4 max-w-lg mx-auto">
 
-      {/* ── Today's mood / check-in hero ──────────────────────────────────── */}
-      <motion.div initial={{ opacity:0, y:14 }} animate={{ opacity:1, y:0 }}
+      {/* ── How are you feeling — auto-derived from body map ──────────────── */}
+      <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
         data-tour="checkin"
         className="glass-card rounded-3xl p-5 overflow-hidden">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-gray-400 font-medium">How are you feeling?</p>
-            {todayCfg ? (
-              <div className="flex items-center gap-2 mt-1">
-                <span className="text-3xl">{todayCfg.emoji}</span>
-                <div>
-                  <p className="text-base font-extrabold text-gray-800">{todayCfg.label}</p>
-                  {todayCheckIn?.notes && <p className="text-xs text-gray-400 mt-0.5 max-w-[180px] truncate">{todayCheckIn.notes}</p>}
-                </div>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-3xl">{todayCfg.emoji}</span>
+              <div>
+                <p className="text-base font-extrabold text-gray-800">{todayCfg.label}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">
+                  {activeSymptoms.length === 0
+                    ? 'No active symptoms — great work!'
+                    : `${activeSymptoms.length} active symptom${activeSymptoms.length !== 1 ? 's' : ''}`}
+                </p>
               </div>
-            ) : (
-              <p className="text-base font-bold text-gray-400 mt-1">No check-in yet</p>
-            )}
+            </div>
           </div>
-          <button onClick={() => openCheckIn(new Date())}
-            className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors whitespace-nowrap">
-            <Plus size={13} /> Check in
+          <button
+            onClick={() => setShowBodyMap(true)}
+            className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors whitespace-nowrap"
+          >
+            <Plus size={13} /> Log Pain
           </button>
         </div>
 
-        {/* 7-day mood bar — always shown, empty slots are tappable */}
+        {/* 7-day mood bar — symptom-derived, always shown */}
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">7-day mood</p>
-          <MoodBar checkIns={currentCheckIns} onAddForDay={openCheckIn} />
+          <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">7-Day History</p>
+          <MoodBar symptoms={currentSymptoms} memberId={currentMember?.id} onDayPress={setSelectedDay} />
         </div>
       </motion.div>
 
-      {/* ── Pain / symptom section ────────────────────────────────────────── */}
+      {/* ── Pain & Symptoms ───────────────────────────────────────────────── */}
       <div className="glass-card rounded-2xl p-4">
         <div className="flex justify-between items-center mb-3">
           <div>
-            <h3 className="text-sm font-bold text-gray-800">Pain & Symptoms</h3>
+            <h3 className="text-sm font-bold text-gray-800">Health Mapping</h3>
             <p className="text-xs text-gray-400">
               {activeSymptoms.length > 0 ? `${activeSymptoms.length} active` : 'Nothing logged yet'}
             </p>
           </div>
-          <button onClick={() => navigate('/body-map')}
-            className="flex items-center gap-1 text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-xl hover:bg-primary-100 transition-colors">
-            <Plus size={13} /> Log
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button onClick={() => setShowAddMed(true)}
+              className="flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors">
+              <Pill size={12} /> Med
+            </button>
+            <button onClick={() => setShowAddCond(true)}
+              className="flex items-center gap-1 text-xs font-semibold text-primary-600 bg-primary-50 px-2.5 py-1.5 rounded-xl hover:bg-primary-100 transition-colors">
+              <Plus size={12} /> Condition
+            </button>
+          </div>
         </div>
 
         {activeSymptoms.length > 0 ? (
@@ -393,10 +790,9 @@ export default function Dashboard() {
               <SymptomPill key={s.id} symptom={s} onResolve={resolveSymptom} />
             ))}
             {activeSymptoms.length > 3 && (
-              <button onClick={() => navigate('/history')}
-                className="w-full text-center text-xs text-primary-600 font-semibold py-1.5">
-                +{activeSymptoms.length - 3} more — view all →
-              </button>
+              <p className="text-center text-xs text-primary-600 font-semibold py-1.5">
+                +{activeSymptoms.length - 3} more — open body map to see all
+              </p>
             )}
           </div>
         ) : (
@@ -413,9 +809,39 @@ export default function Dashboard() {
             </div>
           </div>
         )}
+
+        {/* ── Conditions — always visible ── */}
+        {currentConditions.length > 0 && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Conditions</p>
+            <div className="space-y-1.5">
+              {currentConditions.map(c => {
+                const sevColor =
+                  c.severity === 'severe'   ? { bg: '#fee2e2', text: '#dc2626', dot: '#ef4444' } :
+                  c.severity === 'moderate' ? { bg: '#fef3c7', text: '#b45309', dot: '#f59e0b' } :
+                                              { bg: '#dcfce7', text: '#15803d', dot: '#22c55e' }
+                return (
+                  <button key={c.id}
+                    onClick={() => setSelectedCond(c)}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left active:scale-[0.98] transition-transform"
+                    style={{ background: sevColor.bg }}>
+                    <span className="text-base flex-shrink-0">{c.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold truncate" style={{ color: sevColor.text }}>{c.name}</p>
+                      {c.severity && (
+                        <p className="text-[10px] capitalize" style={{ color: sevColor.dot }}>{c.severity}</p>
+                      )}
+                    </div>
+                    <span className="text-[10px] font-semibold flex-shrink-0" style={{ color: sevColor.dot }}>›</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ── Steps ────────────────────────────────────────────────────────── */}
+      {/* ── Steps ─────────────────────────────────────────────────────────── */}
       {isNative ? (
         <div className="glass-card rounded-2xl p-4">
           <div className="flex items-center gap-3">
@@ -426,8 +852,7 @@ export default function Dashboard() {
               <p className="text-xs font-semibold text-gray-500">Steps today</p>
               {connected && vitals?.steps != null
                 ? <p className="text-base font-extrabold text-gray-800 mt-0.5">{vitals.steps.toLocaleString()}</p>
-                : <p className="text-sm text-gray-300 font-medium mt-0.5">No data yet</p>
-              }
+                : <p className="text-sm text-gray-300 font-medium mt-0.5">No data yet</p>}
             </div>
             {connected
               ? <CheckCircle size={16} className="text-emerald-400 flex-shrink-0" />
@@ -437,8 +862,7 @@ export default function Dashboard() {
                   style={{ background: 'rgba(99,102,241,0.08)', border: '0.75px solid rgba(99,102,241,0.2)', color: '#6366f1' }}>
                   <Plus size={12} /> Connect
                 </button>
-              )
-            }
+              )}
           </div>
           {!connected && (
             <p className="text-[10px] text-gray-300 mt-2.5 pl-[52px]">
@@ -465,13 +889,28 @@ export default function Dashboard() {
       {/* ── Activity chart ────────────────────────────────────────────────── */}
       <ActivityChart onConnect={() => setShowConnect(true)} />
 
-      {/* ── Check-in modal ────────────────────────────────────────────────── */}
+      {/* ── Day detail modal ──────────────────────────────────────────────── */}
       <AnimatePresence>
-        {checkInDate && (
-          <CheckInModal
-            key={checkInDate.toDateString()}
-            targetDate={checkInDate}
-            onClose={() => setCheckInDate(null)}
+        {selectedDay && (
+          <DayDetailModal
+            key={selectedDay.toDateString()}
+            day={selectedDay}
+            symptoms={currentSymptoms}
+            memberId={currentMember?.id}
+            onClose={() => setSelectedDay(null)}
+            onResolve={(id) => { resolveSymptom(id) }}
+            onLogPain={() => setShowBodyMap(true)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Body Map Sheet ────────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showBodyMap && (
+          <BodyMapModal
+            onClose={() => setShowBodyMap(false)}
+            onSymptomAdded={handleSymptomAdded}
+            skinColor={skinColor}
           />
         )}
       </AnimatePresence>
@@ -488,6 +927,33 @@ export default function Dashboard() {
             isNative={isNative}
             unavailable={healthUnavail}
             notInstalled={notInstalled}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Add Condition modal ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showAddCond && <AddConditionModal onClose={() => setShowAddCond(false)} />}
+      </AnimatePresence>
+
+      {/* ── Add Medication modal ───────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showAddMed && (
+          <AddMedicationModal
+            onClose={() => setShowAddMed(false)}
+            conditions={currentConditions}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Condition detail modal ─────────────────────────────────────────── */}
+      <AnimatePresence>
+        {selectedCond && (
+          <ConditionDetailModal
+            key={selectedCond.id}
+            condition={selectedCond}
+            onClose={() => setSelectedCond(null)}
+            onAddMed={() => setShowAddMed(true)}
           />
         )}
       </AnimatePresence>

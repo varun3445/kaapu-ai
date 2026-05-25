@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings2, X, Check, Clock, UserCheck, UserX } from 'lucide-react'
+import { Settings2, X, Check, Clock, UserCheck, UserX, Ruler, Weight, MapPin, User } from 'lucide-react'
 import { format, isToday } from 'date-fns'
 import { useApp } from '../context/AppContext'
 import { SYMPTOM_CATEGORIES, FEELING_CONFIG } from '../data/mockData'
@@ -342,7 +342,9 @@ function SymptomRow({ symptom }) {
             <span className="text-[9px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">Resolved</span>
           )}
         </div>
-        <p className="text-[10px] text-gray-400">{symptom.type} · {symptomDurationLabel(symptom)}</p>
+        <p className="text-[10px] text-gray-400">
+          {symptom.type} · {symptomDurationLabel(symptom)} · {isToday(new Date(symptom.timestamp)) ? 'Today' : format(new Date(symptom.timestamp), 'MMM d')}
+        </p>
       </div>
       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
         sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
@@ -366,6 +368,9 @@ function MoodRow({ checkIn }) {
 }
 
 function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIns }) {
+  const { conditions: allConditions, medications: allMedications, currentUser } = useApp()
+  // Show height/weight only if viewing the current user's own member record
+  const isSelf = member.userId === currentUser?.id
   const [tab,            setTab]            = useState('overview')
   const [remoteSymptoms, setRemoteSymptoms] = useState(null) // null = not yet fetched
   const [remoteCheckIns, setRemoteCheckIns] = useState(null)
@@ -433,19 +438,48 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
 
   const active   = symptoms.filter(s => !s.resolved)
   const resolved = symptoms.filter(s => s.resolved)
-  const recentCI = checkIns.slice(0, 5)
   const highSev  = active.filter(s => s.severity >= 7)
+
+  // Conditions & medications for this member (local family only; connected members don't share this data)
+  const memberConditions  = allConditions.filter(c => c.memberId === member.id)
+  const memberMedications = allMedications.filter(m => m.memberId === member.id)
+    .filter((m, i, arr) =>
+      arr.findIndex(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '') === m.name.toLowerCase().replace(/[^a-z0-9]/g, '')) === i
+    )
+
+  const [sortField,   setSortField]   = useState('date')
+  const [sortDir,     setSortDir]     = useState('desc')
+  const [showSortMenu, setShowSortMenu] = useState(false)
+
+  const SORT_OPTIONS = [
+    { id: 'date',     label: 'Date' },
+    { id: 'name',     label: 'Name' },
+    { id: 'severity', label: 'Severity' },
+  ]
+
+  function pickSort(field) {
+    if (sortField === field) setSortDir(d => d === 'desc' ? 'asc' : 'desc')
+    else { setSortField(field); setSortDir('desc') }
+    setShowSortMenu(false)
+  }
+
+  const sortedSymptoms = [...active, ...resolved].sort((a, b) => {
+    let cmp = 0
+    if (sortField === 'date')     cmp = new Date(a.timestamp) - new Date(b.timestamp)
+    if (sortField === 'name')     cmp = (a.bodyLabel || '').localeCompare(b.bodyLabel || '')
+    if (sortField === 'severity') cmp = a.severity - b.severity
+    return sortDir === 'desc' ? -cmp : cmp
+  })
 
   const TABS = [
     { id: 'overview', label: 'Overview' },
-    { id: 'symptoms', label: `Symptoms (${active.length})` },
-    { id: 'mood',     label: `Mood (${checkIns.length})` },
+    { id: 'symptoms', label: `Symptoms (${symptoms.length})` },
   ]
 
   return (
     <div className="space-y-4">
-      <div className="glass-card rounded-2xl p-4">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="glass-card rounded-2xl p-4 space-y-3">
+        <div className="flex items-center gap-3">
           <Avatar member={member} size="lg" />
           <div>
             <p className="font-extrabold text-gray-900">{member.name}</p>
@@ -458,26 +492,61 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
             </p>
           </div>
         </div>
-        {loadingRemote ? (
-          <div className="grid grid-cols-3 gap-2 animate-pulse">
-            {['Active','Resolved','Check-ins'].map(l => (
-              <div key={l} className="bg-gray-100 rounded-xl p-2.5 text-center h-14" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { l: 'Active',    v: active.length,   c: active.length   ? '#f97316' : '#9ca3af' },
-              { l: 'Resolved',  v: resolved.length, c: resolved.length ? '#10b981' : '#9ca3af' },
-              { l: 'Check-ins', v: checkIns.length, c: '#6366f1' },
-            ].map(s => (
-              <div key={s.l} className="bg-gray-50 rounded-xl p-2.5 text-center">
-                <p className="text-xl font-extrabold" style={{ color: s.c }}>{s.v}</p>
-                <p className="text-[10px] text-gray-400">{s.l}</p>
-              </div>
-            ))}
-          </div>
-        )}
+
+        {/* Bio chips */}
+        <div className="flex flex-wrap gap-2">
+          {member.age > 0 && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
+              <User size={11} /> {member.age} yrs
+            </span>
+          )}
+          {member.gender && member.gender !== 'other' && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full capitalize">
+              <User size={11} /> {member.gender}
+            </span>
+          )}
+          {member.relationship && member.relationship !== 'Self' && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-primary-50 text-primary-600 px-2.5 py-1 rounded-full">
+              {member.relationship}
+            </span>
+          )}
+          {isSelf && currentUser?.heightCm && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-sky-50 text-sky-600 px-2.5 py-1 rounded-full">
+              <Ruler size={11} />
+              {currentUser.units === 'imperial'
+                ? `${Math.floor(currentUser.heightCm / 30.48)}ft ${Math.round((currentUser.heightCm / 2.54) % 12)}in`
+                : `${currentUser.heightCm} cm`}
+            </span>
+          )}
+          {isSelf && currentUser?.weightKg && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full">
+              <Weight size={11} />
+              {currentUser.units === 'imperial'
+                ? `${Math.round(currentUser.weightKg * 2.20462)} lbs`
+                : `${currentUser.weightKg} kg`}
+            </span>
+          )}
+          {member.bloodType && member.bloodType !== 'Unknown' && (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-rose-50 text-rose-600 px-2.5 py-1 rounded-full">
+              🩸 {member.bloodType}
+            </span>
+          )}
+          {isSelf && (currentUser?.homeLocation ? (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
+              <MapPin size={11} /> {currentUser.homeLocation}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-400 px-2.5 py-1 rounded-full">
+              <MapPin size={11} /> Location not set
+            </span>
+          ))}
+          {/* Active symptom count badge */}
+          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full ${
+            active.length > 0 ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'
+          }`}>
+            {active.length > 0 ? `⚠️ ${active.length} active` : '✓ No active symptoms'}
+          </span>
+        </div>
       </div>
 
       {highSev.length > 0 && (
@@ -489,13 +558,64 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
         </div>
       )}
 
-      <div className="flex glass-card rounded-2xl p-1">
-        {TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)}
-            className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
-              tab === t.id ? 'bg-primary-600 text-white' : 'text-gray-500'
-            }`}>{t.label}</button>
-        ))}
+      <div className="flex items-center gap-2">
+        <div className="flex flex-1 glass-card rounded-2xl p-1">
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
+                tab === t.id ? 'bg-primary-600 text-white' : 'text-gray-500'
+              }`}>{t.label}</button>
+          ))}
+        </div>
+
+        {/* Sort button — only visible on Symptoms tab */}
+        <AnimatePresence>
+          {tab === 'symptoms' && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
+              className="relative flex-shrink-0"
+            >
+              <button
+                onClick={() => setShowSortMenu(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold border transition-all ${
+                  showSortMenu
+                    ? 'bg-primary-600 text-white border-primary-600'
+                    : 'bg-white text-gray-600 border-gray-200'
+                }`}
+              >
+                Sort
+                <span className="text-[10px] opacity-70">{sortDir === 'desc' ? '↓' : '↑'}</span>
+              </button>
+
+              <AnimatePresence>
+                {showSortMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                    transition={{ duration: 0.12 }}
+                    className="absolute right-0 top-full mt-1.5 z-50 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden min-w-[130px]"
+                  >
+                    {SORT_OPTIONS.map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => pickSort(opt.id)}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors ${
+                          sortField === opt.id ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        {opt.label}
+                        {sortField === opt.id && (
+                          <span className="text-[11px] ml-2">{sortDir === 'desc' ? '↓' : '↑'}</span>
+                        )}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       <AnimatePresence mode="wait">
@@ -506,44 +626,73 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
             </div>
           ) : tab === 'overview' ? (
             <div className="space-y-3">
-              {recentCI[0] && (
+              {/* Active symptoms only */}
+              {active.length > 0 ? (
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Latest Mood</p>
-                  <MoodRow checkIn={recentCI[0]} />
-                </div>
-              )}
-              {active.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Active Symptoms</p>
-                  <div className="space-y-2">{active.slice(0,3).map(s => <SymptomRow key={s.id} symptom={s} />)}</div>
-                </div>
-              )}
-              {active.length === 0 && !recentCI[0] && (
-                <div className="text-center py-10 glass-card rounded-2xl">
-                  <p className="text-3xl mb-2">💚</p>
-                  <p className="text-sm font-semibold text-gray-600">All clear</p>
-                  <p className="text-xs text-gray-400 mt-1">No symptoms or check-ins logged</p>
-                </div>
-              )}
-            </div>
-          ) : tab === 'symptoms' ? (
-            <div className="space-y-2">
-              {[...active,...resolved].length === 0 ? (
-                <div className="text-center py-10 glass-card rounded-2xl">
-                  <p className="text-sm text-gray-400">No symptoms logged</p>
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Active Symptoms</p>
+                  <div className="space-y-2">{active.map(s => <SymptomRow key={s.id} symptom={s} />)}</div>
                 </div>
               ) : (
-                [...active,...resolved].map(s => <SymptomRow key={s.id} symptom={s} />)
+                <div className="text-center py-8 glass-card rounded-2xl">
+                  <p className="text-3xl mb-2">💚</p>
+                  <p className="text-sm font-semibold text-gray-600">No active symptoms</p>
+                  <p className="text-xs text-gray-400 mt-1">All looking good right now</p>
+                </div>
+              )}
+
+              {/* Conditions */}
+              {memberConditions.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Conditions</p>
+                  <div className="glass-card rounded-2xl divide-y divide-gray-50">
+                    {memberConditions.map(c => (
+                      <div key={c.id} className="flex items-center gap-3 px-4 py-3">
+                        <span className="text-lg">{c.icon || '🏥'}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800">{c.name}</p>
+                          {c.diagnosedDate && (
+                            <p className="text-[10px] text-gray-400">Since {new Date(c.diagnosedDate).getFullYear()}</p>
+                          )}
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
+                          c.severity === 'severe'   ? 'bg-rose-100 text-rose-700' :
+                          c.severity === 'moderate' ? 'bg-amber-100 text-amber-700' :
+                          'bg-emerald-100 text-emerald-700'
+                        }`}>{c.severity}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Medications */}
+              {memberMedications.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 mb-2">Medications</p>
+                  <div className="glass-card rounded-2xl divide-y divide-gray-50">
+                    {memberMedications.map(m => (
+                      <div key={m.id} className="flex items-center gap-3 px-4 py-3">
+                        <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                          <span className="text-sm">💊</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-gray-800 truncate">{m.name}</p>
+                          <p className="text-[10px] text-gray-400">{[m.dosage, m.frequency].filter(Boolean).join(' · ')}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           ) : (
             <div className="space-y-2">
-              {checkIns.length === 0 ? (
+              {sortedSymptoms.length === 0 ? (
                 <div className="text-center py-10 glass-card rounded-2xl">
-                  <p className="text-sm text-gray-400">No check-ins logged</p>
+                  <p className="text-sm text-gray-400">No symptoms logged</p>
                 </div>
               ) : (
-                checkIns.slice(0, 10).map(c => <MoodRow key={c.id} checkIn={c} />)
+                sortedSymptoms.map(s => <SymptomRow key={s.id} symptom={s} />)
               )}
             </div>
           )}

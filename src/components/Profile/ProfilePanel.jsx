@@ -6,7 +6,7 @@ import {
   Copy, Check as CheckIcon, MapPin, Clock, PauseCircle,
   Eye, EyeOff, Users, BarChart2, Save, Phone, Trash2,
   Download, AlertTriangle, FileText, TrendingUp, TrendingDown, Minus, PlayCircle,
-  Megaphone, Send,
+  Megaphone, Send, Pill, Sparkles,
 } from 'lucide-react'
 import { TOUR_KEY } from '../Onboarding/OnboardingTour'
 import { useApp } from '../../context/AppContext'
@@ -352,19 +352,65 @@ function SaveButton({ saved, onClick }) {
 }
 
 // ── Sub-page: Notifications ───────────────────────────────────────────────────
+// Common timezones list for the picker
+const TIMEZONES = [
+  { label: 'UTC',                        value: 'UTC' },
+  { label: 'London (GMT/BST)',            value: 'Europe/London' },
+  { label: 'Paris / Berlin (CET)',        value: 'Europe/Paris' },
+  { label: 'Athens / Helsinki (EET)',     value: 'Europe/Athens' },
+  { label: 'Dubai (GST)',                 value: 'Asia/Dubai' },
+  { label: 'Karachi (PKT)',               value: 'Asia/Karachi' },
+  { label: 'India (IST +5:30)',           value: 'Asia/Kolkata' },
+  { label: 'Dhaka (BST +6)',              value: 'Asia/Dhaka' },
+  { label: 'Bangkok (ICT +7)',            value: 'Asia/Bangkok' },
+  { label: 'Singapore / KL (SGT +8)',     value: 'Asia/Singapore' },
+  { label: 'Tokyo / Seoul (JST +9)',      value: 'Asia/Tokyo' },
+  { label: 'Sydney (AEST +10)',           value: 'Australia/Sydney' },
+  { label: 'Auckland (NZST +12)',         value: 'Pacific/Auckland' },
+  { label: 'São Paulo (BRT -3)',          value: 'America/Sao_Paulo' },
+  { label: 'New York (ET)',               value: 'America/New_York' },
+  { label: 'Chicago (CT)',                value: 'America/Chicago' },
+  { label: 'Denver (MT)',                 value: 'America/Denver' },
+  { label: 'Los Angeles (PT)',            value: 'America/Los_Angeles' },
+  { label: 'Anchorage (AKT)',             value: 'America/Anchorage' },
+  { label: 'Honolulu (HST)',              value: 'Pacific/Honolulu' },
+]
+
+const NOTIF_DEFAULTS = { medications: true, connections: true, aiInsights: true }
+
+const INSIGHT_DAYS = [
+  { id: 'sunday',    label: 'S' },
+  { id: 'monday',    label: 'M' },
+  { id: 'tuesday',   label: 'T' },
+  { id: 'wednesday', label: 'W' },
+  { id: 'thursday',  label: 'T' },
+  { id: 'friday',    label: 'F' },
+  { id: 'saturday',  label: 'S' },
+]
+
 function NotificationsPage({ onBack }) {
   const { currentUser, updateProfile } = useApp()
-  const [checkInTime, setCheckInTime] = useState(currentUser?.checkInTime  || '08:00')
   const [paused,      setPaused]      = useState(currentUser?.checkInPaused || false)
+  const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  const [timezone,    setTimezone]    = useState(currentUser?.timezone || detectedTz || 'UTC')
+  const [notifPrefs,  setNotifPrefs]  = useState({ ...NOTIF_DEFAULTS, ...(currentUser?.notifPrefs || {}) })
+  const [insightDay,  setInsightDay]  = useState(currentUser?.insightDay || 'monday')
   const [saved,       setSaved]       = useState(false)
   const [saveResult,  setSaveResult]  = useState(null)
 
+  function togglePref(key) {
+    setNotifPrefs(p => ({ ...p, [key]: !p[key] }))
+  }
+
   function save() {
+    const origPrefs = { ...NOTIF_DEFAULTS, ...(currentUser?.notifPrefs || {}) }
     const changed =
-      checkInTime !== (currentUser?.checkInTime  || '08:00') ||
-      paused      !== (currentUser?.checkInPaused || false)
+      paused      !== (currentUser?.checkInPaused || false)  ||
+      timezone    !== (currentUser?.timezone      || 'UTC')  ||
+      insightDay  !== (currentUser?.insightDay    || 'monday') ||
+      Object.keys(notifPrefs).some(k => notifPrefs[k] !== origPrefs[k])
     if (changed) {
-      updateProfile({ checkInTime, checkInPaused: paused })
+      updateProfile({ checkInPaused: paused, timezone, notifPrefs, insightDay })
       setSaved(true); setTimeout(() => setSaved(false), 2000)
     }
     setSaveResult(changed ? 'saved' : 'no-changes')
@@ -375,25 +421,76 @@ function NotificationsPage({ onBack }) {
       <BackHeader title="Notifications" onBack={onBack} />
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Daily Check-in</p>
-          <div className="glass-card rounded-2xl px-4 divide-y divide-black/5">
-            <SettingRow icon={Clock} label="Reminder Time" sub="Get a nudge to log your daily feeling" iconBg="bg-primary-50" iconColor="text-primary-500">
-              <input type="time" value={checkInTime} onChange={e => setCheckInTime(e.target.value)}
-                className="text-xs font-bold text-primary-600 bg-primary-50 rounded-lg px-2 py-1 border-none outline-none cursor-pointer" />
-            </SettingRow>
-            <SettingRow icon={PauseCircle} label="Pause Check-ins" sub={paused ? 'Paused — reminders are off' : 'Useful when travelling or on a break'}
-              iconBg={paused ? 'bg-amber-50' : 'bg-gray-100'} iconColor={paused ? 'text-amber-500' : 'text-gray-400'}>
-              <Toggle value={paused} onChange={setPaused} />
-            </SettingRow>
+          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Timezone</p>
+          <div className="glass-card rounded-2xl px-4 py-3">
+            <p className="text-[10px] text-gray-400 mb-2">Used to send reminders at the right local time</p>
+            <select
+              value={timezone}
+              onChange={e => setTimezone(e.target.value)}
+              className="w-full text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-400"
+            >
+              {/* Show detected tz at top if not in list */}
+              {!TIMEZONES.find(t => t.value === detectedTz) && (
+                <option value={detectedTz}>{detectedTz} (auto-detected)</option>
+              )}
+              {TIMEZONES.map(tz => (
+                <option key={tz.value} value={tz.value}>
+                  {tz.value === detectedTz ? `${tz.label} (auto-detected)` : tz.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
+
         <div>
           <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Alert Preferences</p>
           <div className="glass-card rounded-2xl px-4 divide-y divide-black/5">
             <SettingRow icon={Bell} label="Emergency Alerts" sub="Always on — cannot be disabled" iconBg="bg-rose-50" iconColor="text-rose-500">
               <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-full">Always on</span>
             </SettingRow>
-            <SettingRow icon={Bell} label="Health Reminders" sub="Medication and symptom logging reminders" iconBg="bg-blue-50" iconColor="text-blue-500">
+            <SettingRow icon={Pill} label="Medication Reminders" sub="Alerts at your scheduled medication times" iconBg="bg-indigo-50" iconColor="text-indigo-500">
+              <Toggle value={notifPrefs.medications} onChange={() => togglePref('medications')} />
+            </SettingRow>
+            <SettingRow icon={Users} label="Connections" sub="Family activity, join requests and updates" iconBg="bg-emerald-50" iconColor="text-emerald-500">
+              <Toggle value={notifPrefs.connections} onChange={() => togglePref('connections')} />
+            </SettingRow>
+            <div>
+              <SettingRow icon={Sparkles} label="AI Insights" sub="Personalised health tips from Kaapu" iconBg="bg-violet-50" iconColor="text-violet-500">
+                <Toggle value={notifPrefs.aiInsights} onChange={() => togglePref('aiInsights')} />
+              </SettingRow>
+              <AnimatePresence>
+                {notifPrefs.aiInsights && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-1 pb-3 pt-1">
+                      <p className="text-[10px] text-violet-400 font-semibold mb-2">
+                        Weekly insight delivery day
+                      </p>
+                      <div className="flex gap-1.5">
+                        {INSIGHT_DAYS.map(d => (
+                          <button
+                            key={d.id}
+                            onClick={() => setInsightDay(d.id)}
+                            className={`w-8 h-8 rounded-full text-[11px] font-bold flex-shrink-0 flex items-center justify-center transition-colors ${
+                              insightDay === d.id
+                                ? 'bg-violet-500 text-white'
+                                : 'bg-violet-50 text-violet-400 hover:bg-violet-100'
+                            }`}
+                          >
+                            {d.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+            <SettingRow icon={Bell} label="Health Reminders" sub="Check-in nudges and symptom logging" iconBg="bg-blue-50" iconColor="text-blue-500">
               <Toggle value={!paused} onChange={v => setPaused(!v)} />
             </SettingRow>
           </div>

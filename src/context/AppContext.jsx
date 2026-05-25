@@ -45,6 +45,22 @@ try { localStorage.removeItem('ht_current_member') } catch (_) {}
 const lsLoad = (k, fb) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : fb } catch { return fb } }
 const lsSave = (k, v)  => { try { localStorage.setItem(k, JSON.stringify(v)) } catch (_) {} }
 
+// ── Streak notification deduplication ────────────────────────────────────────
+const STREAK_LS = 'kaapu-streak-notified'
+function _getStreakSet() {
+  try { return new Set(JSON.parse(localStorage.getItem(STREAK_LS) || '[]')) } catch { return new Set() }
+}
+function _markStreak(key) {
+  const s = _getStreakSet(); s.add(key)
+  try { localStorage.setItem(STREAK_LS, JSON.stringify([...s].slice(-200))) } catch (_) {}
+}
+
+// How many consecutive days a symptom's duration field implies
+const DURATION_STREAK_DAYS = {
+  'Just started': 0, 'A few hours': 0, '1 day': 1,
+  '2–3 days': 3, '1 week': 7, '2+ weeks': 14, 'Ongoing': 14,
+}
+
 // ── Emergency summary ─────────────────────────────────────────────────────────
 function buildEmergencySummary({ member, conditions, medications, symptoms, checkIns, riskProfile, userNote }) {
   const lines = []
@@ -73,37 +89,60 @@ const RELATIONSHIP_INVERSE = {
   'Carer':'Ward','Ward':'Carer','Friend':'Friend','Other':'Other',
 }
 
+// ── Mood calculation from active symptoms ─────────────────────────────────────
+// Severity tiers: minor 1-4 (1pt), moderate 5-6 (2pts), severe 7-10 (4pts)
+// Score thresholds: 0=great, 1=good, 2-3=okay, 4-5=bad, 6+=terrible
+export function calculateMoodFromSymptoms(activeSymptoms) {
+  let score = 0
+  activeSymptoms.forEach(s => {
+    if (s.severity >= 7)      score += 4  // severe
+    else if (s.severity >= 5) score += 2  // moderate
+    else                      score += 1  // minor
+  })
+  if (score === 0) return 'great'
+  if (score === 1) return 'good'
+  if (score <= 3)  return 'okay'
+  if (score <= 5)  return 'bad'
+  return 'terrible'
+}
+
 // ── Context ───────────────────────────────────────────────────────────────────
 const AppContext = createContext(null)
 
 export function AppProvider({ children }) {
+  // ── Demo param: auto-login when ?demo=true is in the URL ──────────────────
+  const _demoParam = new URLSearchParams(window.location.search).get('demo') === 'true'
+  const _demoUser  = _demoParam ? DEMO_USERS[0] : null
+  const _demoMine  = _demoParam ? DEMO_MEMBERS.filter(m => m.familyId === _demoUser.familyId) : []
+
   // ── Loading & mode ────────────────────────────────────────────────────────
   const [appLoading,  setAppLoading]  = useState(false)
-  const [isDemoMode,  setIsDemoMode]  = useState(false)
-  const isDemoRef = useRef(false)
+  const [isDemoMode,  setIsDemoMode]  = useState(_demoParam)
+  const isDemoRef = useRef(_demoParam)
 
   // ── Auth state ────────────────────────────────────────────────────────────
-  const [currentUser,   setCurrentUser]   = useState(null)
-  const [currentMember, setCurrentMember] = useState(null)
+  const [currentUser,   setCurrentUser]   = useState(_demoUser)
+  const [currentMember, setCurrentMember] = useState(_demoMine[0] || null)
 
   // ── Data state ────────────────────────────────────────────────────────────
-  const [members,         setMembers]         = useState([])
-  const [families,        setFamilies]        = useState([])
-  const [symptoms,        setSymptoms]        = useState([])
-  const [checkIns,        setCheckIns]        = useState([])
-  const [documents,       setDocuments]       = useState([])
+  const [members,         setMembers]         = useState(_demoParam ? DEMO_MEMBERS : [])
+  const [families,        setFamilies]        = useState(_demoParam ? [DEMO_FAMILY] : [])
+  const [symptoms,        setSymptoms]        = useState(_demoParam ? DEMO_SYMPTOMS : [])
+  const [checkIns,        setCheckIns]        = useState(_demoParam ? DEMO_CHECKINS : [])
+  const [documents,       setDocuments]       = useState(_demoParam ? DEMO_DOCUMENTS : [])
   const [doctorPatients,  setDoctorPatients]  = useState([])
-  const [conditions,      setConditions]      = useState([])
-  const [medications,     setMedications]     = useState([])
-  const [riskProfiles,    setRiskProfiles]    = useState([])
+  const [conditions,      setConditions]      = useState(_demoParam ? DEMO_CONDITIONS : [])
+  const [medications,     setMedications]     = useState(_demoParam ? DEMO_MEDICATIONS : [])
+  const [riskProfiles,    setRiskProfiles]    = useState(_demoParam ? DEMO_RISK_PROFILES : [])
   const [emergencyEvents, setEmergencyEvents] = useState([])
-  const [familyRequests,  setFamilyRequests]  = useState([])
+  const [familyRequests,  setFamilyRequests]  = useState(_demoParam ? DEMO_FAMILY_REQUESTS.map(r => ({ ...r, toUserId: _demoUser.id, toUserName: _demoUser.name || r.toUserName })) : [])
   const [notifications,   setNotifications]   = useState([])
   const [notifCentreOpen, setNotifCentreOpen] = useState(false)
   const [activeEmergency, setActiveEmergency] = useState(null)
   const [skinColor,       setSkinColorState]  = useState(() => lsLoad(LS.skinColor, '#C49272'))
 
   // Push notification registration ref (prevent duplicate registrations)
+  const symptomsRef = useRef(symptoms)
   const pushRegisteredRef = useRef(false)
 
   // Real-time channel refs
@@ -118,6 +157,7 @@ export function AppProvider({ children }) {
 
   // ── Persist UI prefs ──────────────────────────────────────────────────────
   useEffect(() => { lsSave(LS.skinColor, skinColor) }, [skinColor])
+  useEffect(() => { symptomsRef.current = symptoms }, [symptoms])
   // currentMember is always derived from the auth user — no localStorage persistence needed
 
   // Keep currentMember in sync when the members array is updated (e.g. after updateProfile)
@@ -164,6 +204,26 @@ export function AppProvider({ children }) {
     }
   }, []) // eslint-disable-line
 
+  // ── Demo auto-login via ?demo=true URL param (for design capture only) ──────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('demo') === 'true' && !isDemoRef.current) {
+      const demoUser = DEMO_USERS[0]
+      isDemoRef.current = true; setIsDemoMode(true)
+      setCurrentUser(demoUser)
+      setMembers(DEMO_MEMBERS); setFamilies([DEMO_FAMILY])
+      setSymptoms(DEMO_SYMPTOMS); setCheckIns(DEMO_CHECKINS)
+      setDocuments(DEMO_DOCUMENTS); setConditions(DEMO_CONDITIONS)
+      setMedications(DEMO_MEDICATIONS); setRiskProfiles(DEMO_RISK_PROFILES)
+      setFamilyRequests(DEMO_FAMILY_REQUESTS.map(r => ({
+        ...r, toUserId: demoUser.id, toUserName: demoUser.name || r.toUserName,
+      })))
+      const mine = DEMO_MEMBERS.filter(m => m.familyId === demoUser.familyId)
+      setCurrentMember(mine.find(m => m.userId === demoUser.id) || mine[0] || null)
+      setAppLoading(false)
+    }
+  }, []) // eslint-disable-line
+
   // helper: run a supabase query with a per-query timeout
   function _sbq(promise, ms = 15000) {
     const t = new Promise((_, rej) => setTimeout(() => rej(new Error('query-timeout')), ms))
@@ -207,6 +267,16 @@ export function AppProvider({ children }) {
 
     // Register for push notifications (iOS, Android, Web — best-effort, never blocks load)
     _registerPush(uid).catch(console.error)
+
+    // Auto-save detected timezone if not already stored
+    if (!userData.timezone) {
+      const detectedTz = Intl.DateTimeFormat().resolvedOptions().timeZone
+      if (detectedTz) {
+        supabase?.from('users').update({ timezone: detectedTz }).eq('id', uid).then(() => {
+          setCurrentUser(prev => prev ? { ...prev, timezone: detectedTz } : prev)
+        })
+      }
+    }
 
     const { familyId } = userData
 
@@ -845,6 +915,69 @@ export function AppProvider({ children }) {
       checkForAlerts(symptoms.filter(s => s.memberId === currentMember.id), currentUser.id)
   }, [symptoms, currentMember, checkForAlerts])
 
+  // ── Symptom streak detection → Kaapu AI insight notification ─────────────
+  const checkSymptomStreaks = useCallback((symptomList, member) => {
+    if (!member) return
+    const active = symptomList.filter(s => s.memberId === member.id && !s.resolved)
+    if (!active.length) return
+
+    // Group by category + body region
+    const groups = {}
+    active.forEach(s => {
+      const key = `${s.category || s.categoryLabel}|${s.bodyRegion || s.bodyLabel}`
+      if (!groups[key]) groups[key] = { sample: s, days: new Set(), ids: [], maxSev: 0, maxDurDays: 0 }
+      groups[key].days.add(new Date(s.timestamp).toDateString())
+      groups[key].ids.push(s.id)
+      groups[key].maxSev = Math.max(groups[key].maxSev, s.severity || 0)
+      // Factor in the user-reported duration (e.g. "1 week" = 7 days even if only 1 log entry)
+      const durDays = DURATION_STREAK_DAYS[s.duration] ?? 0
+      groups[key].maxDurDays = Math.max(groups[key].maxDurDays, durDays)
+    })
+
+    Object.entries(groups).forEach(([gKey, { sample, days, ids, maxSev, maxDurDays }]) => {
+      if (maxSev <= 3) return
+
+      // Count consecutive logged days
+      const sorted = [...days].map(d => new Date(d).getTime()).sort((a, b) => a - b)
+      let maxRun = 1, run = 1
+      for (let i = 1; i < sorted.length; i++) {
+        if ((sorted[i] - sorted[i - 1]) / 86400000 < 1.6) { run++; maxRun = Math.max(maxRun, run) }
+        else run = 1
+      }
+
+      // Use whichever is larger: consecutive logged days OR user-reported duration
+      const effectiveDays = Math.max(maxRun, maxDurDays)
+      if (effectiveDays < 2) return
+
+      // Deduplicate per symptom ID — each new log entry fires once, but won't re-fire for the same entry
+      const seen = _getStreakSet()
+      const newIds = ids.filter(id => !seen.has(`sym:${id}`))
+      if (!newIds.length) return
+      newIds.forEach(id => _markStreak(`sym:${id}`))
+
+      const notifId  = `streak-${member.id}-${gKey}-${Date.now()}`
+      const sessionId = `streak-session-${member.id}-${gKey}` // stable per symptom group
+      const dayLabel  = effectiveDays >= 14 ? '2+ weeks' : effectiveDays >= 7 ? '1 week' : `${effectiveDays} days`
+      pushNotif({
+        id: notifId,
+        type: 'ai-streak',
+        timestamp: new Date().toISOString(),
+        message: `Kaapu noticed you've had ${sample.categoryLabel} (${sample.bodyLabel}) for ${dayLabel}. Tap to discuss.`,
+        streakData: {
+          category: sample.categoryLabel,
+          bodyArea: sample.bodyLabel,
+          days: effectiveDays,
+          symptomIds: ids,
+          sessionId, // stable ID so re-tapping the notif reopens the same chat
+        },
+      })
+    })
+  }, [pushNotif])
+
+  useEffect(() => {
+    if (currentMember) checkSymptomStreaks(symptoms, currentMember)
+  }, [symptoms, currentMember]) // eslint-disable-line
+
   // Re-push pending family requests as notifications after login
   useEffect(() => {
     if (!currentUser) return
@@ -856,6 +989,71 @@ export function AppProvider({ children }) {
         message: `${r.fromUserName} (${r.fromUserUid}) wants to connect with you as ${r.relationship}.`,
       }))
   }, [currentUser?.id]) // eslint-disable-line
+
+  // ── Weekly AI Insight ─────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!currentUser || !currentMember || !supabase) return
+    if (!currentUser.notifPrefs?.aiInsights) return
+
+    // Check if today matches the user's chosen delivery day
+    const DAY_MAP = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday']
+    const todayDay = DAY_MAP[new Date().getDay()]
+    const targetDay = currentUser.insightDay || 'monday'
+    if (todayDay !== targetDay) return
+
+    // Deduplicate: only fire once per calendar day
+    const dedupeKey = `kaapu-weekly-insight-${currentUser.id}-${new Date().toDateString()}`
+    if (localStorage.getItem(dedupeKey)) return
+
+    // Gather 7-day data
+    const sevenDaysAgo = Date.now() - 7 * 24 * 3600000
+    const memberSymptoms = symptoms.filter(s => s.memberId === currentMember.id)
+    const symptoms7d = memberSymptoms
+      .filter(s => new Date(s.timestamp).getTime() > sevenDaysAgo)
+      .map(s => ({
+        categoryLabel: s.categoryLabel,
+        bodyLabel:     s.bodyLabel,
+        category:      s.category,
+        bodyArea:      s.bodyRegion || s.bodyLabel,
+        severity:      s.severity,
+        resolved:      s.resolved,
+      }))
+
+    const memberConditions  = conditions.filter(c => c.memberId === currentMember.id)
+    const memberMedications = medications.filter(m => m.memberId === currentMember.id)
+    const checkIns7d = checkIns
+      .filter(c => c.memberId === currentMember.id && new Date(c.date).getTime() > sevenDaysAgo)
+      .map(c => ({ mood: c.mood, energy: c.energy }))
+
+    // Mark as delivered immediately to avoid double-fires
+    localStorage.setItem(dedupeKey, '1')
+
+    supabase.functions.invoke('kaapu-weekly-insight', {
+      body: {
+        healthData: {
+          memberName:  currentMember.name,
+          conditions:  memberConditions,
+          medications: memberMedications,
+          symptoms7d,
+          checkIns7d,
+          activeCount: symptoms7d.filter(s => !s.resolved).length,
+        },
+      },
+    }).then(({ data, error }) => {
+      if (error || !data?.insight) return
+      const insight = data.insight
+      pushNotif({
+        id:        `weekly-insight-${currentUser.id}-${new Date().toDateString()}`,
+        type:      'ai-weekly-insight',
+        timestamp: new Date().toISOString(),
+        message:   'Your weekly Kaapu health insight is ready. Tap to read.',
+        insightData: { insight, memberName: currentMember.name },
+      })
+    }).catch(() => {
+      // If call fails, remove the dedupe key so it can retry next launch
+      localStorage.removeItem(dedupeKey)
+    })
+  }, [currentUser?.id, currentMember?.id]) // eslint-disable-line
 
   // ── Escalation check ──────────────────────────────────────────────────────
   const checkEscalation = useCallback(() => {
@@ -1008,22 +1206,6 @@ export function AppProvider({ children }) {
     dismissNotification(`fam-req-${requestId}`)
   }, [familyRequests, currentUser, sbUpdate, pushNotif, dismissNotification])
 
-  // ── Symptoms ──────────────────────────────────────────────────────────────
-  const addSymptom = useCallback((data) => {
-    const s = { id: `sym-${Date.now()}`, memberId: currentMember.id, familyId: currentUser.familyId, timestamp: new Date().toISOString(), resolved: false, ...data }
-    setSymptoms(prev => [s, ...prev]); sbInsert('symptoms', s); return s
-  }, [currentMember, currentUser, sbInsert])
-
-  const resolveSymptom = useCallback((id) => {
-    const resolvedAt = new Date().toISOString()
-    setSymptoms(prev => prev.map(s => s.id === id ? { ...s, resolved: true, resolvedAt } : s))
-    sbUpdate('symptoms', id, { resolved: true, resolvedAt })
-  }, [sbUpdate])
-
-  const deleteSymptom = useCallback((id) => {
-    setSymptoms(prev => prev.filter(s => s.id !== id)); sbDelete('symptoms', id)
-  }, [sbDelete])
-
   // ── Check-ins ─────────────────────────────────────────────────────────────
   // targetDate is an optional Date object; defaults to now (today's check-in).
   // When a past date is provided we store noon local time for that date so the
@@ -1050,14 +1232,89 @@ export function AppProvider({ children }) {
     })
   }, [currentMember, currentUser, sbInsert, sbDelete])
 
+  // ── Symptoms ──────────────────────────────────────────────────────────────
+  const addSymptom = useCallback((data) => {
+    const s = { id: `sym-${Date.now()}`, memberId: currentMember.id, familyId: currentUser.familyId, timestamp: new Date().toISOString(), resolved: false, ...data }
+    // Auto-calculate and save today's mood based on new symptom set
+    const memberActive = symptomsRef.current.filter(sx => sx.memberId === currentMember.id && !sx.resolved)
+    const mood = calculateMoodFromSymptoms([...memberActive, s])
+    setSymptoms(prev => [s, ...prev])
+    sbInsert('symptoms', s)
+    addCheckIn({ feeling: mood })
+    return s
+  }, [currentMember, currentUser, sbInsert, addCheckIn])
+
+  const updateSymptom = useCallback((id, data) => {
+    setSymptoms(prev => prev.map(s => s.id === id ? { ...s, ...data } : s))
+    sbUpdate('symptoms', id, data)
+  }, [sbUpdate])
+
+  const resolveSymptom = useCallback((id) => {
+    const resolvedAt = new Date().toISOString()
+    setSymptoms(prev => prev.map(s => s.id === id ? { ...s, resolved: true, resolvedAt } : s))
+    sbUpdate('symptoms', id, { resolved: true, resolvedAt })
+    // Recalculate mood without the now-resolved symptom
+    const newActive = symptomsRef.current.filter(sx => sx.memberId === currentMember.id && !sx.resolved && sx.id !== id)
+    addCheckIn({ feeling: calculateMoodFromSymptoms(newActive) })
+  }, [sbUpdate, currentMember, addCheckIn])
+
+  const deleteSymptom = useCallback((id) => {
+    setSymptoms(prev => prev.filter(s => s.id !== id)); sbDelete('symptoms', id)
+  }, [sbDelete])
+
   // ── Documents ─────────────────────────────────────────────────────────────
-  const addDocument = useCallback((data) => {
-    const d = { id: `doc-${Date.now()}`, memberId: currentMember.id, familyId: currentUser.familyId, uploadedAt: new Date().toISOString(), ...data }
+  const addDocument = useCallback(async (data) => {
+    const id = `doc-${Date.now()}`
+    // Spread data last so caller-provided uploadedAt (document date) takes precedence
+    const d = { id, memberId: currentMember.id, familyId: currentUser.familyId, uploadedAt: new Date().toISOString(), ...data }
+
+    // Optimistically add with blob URL so UI is instant
     setDocuments(prev => [d, ...prev])
-    const { fileUrl, ...sbData } = d // blob URLs are device-specific, don't store
+
+    // Upload file to Supabase Storage if we have the raw file blob
+    if (data.file && supabase && currentUser?.id) {
+      try {
+        const ext  = data.file.name.split('.').pop()
+        const path = `${currentUser.id}/${id}.${ext}`
+        const { error: upErr } = await supabase.storage
+          .from('health-docs')
+          .upload(path, data.file, { contentType: data.file.type, upsert: false })
+
+        if (!upErr) {
+          // Get a signed URL valid for 10 years (~315 million seconds)
+          const { data: signed } = await supabase.storage
+            .from('health-docs')
+            .createSignedUrl(path, 315360000)
+
+          const fileUrl    = signed?.signedUrl || d.fileUrl
+          const filePath   = path
+          // Update local state with the persistent URL
+          setDocuments(prev => prev.map(doc => doc.id === id ? { ...doc, fileUrl, filePath } : doc))
+          // Persist to DB — include fileUrl so it reloads on next session
+          const { file: _f, ...rest } = d
+          sbInsert('documents', { ...rest, fileUrl, filePath })
+          return { ...d, fileUrl, filePath }
+        }
+      } catch (err) {
+        console.warn('[addDocument] storage upload failed', err)
+      }
+    }
+
+    // Fallback: save without fileUrl if upload failed or no file
+    const { file: _f, fileUrl: _u, ...sbData } = d
     sbInsert('documents', sbData)
     return d
   }, [currentMember, currentUser, sbInsert])
+
+  const deleteDocument = useCallback(async (id) => {
+    const doc = documents.find(d => d.id === id)
+    setDocuments(prev => prev.filter(d => d.id !== id))
+    sbDelete('documents', id)
+    // Also remove the file from storage if we have the path
+    if (doc?.filePath && supabase) {
+      supabase.storage.from('health-docs').remove([doc.filePath]).catch(() => {})
+    }
+  }, [documents, sbDelete])
 
   // ── Doctor patients ───────────────────────────────────────────────────────
   const addDoctorPatient = useCallback((patientId) => {
@@ -1229,8 +1486,8 @@ export function AppProvider({ children }) {
       notifCentreOpen, setNotifCentreOpen,
       currentSymptoms, currentCheckIns, currentDocuments,
       symptoms, checkIns, documents, families,
-      addSymptom, resolveSymptom, deleteSymptom,
-      addCheckIn, deleteCheckIn, addDocument,
+      addSymptom, updateSymptom, resolveSymptom, deleteSymptom,
+      addCheckIn, deleteCheckIn, addDocument, deleteDocument,
       doctorPatients, addDoctorPatient,
       notifications, dismissNotification, pushNotif,
       skinColor, setSkinColor,

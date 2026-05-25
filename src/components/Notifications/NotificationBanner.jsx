@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   AlertTriangle, Info, X, MapPin, ExternalLink,
   Heart, Pill, Phone, Clock, ChevronRight,
-  CheckCircle, ShieldAlert, Bell, Trash2, Users, UserCheck, UserX,
+  CheckCircle, ShieldAlert, Bell, Trash2, Users, UserCheck, UserX, Sparkles,
 } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { useApp } from '../../context/AppContext'
@@ -98,6 +98,28 @@ const TYPE_CONFIG = {
     bar:        'bg-indigo-50 border-indigo-200',
     text:       'text-indigo-800',
     sub:        'text-indigo-400',
+  },
+  'ai-streak': {
+    icon:       Sparkles,
+    accent:     '#8b5cf6',
+    border:     'rgba(139,92,246,0.3)',
+    badge:      'bg-violet-100 text-violet-700',
+    dot:        'bg-violet-400',
+    label:      'Kaapu Insight',
+    bar:        'bg-violet-50 border-violet-200',
+    text:       'text-violet-800',
+    sub:        'text-violet-400',
+  },
+  'ai-weekly-insight': {
+    icon:       Sparkles,
+    accent:     '#7c3aed',
+    border:     'rgba(124,58,237,0.3)',
+    badge:      'bg-violet-100 text-violet-800',
+    dot:        'bg-violet-500',
+    label:      'Weekly Insight',
+    bar:        'bg-violet-50 border-violet-300',
+    text:       'text-violet-900',
+    sub:        'text-violet-500',
   },
 }
 
@@ -630,6 +652,28 @@ export default function NotificationBanner() {
     setNotifCentreOpen(false)
   }
 
+  function handleTap(n) {
+    // AI streak notifications → navigate to AI tab and pre-seed conversation
+    if (n.type === 'ai-streak') {
+      const { category, bodyArea, days, symptomIds } = n.streakData || {}
+      sessionStorage.setItem('kaapu-pending-ai', JSON.stringify({ category, bodyArea, days, symptomIds: symptomIds || [] }))
+      window.dispatchEvent(new CustomEvent('kaapu:navigate', { detail: { path: '/ai' } }))
+      handleSwipe(n.id)
+      return
+    }
+    // Weekly insight → navigate to AI tab with insight pre-loaded
+    if (n.type === 'ai-weekly-insight') {
+      const { insight } = n.insightData || {}
+      if (insight) {
+        sessionStorage.setItem('kaapu-pending-weekly-insight', JSON.stringify({ insight }))
+      }
+      window.dispatchEvent(new CustomEvent('kaapu:navigate', { detail: { path: '/ai' } }))
+      handleSwipe(n.id)
+      return
+    }
+    setActiveNotif(n)
+  }
+
   return (
     <>
       {/* Live feed overlay — floats below header, never pushes content */}
@@ -643,7 +687,7 @@ export default function NotificationBanner() {
               <SwipeableNotification
                 n={n}
                 onDismiss={() => handleSwipe(n.id)}
-                onTap={() => setActiveNotif(n)}
+                onTap={() => handleTap(n)}
               />
             </div>
           ))}
@@ -662,7 +706,7 @@ export default function NotificationBanner() {
         {notifCentreOpen && (
           <NotifCentre
             dismissed={dismissed}
-            onTap={n => { setNotifCentreOpen(false); setActiveNotif(n) }}
+            onTap={n => { setNotifCentreOpen(false); handleTap(n) }}
             onClear={handleClear}
             onClearAll={handleClearAll}
             onClose={handleCentreClose}

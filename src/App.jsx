@@ -1,12 +1,11 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { Heart } from 'lucide-react'
 import { AppProvider, useApp } from './context/AppContext'
 import AppLayout              from './components/Layout/AppLayout'
 import Auth                   from './pages/Auth'
 import Dashboard              from './pages/Dashboard'
-import BodyMap                from './pages/BodyMap'
 import History                from './pages/History'
 import Family                 from './pages/Family'
+import AI                     from './pages/AI'
 import DoctorPortal           from './pages/DoctorPortal'
 import EmergencyContactGate   from './components/Onboarding/EmergencyContactGate'
 
@@ -55,10 +54,10 @@ function AppRoutes() {
           : <Auth />
       } />
       <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
-        <Route index            element={<Dashboard />} />
-        <Route path="body-map"  element={<BodyMap />} />
-        <Route path="history"   element={<History />} />
-        <Route path="family"    element={<Family />} />
+        <Route index           element={<Dashboard />} />
+        <Route path="history"  element={<History />} />
+        <Route path="ai"       element={<AI />} />
+        <Route path="family"   element={<Family />} />
       </Route>
       <Route path="/doctor" element={<DoctorRoute><DoctorPortal /></DoctorRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />

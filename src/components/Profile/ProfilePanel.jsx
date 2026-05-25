@@ -1234,17 +1234,7 @@ export default function ProfilePanel({ open, onClose }) {
                     </div>
                   </div>
 
-                  {/* Replay tour */}
-                  <button
-                    onClick={() => {
-                      localStorage.removeItem(TOUR_KEY)
-                      handleClose()
-                      setTimeout(() => window.dispatchEvent(new Event('kaapu:start-tour')), 350)
-                    }}
-                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-primary-200/60 text-primary-600 font-semibold text-sm hover:bg-primary-50 transition-colors glass-card"
-                  >
-                    <PlayCircle size={15} /> Replay App Tour
-                  </button>
+                  {/* Replay tour — temporarily hidden, needs update for new UI */}
 
 
                   {/* Sign out */}

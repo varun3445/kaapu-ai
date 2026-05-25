@@ -334,7 +334,7 @@ function HistorySheet({ onClose, onRestore, userId }) {
 // ── Empty state ──────────────────────────────────────────────────────────────
 function EmptyState({ onSuggest }) {
   return (
-    <div className="flex flex-col items-center px-4 pt-6 pb-4">
+    <div data-tour="ai-page" className="flex flex-col items-center px-4 pt-6 pb-4">
       <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
         <Sparkles size={26} className="text-primary-500" />
       </div>

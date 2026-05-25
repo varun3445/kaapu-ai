@@ -454,7 +454,7 @@ function NotificationsPage({ onBack }) {
             <SettingRow icon={Users} label="Connections" sub="Family activity, join requests and updates" iconBg="bg-emerald-50" iconColor="text-emerald-500">
               <Toggle value={notifPrefs.connections} onChange={() => togglePref('connections')} />
             </SettingRow>
-            <div>
+            <div data-tour="ai-insights-setting">
               <SettingRow icon={Sparkles} label="AI Insights" sub="Personalised health tips from Kaapu" iconBg="bg-violet-50" iconColor="text-violet-500">
                 <Toggle value={notifPrefs.aiInsights} onChange={() => togglePref('aiInsights')} />
               </SettingRow>
@@ -1219,6 +1219,8 @@ export default function ProfilePanel({ open, onClose }) {
                         const Icon = item.icon
                         return (
                           <button key={item.id} onClick={() => setPage(item.id)}
+                            {...(item.id === 'emergency-contacts' ? { 'data-tour': 'emergency-contacts-btn' } : {})}
+                            {...(item.id === 'notifications' ? { 'data-tour': 'notifications-btn' } : {})}
                             className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left">
                             <div className={`w-7 h-7 rounded-lg ${item.iconBg || 'bg-white/80'} shadow-sm flex items-center justify-center`}>
                               <Icon size={14} className={item.iconColor || 'text-gray-400'} />
@@ -1234,7 +1236,17 @@ export default function ProfilePanel({ open, onClose }) {
                     </div>
                   </div>
 
-                  {/* Replay tour — temporarily hidden, needs update for new UI */}
+                  {/* Replay tour */}
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem(TOUR_KEY)
+                      handleClose()
+                      setTimeout(() => window.dispatchEvent(new Event('kaapu:start-tour')), 350)
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border border-primary-200/60 text-primary-600 font-semibold text-sm hover:bg-primary-50 transition-colors glass-card"
+                  >
+                    <PlayCircle size={15} /> Replay App Tour
+                  </button>
 
 
                   {/* Sign out */}

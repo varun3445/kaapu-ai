@@ -764,7 +764,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* ── Pain & Symptoms ───────────────────────────────────────────────── */}
-      <div className="glass-card rounded-2xl p-4">
+      <div data-tour="health-mapping" className="glass-card rounded-2xl p-4">
         <div className="flex justify-between items-center mb-3">
           <div>
             <h3 className="text-sm font-bold text-gray-800">Health Mapping</h3>

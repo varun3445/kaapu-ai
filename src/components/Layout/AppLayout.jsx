@@ -21,22 +21,23 @@ export default function AppLayout() {
     return () => window.removeEventListener('kaapu:navigate', handler)
   }, [navigate])
 
-  // Tour temporarily disabled — needs update to match new UI & features
-  // useEffect(() => {
-  //   if (!currentUser?.id) return
-  //   const pendingTour = sessionStorage.getItem('kaapu_show_tour') === '1'
-  //   if (pendingTour || !localStorage.getItem(TOUR_KEY)) {
-  //     sessionStorage.removeItem('kaapu_show_tour')
-  //     const t = setTimeout(() => setShowTour(true), 800)
-  //     return () => clearTimeout(t)
-  //   }
-  // }, [currentUser?.id])
+  // Show tour once for first-time users
+  useEffect(() => {
+    if (!currentUser?.id) return
+    const pendingTour = sessionStorage.getItem('kaapu_show_tour') === '1'
+    if (pendingTour || !localStorage.getItem(TOUR_KEY)) {
+      sessionStorage.removeItem('kaapu_show_tour')
+      const t = setTimeout(() => setShowTour(true), 800)
+      return () => clearTimeout(t)
+    }
+  }, [currentUser?.id]) // eslint-disable-line
 
-  // useEffect(() => {
-  //   const handler = () => { setShowTour(true) }
-  //   window.addEventListener('kaapu:start-tour', handler)
-  //   return () => window.removeEventListener('kaapu:start-tour', handler)
-  // }, [])
+  // Allow re-triggering the tour via custom event
+  useEffect(() => {
+    const handler = () => { setShowTour(true) }
+    window.addEventListener('kaapu:start-tour', handler)
+    return () => window.removeEventListener('kaapu:start-tour', handler)
+  }, [])
 
   // Only show the banner (and its "I'm OK" resolve button) when the emergency
   // belongs to THIS user's own family. Connected-family emergencies are handled

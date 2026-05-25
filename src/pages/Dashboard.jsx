@@ -694,7 +694,7 @@ function ConditionDetailModal({ condition, onClose, onAddMed }) {
 export default function Dashboard() {
   const {
     currentMember, currentSymptoms, addSymptom, resolveSymptom, skinColor,
-    currentConditions, removeCondition, currentMedications, addCondition, addMedication,
+    currentConditions, removeCondition, currentMedications, addCondition, addMedication, removeMedication,
   } = useApp()
   const { connected, vitals, loading: healthLoading, connect, isIOS, isAndroid, isNative } = useHealthData()
 
@@ -845,18 +845,32 @@ export default function Dashboard() {
           <div className="mt-3 pt-3 border-t border-gray-100">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Medications</p>
             <div className="space-y-1.5">
-              {currentMedications.map(m => (
-                <div key={m.id}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50">
-                  <Pill size={13} className="text-indigo-400 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-indigo-800 truncate">{m.name}</p>
-                    {(m.dosage || m.frequency) && (
-                      <p className="text-[10px] text-indigo-400">{[m.dosage, m.frequency].filter(Boolean).join(' · ')}</p>
-                    )}
+              {currentMedications.map(m => {
+                const linkedCondition = currentConditions.find(c => c.id === m.conditionId)
+                return (
+                  <div key={m.id} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50">
+                    <Pill size={13} className="text-indigo-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-indigo-800 truncate">{m.name}</p>
+                      <p className="text-[10px] text-indigo-400">
+                        {[m.dosage, m.frequency].filter(Boolean).join(' · ')}
+                        {linkedCondition && (
+                          <span className="ml-1 text-indigo-300">· {linkedCondition.icon} {linkedCondition.name}</span>
+                        )}
+                        {!linkedCondition && (
+                          <span className="ml-1 text-indigo-200">· unlinked</span>
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeMedication(m.id)}
+                      className="w-6 h-6 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 hover:bg-rose-100 transition-colors"
+                    >
+                      <Trash2 size={10} className="text-rose-400" />
+                    </button>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

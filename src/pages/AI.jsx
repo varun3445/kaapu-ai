@@ -298,7 +298,7 @@ function HistorySheet({ onClose, onRestore, userId }) {
                           transition={{ duration: 0.15 }}
                           className="overflow-hidden"
                         >
-                          <div className="mx-4 mb-3 rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3">
+                          <div className="mx-4 mb-3 mt-1 rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3">
                             <p className="text-[11px] font-semibold text-rose-700 mb-0.5">Delete this conversation?</p>
                             <p className="text-[10px] text-rose-400 mb-3 leading-relaxed">This can't be undone. Kaapu will permanently forget this chat and it won't influence future responses.</p>
                             <div className="flex gap-2">

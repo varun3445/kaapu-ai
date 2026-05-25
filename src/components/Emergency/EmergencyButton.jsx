@@ -169,7 +169,9 @@ function EmergencySummaryModal() {
                       <p key={s.id} className="text-[11px] text-gray-500">
                         {s.bodyLabel} — {s.type}
                         <span className="ml-1 text-gray-400">· {s.severity}/10</span>
-                        {s.duration ? <span className="text-gray-400"> · {s.duration}</span> : null}
+                        {s.timestamp && (
+                          <span className="text-gray-400"> · {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>
+                        )}
                       </p>
                     ))}
                   </div>

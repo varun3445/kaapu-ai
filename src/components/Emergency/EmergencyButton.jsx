@@ -109,6 +109,17 @@ function EmergencySummaryModal() {
               </div>
             </div>
 
+            {currentUser?.nhsId && (
+              <div className="flex items-center gap-2.5 rounded-xl px-3 py-2"
+                style={{ background: 'rgba(0,94,184,0.07)', border: '1px solid rgba(0,94,184,0.18)' }}>
+                <img src="/nhs-logo.png" alt="NHS" style={{ height: 14, width: 'auto', flexShrink: 0 }} />
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-blue-500 uppercase tracking-wider whitespace-nowrap">NHS No.</p>
+                  <p className="text-sm font-extrabold tracking-[0.15em] font-mono" style={{ color: '#005EB8' }}>{currentUser.nhsId}</p>
+                </div>
+              </div>
+            )}
+
             {ev.note ? (
               <div className="bg-gray-50 rounded-xl px-3 py-2.5">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1">Note</p>

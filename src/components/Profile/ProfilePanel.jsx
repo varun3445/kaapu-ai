@@ -1070,6 +1070,122 @@ function EmergencyContactsPage({ onBack }) {
   )
 }
 
+// ── NHS ID Card ───────────────────────────────────────────────────────────────
+function NhsIdCard() {
+  const { currentUser, updateProfile } = useApp()
+  const stored = currentUser?.nhsId || ''
+
+  const [editing,  setEditing]  = useState(false)
+  const [draft,    setDraft]    = useState('')
+  const [error,    setError]    = useState('')
+  const [saving,   setSaving]   = useState(false)
+  const [copied,   setCopied]   = useState(false)
+
+  // NHS numbers are exactly 10 digits; display as "XXX XXX XXXX"
+  function formatNhs(raw) {
+    const digits = raw.replace(/\D/g, '').slice(0, 10)
+    if (digits.length <= 3) return digits
+    if (digits.length <= 6) return `${digits.slice(0,3)} ${digits.slice(3)}`
+    return `${digits.slice(0,3)} ${digits.slice(3,6)} ${digits.slice(6)}`
+  }
+
+  function handleChange(e) {
+    const formatted = formatNhs(e.target.value)
+    setDraft(formatted)
+    setError('')
+  }
+
+  async function save() {
+    const digits = draft.replace(/\D/g, '')
+    if (digits.length !== 10) { setError('NHS number must be exactly 10 digits'); return }
+    setSaving(true)
+    await updateProfile({ nhsId: draft })
+    setSaving(false)
+    setEditing(false)
+  }
+
+  function copyNhs() {
+    navigator.clipboard?.writeText(stored).catch(() => {})
+    setCopied(true); setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="glass-card rounded-2xl overflow-hidden">
+      {/* NHS blue header strip */}
+      <div className="flex items-center gap-2.5 px-4 py-3"
+        style={{ background: 'linear-gradient(135deg, #005EB8 0%, #003087 100%)' }}>
+        {/* NHS logo */}
+        <img src="/nhs-logo.png" alt="NHS" className="h-5 w-auto flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-bold text-xs">NHS Number</p>
+          <p className="text-blue-200 text-[10px]">Your unique patient identifier</p>
+        </div>
+        {stored && !editing && (
+          <button onClick={copyNhs}
+            className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors"
+            style={{ background: 'rgba(255,255,255,0.18)' }}>
+            {copied ? <CheckIcon size={13} color="white" /> : <Copy size={13} color="white" />}
+          </button>
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="px-4 py-3">
+        {editing ? (
+          <div className="space-y-2.5">
+            <div>
+              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">NHS Number</label>
+              <input
+                autoFocus
+                type="text"
+                inputMode="numeric"
+                placeholder="485 777 3456"
+                value={draft}
+                onChange={handleChange}
+                className="w-full px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-300"
+                style={{ background: 'rgba(255,255,255,0.7)', border: error ? '1.5px solid #f87171' : '0.75px solid rgba(0,0,0,0.10)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)', fontFamily: 'monospace', letterSpacing: '0.1em' }}
+              />
+              {error && <p className="text-[10px] text-rose-500 font-semibold mt-1">⚠️ {error}</p>}
+            </div>
+            <p className="text-[10px] text-gray-400 leading-relaxed">
+              Find it on your NHS card, a prescription letter, or by calling 111.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={save} disabled={saving}
+                className="flex-1 py-2 rounded-xl text-white text-[11px] font-bold disabled:opacity-60 transition-colors flex items-center justify-center gap-1.5"
+                style={{ background: '#005EB8' }}>
+                {saving
+                  ? <><div className="w-3 h-3 border-2 border-white/60 border-t-white rounded-full animate-spin" /> Saving…</>
+                  : <><CheckIcon size={11} /> Save</>}
+              </button>
+              <button onClick={() => { setEditing(false); setError('') }}
+                className="flex-1 py-2 rounded-xl bg-gray-100 text-gray-500 text-[11px] font-semibold">
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : stored ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-gray-400 mb-0.5">Registered number</p>
+              <p className="text-lg font-extrabold tracking-[0.18em] font-mono" style={{ color: '#005EB8' }}>{stored}</p>
+            </div>
+            <button onClick={() => { setDraft(stored); setEditing(true) }}
+              className="text-[10px] font-semibold text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-xl transition-colors">
+              Edit
+            </button>
+          </div>
+        ) : (
+          <button onClick={() => { setDraft(''); setEditing(true) }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[11px] font-semibold border-2 border-dashed border-blue-200 text-blue-400 hover:bg-blue-50 hover:border-blue-300 transition-colors">
+            + Add your NHS number
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Main ProfilePanel ─────────────────────────────────────────────────────────
 export default function ProfilePanel({ open, onClose }) {
   const { currentUser, currentMember, skinColor, setSkinColor, logout, isAdmin, sendBroadcast } = useApp()
@@ -1210,6 +1326,9 @@ export default function ProfilePanel({ open, onClose }) {
                       })}
                     </div>
                   </div>
+
+                  {/* NHS ID */}
+                  <NhsIdCard />
 
                   {/* Settings list */}
                   <div>

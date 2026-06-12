@@ -5,7 +5,7 @@ import { format, isToday, isYesterday, subMonths, subYears } from 'date-fns'
 import {
   CheckCircle, ChevronDown, ChevronUp, FileText, Upload,
   X, Plus, FolderOpen, Pill, Heart, Search,
-  ArrowDownUp, Clock, SlidersHorizontal, Trash2, Edit3, Loader,
+  ArrowDownUp, Clock, SlidersHorizontal, Trash2, Edit3, Loader, Pencil,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
@@ -106,9 +106,26 @@ function groupByDate(items) {
 // ─────────────────────────────────────────────────────────────────────────────
 // Timeline sub-components
 // ─────────────────────────────────────────────────────────────────────────────
-function SymptomCard({ item, onResolve, onDelete, readOnly = false }) {
+function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [editing, setEditing] = useState(false)
+  const [editStart, setEditStart] = useState('')
+  const [editEnd,   setEditEnd]   = useState('')
+
+  function openEdit() {
+    setEditStart(item.timestamp ? item.timestamp.slice(0, 10) : '')
+    setEditEnd(item.resolvedAt  ? item.resolvedAt.slice(0, 10) : '')
+    setEditing(true)
+  }
+
+  function saveEdit() {
+    if (!editStart) return
+    const updates = { timestamp: new Date(editStart).toISOString() }
+    if (item.resolved && editEnd) updates.resolvedAt = new Date(editEnd).toISOString()
+    onEdit(item.id, updates)
+    setEditing(false)
+  }
   const cat      = SYMPTOM_CATEGORIES.find(c => c.id === item.category)
   const sev      = item.severity
   const sevColor = sev >= 7 ? '#ef4444' : sev >= 5 ? '#f97316' : '#10b981'
@@ -180,13 +197,58 @@ function SymptomCard({ item, onResolve, onDelete, readOnly = false }) {
                     <CheckCircle size={13} /> Mark as resolved
                   </button>
                 ) : <span />}
-                {!readOnly && onDelete && (
-                  <button onClick={() => setConfirming(true)}
-                    className="flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-600">
-                    <Trash2 size={12} /> Delete
-                  </button>
-                )}
+                <div className="flex items-center gap-3">
+                  {!readOnly && onEdit && !editing && (
+                    <button onClick={openEdit}
+                      className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-600">
+                      <Pencil size={12} /> Edit dates
+                    </button>
+                  )}
+                  {!readOnly && onDelete && (
+                    <button onClick={() => setConfirming(true)}
+                      className="flex items-center gap-1 text-xs font-semibold text-rose-400 hover:text-rose-600">
+                      <Trash2 size={12} /> Delete
+                    </button>
+                  )}
+                </div>
               </div>
+              <AnimatePresence>
+                {editing && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="rounded-2xl bg-indigo-50 border border-indigo-100 px-4 py-3 mt-1 space-y-2.5">
+                      <p className="text-[11px] font-semibold text-indigo-700">Edit dates</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold block mb-1">Start date</label>
+                          <input type="date" value={editStart} onChange={e => setEditStart(e.target.value)}
+                            className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                        </div>
+                        {item.resolved && (
+                          <div>
+                            <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold block mb-1">End date</label>
+                            <input type="date" value={editEnd} onChange={e => setEditEnd(e.target.value)}
+                              min={editStart}
+                              className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={saveEdit}
+                          className="flex-1 py-1.5 rounded-xl bg-indigo-500 text-white text-[11px] font-bold">
+                          Save
+                        </button>
+                        <button onClick={() => setEditing(false)}
+                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <AnimatePresence>
                 {confirming && (
                   <motion.div
@@ -892,7 +954,7 @@ const TIME_RANGES = [
 export default function History() {
   const {
     currentSymptoms, currentCheckIns, currentDocuments,
-    resolveSymptom, deleteSymptom, addDocument, deleteDocument, currentMember,
+    resolveSymptom, deleteSymptom, updateSymptom, addDocument, deleteDocument, currentMember,
     deleteCheckIn,
   } = useApp()
 
@@ -1186,7 +1248,7 @@ export default function History() {
                   </div>
                   <div className="space-y-2 ml-4">
                     {items.map(item =>
-                      item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} onDelete={!currentMember?.linkedFamilyId ? deleteSymptom : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
+                      item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} onDelete={!currentMember?.linkedFamilyId ? deleteSymptom : undefined} onEdit={!currentMember?.linkedFamilyId ? (id, data) => updateSymptom(id, data) : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
                       item._type === 'checkin'  ? <CheckInCard   key={item.id} item={item} onEdit={!currentMember?.linkedFamilyId ? d => setEditCheckIn(d) : undefined} onDelete={!currentMember?.linkedFamilyId ? deleteCheckIn : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
                       <DocTimelineCard key={item.id} item={item} onView={setViewDoc} />
                     )}

@@ -334,7 +334,7 @@ function HistorySheet({ onClose, onRestore, userId }) {
 // ── Empty state ──────────────────────────────────────────────────────────────
 function EmptyState({ onSuggest }) {
   return (
-    <div data-tour="ai-page" className="flex flex-col items-center px-4 pt-6 pb-4">
+    <div data-tour="ai-page" className="flex flex-col items-center px-4 pt-6 pb-4 max-w-lg mx-auto w-full">
       <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
         <Sparkles size={26} className="text-primary-500" />
       </div>
@@ -624,7 +624,7 @@ export default function AI() {
   return (
     <>
       {/* ── Top bar: History + SOS centered, New chat when chatting ── */}
-      <div className="flex items-center justify-between px-4 pt-3 pb-1">
+      <div className="flex items-center justify-between px-4 pt-3 pb-1 max-w-lg mx-auto">
         {/* History pill */}
         <button
           onClick={() => setShowHistory(true)}
@@ -660,7 +660,7 @@ export default function AI() {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="overflow-y-auto px-4 pt-2"
+          className="overflow-y-auto px-4 pt-2 max-w-lg mx-auto w-full"
           style={{ paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px) + 4rem)' }}
         >
           <div className="flex justify-end mb-2">
@@ -751,7 +751,7 @@ export default function AI() {
           className="fixed left-0 right-0 bg-white border-t border-gray-100 px-4 pt-2.5 z-30"
           style={inputBarStyle}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 max-w-lg mx-auto">
             <div data-tour="ai-chat-input" className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
               <input
                 ref={inputRef}

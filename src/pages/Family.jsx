@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext'
 import { SYMPTOM_CATEGORIES, FEELING_CONFIG } from '../data/mockData'
 import { Avatar } from '../components/Family/FamilySwitcher'
 import { supabase, supabaseReady } from '../supabase'
-import { severityLabel } from '../utils/severity'
+import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
 
 // ── Shared helper ─────────────────────────────────────────────────────────────
 function formatUID(val) {
@@ -347,8 +347,8 @@ function SymptomRow({ symptom }) {
           {symptom.type} · {symptomDurationLabel(symptom)} · {isToday(new Date(symptom.timestamp)) ? 'Today' : format(new Date(symptom.timestamp), 'MMM d')}
         </p>
       </div>
-      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-        sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+        sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-100 text-rose-600' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
       }`}>{severityLabel(sev)}</span>
     </div>
   )
@@ -439,7 +439,7 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
 
   const active   = symptoms.filter(s => !s.resolved)
   const resolved = symptoms.filter(s => s.resolved)
-  const highSev  = active.filter(s => s.severity >= 7)
+  const highSev  = active.filter(s => s.severity >= SEVERITY_HIGH_THRESHOLD)
 
   // Conditions & medications for this member (local family only; connected members don't share this data)
   const memberConditions  = allConditions.filter(c => c.memberId === member.id)

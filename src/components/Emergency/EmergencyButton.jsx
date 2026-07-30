@@ -5,7 +5,7 @@ import { format, isToday, isYesterday } from 'date-fns'
 import { useLocation } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import { warmAudio, stopActiveAlarm } from '../../utils/audio'
-import { severityLabel } from '../../utils/severity'
+import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../../utils/severity'
 import EmergencyFlow from './EmergencyFlow'
 
 // ── My-own emergency summary modal (for the person who triggered it) ──────────
@@ -45,7 +45,7 @@ function EmergencySummaryModal() {
   if (!ev) return null
 
   const emergencyContacts = (currentUser?.emergencyContacts || []).slice(0, 3)
-  const highSev = activeSymptoms.filter(s => s.severity >= 7)
+  const highSev = activeSymptoms.filter(s => s.severity >= SEVERITY_HIGH_THRESHOLD)
   const loc     = ev.location
 
   function handleResolve() {
@@ -155,9 +155,9 @@ function EmergencySummaryModal() {
                 {activeSymptoms.length > 0 ? (
                   <div className="space-y-0.5">
                     {activeSymptoms.map(s => (
-                      <p key={s.id} className={`text-[11px] ${s.severity >= 7 ? 'text-rose-600 font-semibold' : 'text-gray-600'}`}>
+                      <p key={s.id} className={`text-[11px] ${s.severity >= SEVERITY_HIGH_THRESHOLD ? 'text-rose-600 font-semibold' : 'text-gray-600'}`}>
                         {s.bodyLabel} — {s.type}
-                        <span className={`ml-1 font-bold ${s.severity >= 7 ? 'text-rose-600' : s.severity >= 5 ? 'text-amber-500' : 'text-emerald-600'}`}>
+                        <span className={`ml-1 font-bold ${s.severity >= SEVERITY_HIGH_THRESHOLD ? 'text-rose-600' : s.severity >= SEVERITY_MID_THRESHOLD ? 'text-amber-500' : 'text-emerald-600'}`}>
                           {severityLabel(s.severity)}
                         </span>
                         {s.timestamp && <span className="text-gray-400 font-normal"> · since {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>}

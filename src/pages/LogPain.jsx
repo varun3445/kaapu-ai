@@ -5,7 +5,7 @@ import { useApp } from '../context/AppContext'
 import BodyScene from '../components/Body3D/BodyScene'
 import SymptomForm from '../components/Symptoms/SymptomForm'
 import { SYMPTOM_CATEGORIES, BODY_REGIONS } from '../data/mockData'
-import { severityLabel } from '../utils/severity'
+import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
 
 // ── Voice NLP ─────────────────────────────────────────────────────────────────
 
@@ -122,16 +122,17 @@ function parseVoice(text) {
   return { regionId, regionLabel, position, categoryId, cat, type: cat?.types[0] || 'General' }
 }
 
-// Parses a spoken severity response ("pretty mild", "it's a 7", "really bad") into 1-10.
-// Returns null if nothing recognisable so the caller can leave the tap buttons up.
+// Parses a spoken severity response ("pretty mild", "it's a 5", "really bad")
+// into the app's 1-6 severity scale. Returns null if nothing recognisable so
+// the caller can leave the tap buttons up.
 function parseSeverity(text) {
   const lower = text.toLowerCase()
-  if (/\b(unbearable|excruciating|worst|extreme|10)\b/.test(lower)) return 9
-  if (/\b(severe|really bad|very bad|intense|awful|terrible|9|8)\b/.test(lower)) return 8
-  if (/\b(moderate|medium|okay|manageable|so.?so|noticeable|5|6|7)\b/.test(lower)) return 5
-  if (/\b(mild|slight|minor|light|little|small|barely|1|2|3|4)\b/.test(lower)) return 2
-  const num = lower.match(/\b([1-9]|10)\b/)
-  if (num) return Math.min(9, Math.max(1, parseInt(num[1], 10)))
+  if (/\b(unbearable|excruciating|worst|extreme|6)\b/.test(lower)) return 6
+  if (/\b(severe|really bad|very bad|intense|awful|terrible|5)\b/.test(lower)) return 5
+  if (/\b(moderate|medium|okay|manageable|so.?so|noticeable|3|4)\b/.test(lower)) return 3
+  if (/\b(mild|slight|minor|light|little|small|barely|1|2)\b/.test(lower)) return 1
+  const num = lower.match(/\b[1-6]\b/)
+  if (num) return parseInt(num[0], 10)
   return null
 }
 
@@ -149,7 +150,7 @@ function SymptomPill({ symptom, onResolve }) {
       </div>
       <div className="flex items-center gap-1.5">
         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
-          sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+          sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-100 text-rose-600' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
         }`}>{severityLabel(sev)}</span>
         <button onClick={() => onResolve(symptom.id)} className="p-1 text-gray-300 hover:text-rose-400 transition-colors">
           <X size={12} />
@@ -326,9 +327,9 @@ export default function LogPain() {
             <p className="text-[10px] text-indigo-400 font-medium mb-3">Tap a level, or just say how bad it is</p>
             <div className="flex gap-2">
               {[
-                { label: 'Mild',     severity: 2, cls: 'border-emerald-200 text-emerald-700 bg-emerald-50 active:bg-emerald-100' },
-                { label: 'Moderate', severity: 5, cls: 'border-amber-200  text-amber-700  bg-amber-50  active:bg-amber-100'  },
-                { label: 'Severe',   severity: 8, cls: 'border-rose-200   text-rose-700   bg-rose-50   active:bg-rose-100'   },
+                { label: 'Mild',     severity: 1, cls: 'border-emerald-200 text-emerald-700 bg-emerald-50 active:bg-emerald-100' },
+                { label: 'Moderate', severity: 3, cls: 'border-amber-200  text-amber-700  bg-amber-50  active:bg-amber-100'  },
+                { label: 'Severe',   severity: 5, cls: 'border-rose-200   text-rose-700   bg-rose-50   active:bg-rose-100'   },
               ].map(({ label, severity, cls }) => (
                 <button
                   key={label}

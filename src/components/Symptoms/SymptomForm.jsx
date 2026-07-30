@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { X, ChevronDown, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SYMPTOM_CATEGORIES } from '../../data/mockData'
-import { severityLabel as SEV_LABEL, severityColor as SEV_COLOR } from '../../utils/severity'
+import { severityLabel as SEV_LABEL, severityColor as SEV_COLOR, SEVERITY_HIGH_THRESHOLD } from '../../utils/severity'
 
 const DURATIONS = ['Just started', 'A few hours', '1 day', '2–3 days', '1 week', '2+ weeks', 'Ongoing']
 
@@ -10,7 +10,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
   const [categoryId, setCategoryId] = useState('')
   const [typeIdx,    setTypeIdx]    = useState(0)
   const [customType, setCustomType] = useState('')
-  const [severity,   setSeverity]   = useState(5)
+  const [severity,   setSeverity]   = useState(3)
   const [duration,   setDuration]   = useState(DURATIONS[0])
   const [notes,      setNotes]      = useState(initialNotes)
 
@@ -180,7 +180,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
               </span>
             </div>
             <input
-              type="range" min={1} max={10} step={1}
+              type="range" min={1} max={6} step={1}
               value={severity}
               onChange={e => setSeverity(Number(e.target.value))}
               className="w-full accent-indigo-500"
@@ -220,7 +220,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
           </div>
 
           {/* High severity warning */}
-          {severity >= 7 && (
+          {severity >= SEVERITY_HIGH_THRESHOLD && (
             <motion.div
               initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
               className="rounded-3xl px-4 py-3 text-xs font-semibold"

@@ -8,7 +8,7 @@ import { calculateMoodFromSymptoms } from '../context/AppContext'
 import BodyScene from '../components/Body3D/BodyScene'
 import SymptomForm from '../components/Symptoms/SymptomForm'
 import { FEELING_CONFIG, SYMPTOM_CATEGORIES, CHRONIC_CONDITION_PRESETS } from '../data/mockData'
-import { severityLabel } from '../utils/severity'
+import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
 import ConditionCard from '../components/Conditions/ConditionCard'
 import AddMedicationModal from '../components/Medications/AddMedicationModal'
 import { format, isToday } from 'date-fns'
@@ -43,9 +43,9 @@ function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain
   const title = isToday(day) ? 'Today' : format(day, 'EEEE, d MMM')
 
   // Score breakdown
-  const severe   = daySymptoms.filter(s => s.severity >= 7)
-  const moderate = daySymptoms.filter(s => s.severity >= 5 && s.severity < 7)
-  const minor    = daySymptoms.filter(s => s.severity < 5)
+  const severe   = daySymptoms.filter(s => s.severity >= SEVERITY_HIGH_THRESHOLD)
+  const moderate = daySymptoms.filter(s => s.severity >= SEVERITY_MID_THRESHOLD && s.severity < SEVERITY_HIGH_THRESHOLD)
+  const minor    = daySymptoms.filter(s => s.severity < SEVERITY_MID_THRESHOLD)
   const score    = severe.length * 4 + moderate.length * 2 + minor.length
 
   return createPortal(
@@ -119,9 +119,9 @@ function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain
                         <p className="text-[10px] text-gray-400">{s.type} · {severityLabel(sev)}</p>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                          sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
-                        }`}>{sev >= 7 ? 'Severe' : sev >= 5 ? 'Mod' : 'Minor'}</span>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+                          sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-100 text-rose-600' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+                        }`}>{severityLabel(sev)}</span>
                         {stillActive && (
                           <button
                             onClick={() => onResolve(s.id)}
@@ -368,8 +368,8 @@ function SymptomPill({ symptom, onResolve }) {
         <p className="text-[10px] text-gray-400">{symptom.type} · {symptom.duration}</p>
       </div>
       <div className="flex items-center gap-1.5">
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-          sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
+          sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-100 text-rose-600' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
         }`}>{severityLabel(sev)}</span>
         <button onClick={() => onResolve(symptom.id)} className="p-1 text-gray-300 hover:text-rose-400 transition-colors">
           <X size={12} />

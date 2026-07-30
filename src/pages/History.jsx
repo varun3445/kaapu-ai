@@ -13,7 +13,7 @@ import {
   SYMPTOM_CATEGORIES, FEELING_CONFIG,
   CHRONIC_CONDITION_PRESETS,
 } from '../data/mockData'
-import { severityLabel, severityColor } from '../utils/severity'
+import { severityLabel, severityColor, SEVERITY_HIGH_THRESHOLD } from '../utils/severity'
 import ConditionCard from '../components/Conditions/ConditionCard'
 import AddMedicationModal from '../components/Medications/AddMedicationModal'
 import DailyCheckIn  from '../components/CheckIn/DailyCheckIn'
@@ -186,7 +186,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                   <p className="text-xs text-blue-700">{item.notes}</p>
                 </div>
               )}
-              {sev >= 7 && !item.resolved && (
+              {sev >= SEVERITY_HIGH_THRESHOLD && !item.resolved && (
                 <div className="bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">
                   <p className="text-xs text-rose-600 font-medium">⚠️ You may want to reach out to a doctor for this symptom.</p>
                 </div>

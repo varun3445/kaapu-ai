@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { Capacitor } from '@capacitor/core'
 import { supabase, supabaseReady } from '../supabase'
 import { startAlarm, stopActiveAlarm } from '../utils/audio'
-import { severityLabel } from '../utils/severity'
+import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
 
 // ── Push Notifications (lazy — native iOS + Android via Capacitor) ────────────
 let _pushPlugin = null
@@ -71,7 +71,7 @@ function buildEmergencySummary({ member, conditions, medications, symptoms, chec
   if (conditions.length)  lines.push(`Chronic conditions: ${conditions.map(c => c.name).join(', ')}`)
   if (medications.length) lines.push(`Current medications: ${medications.map(m => `${m.name} ${m.dosage}`).join(', ')}`)
   const hrs72 = symptoms.filter(s => Date.now() - new Date(s.timestamp).getTime() < 72 * 3600000)
-  const high  = hrs72.filter(s => s.severity >= 7)
+  const high  = hrs72.filter(s => s.severity >= SEVERITY_HIGH_THRESHOLD)
   if (high.length)  lines.push(`⚠️ HIGH (72h): ${high.map(s => `${s.bodyLabel} ${s.type} (${severityLabel(s.severity)})`).join(' | ')}`)
   if (hrs72.length) lines.push(`Recent: ${hrs72.map(s => `${s.type} at ${s.bodyLabel}`).join(', ')}`)
   const lastCI = checkIns[0]
@@ -91,13 +91,13 @@ const RELATIONSHIP_INVERSE = {
 }
 
 // ── Mood calculation from active symptoms ─────────────────────────────────────
-// Severity tiers: minor 1-4 (1pt), moderate 5-6 (2pts), severe 7-10 (4pts)
+// Severity tiers (1-6 scale): minor 1-2 (1pt), moderate 3-4 (2pts), severe 5-6 (4pts)
 // Score thresholds: 0=great, 1=good, 2-3=okay, 4-5=bad, 6+=terrible
 export function calculateMoodFromSymptoms(activeSymptoms) {
   let score = 0
   activeSymptoms.forEach(s => {
-    if (s.severity >= 7)      score += 4  // severe
-    else if (s.severity >= 5) score += 2  // moderate
+    if (s.severity >= SEVERITY_HIGH_THRESHOLD)      score += 4  // severe
+    else if (s.severity >= SEVERITY_MID_THRESHOLD) score += 2  // moderate
     else                      score += 1  // minor
   })
   if (score === 0) return 'great'
@@ -956,9 +956,9 @@ export function AppProvider({ children }) {
 
   const checkForAlerts = useCallback((symptomList, userId) => {
     symptomList.filter(s => !s.resolved).forEach(s => {
-      if (s.severity >= 7)
+      if (s.severity >= SEVERITY_HIGH_THRESHOLD)
         pushNotif({ id: `alert-${s.id}`, type: 'danger', forUserId: userId, message: `${severityLabel(s.severity)} ${s.categoryLabel} at ${s.bodyLabel}. Consider reaching out to a doctor.` })
-      else if (s.severity >= 5)
+      else if (s.severity >= SEVERITY_MID_THRESHOLD)
         pushNotif({ id: `alert-warn-${s.id}`, type: 'warning', forUserId: userId, message: `Moderate ${s.categoryLabel} at ${s.bodyLabel} — monitor closely.` })
     })
   }, [pushNotif])

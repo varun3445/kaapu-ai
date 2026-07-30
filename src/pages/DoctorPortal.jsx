@@ -8,14 +8,14 @@ import { format } from 'date-fns'
 import { useApp } from '../context/AppContext'
 import { SYMPTOM_CATEGORIES, FEELING_CONFIG, CHRONIC_CONDITION_PRESETS } from '../data/mockData'
 import { Avatar } from '../components/Family/FamilySwitcher'
-import { severityLabel } from '../utils/severity'
+import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
 
 function PatientSymptomCard({ symptom }) {
   const cat = SYMPTOM_CATEGORIES.find(c => c.id === symptom.category)
   const sev = symptom.severity
   return (
     <div className={`flex items-center gap-3 p-3 rounded-2xl border ${
-      sev >= 7 ? 'bg-rose-50 border-rose-100' : sev >= 5 ? 'bg-amber-50 border-amber-100' : 'bg-gray-50 border-gray-100'
+      sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-50 border-rose-100' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-50 border-amber-100' : 'bg-gray-50 border-gray-100'
     }`}>
       <span className="text-xl">{cat?.icon}</span>
       <div className="flex-1">
@@ -24,9 +24,9 @@ function PatientSymptomCard({ symptom }) {
       </div>
       <div className="text-right">
         <p className="text-sm font-bold" style={{
-          color: sev >= 7 ? '#ef4444' : sev >= 5 ? '#f97316' : '#10b981'
+          color: sev >= SEVERITY_HIGH_THRESHOLD ? '#ef4444' : sev >= SEVERITY_MID_THRESHOLD ? '#f97316' : '#10b981'
         }}>{severityLabel(sev)}</p>
-        {sev >= 7 && <AlertTriangle size={12} className="text-rose-400 ml-auto" />}
+        {sev >= SEVERITY_HIGH_THRESHOLD && <AlertTriangle size={12} className="text-rose-400 ml-auto" />}
       </div>
     </div>
   )
@@ -410,7 +410,7 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
   const [tab, setTab] = useState('overview')
   const activeSymptoms   = symptoms.filter(s => !s.resolved)
   const resolvedSymptoms = symptoms.filter(s => s.resolved)
-  const highSeverity     = activeSymptoms.filter(s => s.severity >= 7)
+  const highSeverity     = activeSymptoms.filter(s => s.severity >= SEVERITY_HIGH_THRESHOLD)
   const recentCheckIn    = checkIns[0]
 
   const TABS = [

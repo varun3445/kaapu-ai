@@ -798,6 +798,9 @@ export default function AI() {
           className="fixed left-0 right-0 bg-white border-t border-gray-100 px-4 pt-2.5 z-30"
           style={inputBarStyle}
         >
+          <p className="text-center text-[10px] text-gray-400 mb-1.5 max-w-lg mx-auto leading-tight">
+            AI-generated response — always check with your GP before acting on it.
+          </p>
           <div className="flex items-center gap-2 max-w-lg mx-auto">
             <div data-tour="ai-chat-input" className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
               <input

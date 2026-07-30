@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Mic, RotateCcw, CheckCircle2, MapPin } from 'lucide-react'
 import { useApp } from '../context/AppContext'
@@ -461,9 +462,19 @@ export default function LogPain() {
         </div>
       )}
 
-      {/* ── Voice button — tap to start, auto-stops when speech ends ── */}
+      {/* ── Voice button — tap to start, auto-stops when speech ends ──
+          Fixed + portalled to body (same technique as AI.jsx's chat input bar)
+          so it stays pinned above the bottom nav instead of scrolling with
+          the page content. The spacer below reserves the equivalent layout
+          space so the 3D view/active-symptoms list don't render underneath it. */}
       {supported && (
-        <div className="flex-shrink-0 flex justify-center pb-3 pt-2 bg-indigo-50">
+        <div className="flex-shrink-0" style={{ height: 'calc(4.75rem + env(safe-area-inset-bottom, 0px))' }} />
+      )}
+      {supported && createPortal(
+        <div
+          className="fixed left-0 right-0 flex justify-center pb-3 pt-2 bg-indigo-50 z-30"
+          style={{ bottom: 0, paddingBottom: 'calc(0.75rem + 5.5rem + env(safe-area-inset-bottom, 0px))' }}
+        >
           <motion.button
             onClick={listening ? stop : start}
             animate={listening ? { scale: 1.08 } : { scale: 1 }}
@@ -477,7 +488,8 @@ export default function LogPain() {
             <Mic size={22} className={listening ? 'animate-pulse' : ''} />
             {listening ? 'Listening…' : 'Tap to speak'}
           </motion.button>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Symptom form */}

@@ -42,6 +42,11 @@ const VOICE_PIN_POSITIONS = {
   'right-shin':        { x: -0.13,  y: -0.55, z:  0.11 },
   'left-foot':         { x:  0.13,  y: -0.67, z:  0.17 },
   'right-foot':        { x: -0.13,  y: -0.67, z:  0.17 },
+  // Back regions — same height bands as their front counterparts, but Z is
+  // negative (behind the body's centre) instead of positive (in front).
+  'upper-back':        { x:  0,     y:  0.28, z: -0.15 },
+  'mid-back':          { x:  0,     y:  0.10, z: -0.16 },
+  'lower-back':        { x:  0,     y: -0.03, z: -0.15 },
 }
 
 // Multi-word phrases FIRST so they take priority over single-word matches
@@ -52,6 +57,13 @@ const REGION_RULES = [
   { id: 'abdomen',         kw: ['stomach ache','stomach pain','tummy ache','abdomen','stomach','belly','tummy','gut','nausea','bloat','indigestion'] },
   { id: 'left-hip',        kw: ['left hip','hip left','left side of my back','left lower back'] },
   { id: 'right-hip',       kw: ['right hip','hip right','right side of my back','right lower back'] },
+  // Central back — checked before the generic 'pelvis'/'hip' catch-all so
+  // "lower back"/"mid back"/"upper back" don't get swallowed by it, and
+  // ordered specific-to-generic so "upper back" doesn't fall into lower-back's
+  // bare 'back' keyword.
+  { id: 'upper-back',      kw: ['upper back','shoulder blade','shoulder blades','between my shoulders'] },
+  { id: 'mid-back',        kw: ['mid back','middle back','middle of my back','mid-back'] },
+  { id: 'lower-back',      kw: ['lower back','low back','back pain','backache','back ache','my back hurts','back'] },
   { id: 'pelvis',          kw: ['lower abdomen','pelvic pain','pelvis','groin','hip pain','hip'] },
   { id: 'left-shoulder',   kw: ['left shoulder','shoulder left','left trap'] },
   { id: 'right-shoulder',  kw: ['right shoulder','shoulder right','right trap','shoulder'] },

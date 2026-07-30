@@ -183,6 +183,7 @@ export function AppProvider({ children }) {
       if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
         if (loadingRef.current) return // already loading, skip duplicate
         loadingRef.current = true
+        setAppLoading(true)
         try {
           // 25s hard timeout on the entire load sequence
           const loadDeadline = new Promise((_, rej) =>
@@ -193,6 +194,7 @@ export function AppProvider({ children }) {
           console.error('[load]', e.message)
         } finally {
           loadingRef.current = false
+          setAppLoading(false)
         }
       } else if (event === 'PASSWORD_RECOVERY') {
         setIsPasswordRecovery(true)
@@ -278,8 +280,9 @@ export function AppProvider({ children }) {
     }
 
     const userData = { ...userRow }
-    // Set user immediately so the app can render — data loads below
+    // Set user immediately so the app can render — rest of data loads below
     setCurrentUser(userData)
+    setAppLoading(false)  // dismiss loading splash; remaining queries run in background
     isDemoRef.current = false
     setIsDemoMode(false)
 
@@ -475,28 +478,28 @@ export function AppProvider({ children }) {
       )
       .subscribe()
 
-    // Catch-up: surface any broadcasts sent in the last hour that were missed
-    // (handles users who open the app after a nudge was already sent)
-    // Catch-up: show the most recent broadcast if sent in the last hour and not yet seen
-    const seenKey = `kaapu_broadcasts_seen_${uid}`
-    const lastSeen = localStorage.getItem(seenKey) || new Date(0).toISOString()
-    const { data: missed } = await supabase
-      .from('broadcasts')
-      .select('*')
-      .gt('created_at', lastSeen)
-      .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1)
-    if (missed?.length) {
-      const b = missed[0]
-      pushNotif({
-        id:        `broadcast-${b.id}`,
-        type:      b.type === 'nudge' ? 'info' : (b.type || 'info'),
-        message:   b.message,
-        timestamp: b.created_at,
-      })
-    }
-    localStorage.setItem(seenKey, new Date().toISOString())
+    // Catch-up broadcasts: fire without blocking the main data load
+    const seenKey = `kaapu_broadcasts_seen_${uid}`;
+    (async () => {
+      const lastSeen = localStorage.getItem(seenKey) || new Date(0).toISOString()
+      const { data: missed } = await supabase
+        .from('broadcasts')
+        .select('*')
+        .gt('created_at', lastSeen)
+        .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: false })
+        .limit(1)
+      if (missed?.length) {
+        const b = missed[0]
+        pushNotif({
+          id:        `broadcast-${b.id}`,
+          type:      b.type === 'nudge' ? 'info' : (b.type || 'info'),
+          message:   b.message,
+          timestamp: b.created_at,
+        })
+      }
+      localStorage.setItem(seenKey, new Date().toISOString())
+    })().catch(console.error)
 
     // ── Step 1: Load members first — needed to know linked (connected) families ──
     const safe    = (res) => (res && !res.error ? res.data || [] : [])

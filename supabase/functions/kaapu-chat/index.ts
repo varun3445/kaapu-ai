@@ -20,6 +20,19 @@ function agentHeaders(key: string) {
   }
 }
 
+// Mirrors src/utils/severity.js — the app's severity scale is 1-6, not 1-10,
+// and every user-facing surface shows a tier word, never a raw fraction.
+// This edge function is a separate Deno runtime so it can't import that file
+// directly; keep the two in sync if the tiers change.
+function severityLabel(sev: number): string {
+  if (sev >= 6) return 'Very Severe'
+  if (sev >= 5) return 'Severe'
+  if (sev >= 4) return 'Moderate-Severe'
+  if (sev >= 3) return 'Moderate'
+  if (sev >= 2) return 'Mild-Moderate'
+  return 'Mild'
+}
+
 function buildHealthContext(context: any): string {
   if (!context) return ''
   const parts: string[] = []
@@ -33,7 +46,7 @@ function buildHealthContext(context: any): string {
   if (context.activeSymptoms?.length) {
     const list = context.activeSymptoms
       .slice(0, 10)
-      .map((s: any) => `${s.categoryLabel || s.category} at ${s.bodyLabel || s.bodyArea} (severity ${s.severity}/10${s.duration ? ', ' + s.duration : ''})`)
+      .map((s: any) => `${s.categoryLabel || s.category} at ${s.bodyLabel || s.bodyArea} (severity: ${severityLabel(s.severity)}${s.duration ? ', ' + s.duration : ''})`)
       .join('; ')
     parts.push(`Active symptoms: ${list}`)
   }
@@ -44,7 +57,7 @@ function buildHealthContext(context: any): string {
         const status = s.resolved
           ? `[resolved${s.resolvedDate ? ' ' + s.resolvedDate : ''}]`
           : '[active]'
-        return `${s.date}: ${s.category} — ${s.type} at ${s.bodyArea}, severity ${s.severity}/10${s.duration ? ', ' + s.duration : ''} ${status}${s.notes ? ', note: ' + s.notes : ''}`
+        return `${s.date}: ${s.category} — ${s.type} at ${s.bodyArea}, severity: ${severityLabel(s.severity)}${s.duration ? ', ' + s.duration : ''} ${status}${s.notes ? ', note: "' + s.notes + '"' : ''}`
       })
       .join('\n')
     parts.push(`Symptom history:\n${hist}`)
@@ -134,6 +147,7 @@ Deno.serve(async (req) => {
       messageText = `${healthCtx}${messageText}
 
 [RESPONSE STYLE: Reply like a warm friend texting — short, plain sentences, no bullet points or markdown. 2-4 sentences max unless more is clearly needed. No sign-offs.]
+[NOTES: Symptom "note" fields are raw speech-to-text and are sometimes garbled or mistranscribed. Treat them as a rough hint at most — never state as fact something a note merely implies (e.g. a posture, cause, or behavior). If a note is unclear, either ignore it or ask the user to clarify rather than asserting your own interpretation of it.]
 [ACTION MARKERS: Silently append [[suggest:resolve]] if the user says a symptom is gone/better/resolved. Append [[suggest:log]] if they mention a new symptom they haven't logged. Append nothing otherwise. Never explain these.]`
     }
 

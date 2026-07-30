@@ -92,15 +92,19 @@ async function sendEvent(key: string, sessionId: string, text: string): Promise<
 async function pollResponse(key: string, sessionId: string, maxMs = 45000): Promise<string> {
   const deadline = Date.now() + maxMs
   let lastText = ''
+  let seenEventIds = new Set<string>()
   while (Date.now() < deadline) {
     await new Promise(r => setTimeout(r, 1500))
     const res = await fetch(`${BASE}/sessions/${sessionId}/events`, { headers: agentHeaders(key) })
     if (!res.ok) continue
     const data = await res.json()
     const events: any[] = data.data || []
-    const agentMsgs = events.filter((e: any) => e.type === 'agent.message')
+    const agentMsgs = events.filter((e: any) => e.type === 'agent.message' && !seenEventIds.has(e.id))
     if (agentMsgs.length) {
-      lastText = agentMsgs[agentMsgs.length - 1].content?.[0]?.text || ''
+      // Only update if we have a new unseen message
+      const newMsg = agentMsgs[agentMsgs.length - 1]
+      seenEventIds.add(newMsg.id)
+      lastText = newMsg.content?.[0]?.text || lastText
     }
     if (events.some((e: any) => e.type === 'session.status_idle') && lastText) break
   }

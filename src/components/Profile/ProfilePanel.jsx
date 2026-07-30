@@ -1348,6 +1348,7 @@ export default function ProfilePanel({ open, onClose }) {
   const [copied, setCopied] = useState(false)
   const [page,   setPage]   = useState(null)
   const [generatingReport, setGeneratingReport] = useState(false)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 
   async function downloadGPReport() {
     if (!currentUser || !currentMember) return
@@ -1507,7 +1508,11 @@ export default function ProfilePanel({ open, onClose }) {
                     </div>
                     <div className="flex-1">
                       <p className="text-xs font-semibold text-gray-800">Visiting your GP?</p>
-                      <p className="text-[10px] text-gray-400">Download your 30-day health summary PDF</p>
+                      <p className="text-[10px] text-gray-400">
+                        {isIOS
+                          ? 'Opens your 30-day health summary — tap Share to save'
+                          : 'Download your 30-day health summary PDF'}
+                      </p>
                     </div>
                     {generatingReport
                       ? <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />

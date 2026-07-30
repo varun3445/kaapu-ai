@@ -50,10 +50,49 @@ function sectionHeader(doc, label, y) {
   return y + 11
 }
 
-// ── Draw Kaapu logo as text (SVG logo not embeddable easily in jsPDF) ─────────
-function drawLogo(doc, x, y) {
+// ── Fetch /logo.png once and convert to a data URL jsPDF can embed ────────────
+// Kicked off at module load (see _logoDataUrlPromise below) rather than inside
+// generateGPReport, so by the time the user clicks "Download", the fetch has
+// already resolved — awaiting it then costs a microtask, not a real network
+// delay. That matters because iOS Safari revokes the "user gesture" needed
+// for window.open() once a real (macrotask) async gap appears in the chain.
+async function loadLogoDataUrl() {
+  try {
+    const res  = await fetch('/logo.png')
+    const blob = await res.blob()
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror   = reject
+      reader.readAsDataURL(blob)
+    })
+  } catch (_) {
+    return null // fall back to text-only wordmark below
+  }
+}
+
+let _logoDataUrlPromise = null
+function getLogoDataUrl() {
+  if (!_logoDataUrlPromise) _logoDataUrlPromise = loadLogoDataUrl()
+  return _logoDataUrlPromise
+}
+// Warm the cache as soon as this module is imported.
+getLogoDataUrl()
+
+const LOGO_ASPECT = 1768 / 2236 // source logo.png is 2236×1768
+
+// ── Draw Kaapu logo (image + wordmark), right-aligned at x ───────────────────
+function drawLogo(doc, x, y, logoDataUrl) {
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(14)
+  const wordmarkW = doc.getTextWidth('Kaapu')
+
+  if (logoDataUrl) {
+    const imgH = 7
+    const imgW = imgH / LOGO_ASPECT
+    try { doc.addImage(logoDataUrl, 'PNG', x - wordmarkW - imgW - 2, y - 0.5, imgW, imgH) } catch (_) {}
+  }
+
   textRgb(doc, C.indigo)
   doc.text('Kaapu', x, y, { align: 'right', baseline: 'top' })
   doc.setFont('helvetica', 'normal')
@@ -63,13 +102,13 @@ function drawLogo(doc, x, y) {
 }
 
 // ── Page header (repeated on each page) ───────────────────────────────────────
-function pageHeader(doc, memberName, dateRange, pageNum, totalPages) {
+function pageHeader(doc, memberName, dateRange, pageNum, totalPages, logoDataUrl) {
   // Patient name + report title
   text(doc, memberName, MARGIN, 12, { size: 14, weight: 'bold', col: C.gray900 })
   text(doc, 'GP Visit Summary', MARGIN, 21, { size: 10, weight: 'bold', col: C.gray900 })
   text(doc, dateRange, MARGIN, 29, { size: 8, col: C.gray600 })
   // Logo top-right
-  drawLogo(doc, PAGE_W - MARGIN, 12)
+  drawLogo(doc, PAGE_W - MARGIN, 12, logoDataUrl)
   // Page number
   text(doc, `Page ${pageNum} of ${totalPages}`, PAGE_W - MARGIN, 29, { size: 8, col: C.gray400, align: 'right' })
   // Divider
@@ -96,20 +135,9 @@ function drawChart(doc, data, x, y, w, h, opts = {}) {
   const plotX = (i) => x + 4 + (i / Math.max(len - 1, 1)) * (w - 8)
   const plotY = (v) => y + h - 6 - (Math.min(v, maxVal) / maxVal) * (h - 10)
 
-  // Filled area
+  // Line + dots
   if (len > 1) {
     const pts = data.map((d, i) => [plotX(i), plotY(d.value)])
-    doc.setFillColor(...color, 0.15)
-    doc.setGState && doc.setGState(new doc.GState({ opacity: 0.15 }))
-    // Approximate fill with light rect (jsPDF doesn't do polygon fill easily)
-    const minY = Math.min(...pts.map(p => p[1]))
-    pts.forEach(([px], i) => {
-      if (i === 0) return
-      const prev = pts[i - 1]
-      const segH = (y + h - 5) - Math.min(pts[i][1], prev[1])
-      fillRgb(doc, [...color.slice(0, 3)])
-      doc.setFillColor(color[0], color[1], color[2], 0.08)
-    })
 
     // Line
     doc.setLineWidth(0.6)
@@ -173,8 +201,10 @@ export async function generateGPReport({ currentUser, currentMember, symptoms, c
   const memberConditions  = (conditions  || []).filter(c => !c.memberId || c.memberId === currentMember?.id)
   const memberMedications = (medications || []).filter(m => !m.memberId || m.memberId === currentMember?.id)
 
+  const logoDataUrl = await getLogoDataUrl()
+
   // ── PAGE 1 ────────────────────────────────────────────────────────────────
-  let y = pageHeader(doc, memberName, dateRange, 1, 2)
+  let y = pageHeader(doc, memberName, dateRange, 1, 2, logoDataUrl)
 
   // ── Patient Bio ───────────────────────────────────────────────────────────
   y = sectionHeader(doc, 'Patient Information', y)
@@ -279,7 +309,7 @@ export async function generateGPReport({ currentUser, currentMember, symptoms, c
 
   // ── PAGE 2 ────────────────────────────────────────────────────────────────
   doc.addPage()
-  y = pageHeader(doc, memberName, dateRange, 2, 2)
+  y = pageHeader(doc, memberName, dateRange, 2, 2, logoDataUrl)
 
   // ── 7-day detailed chart ──────────────────────────────────────────────────
   y = sectionHeader(doc, '7-Day Detailed Symptom Log', y)
@@ -309,30 +339,37 @@ export async function generateGPReport({ currentUser, currentMember, symptoms, c
   if (last7.length > 0) {
     y = sectionHeader(doc, 'Symptom Breakdown — Last 7 Days', y)
 
-    // Group by category
+    // Group by body region + category, e.g. "Right Shoulder Pain" — grouping
+    // by category alone collapsed everything into one vague "Pain" row with
+    // no indication of WHERE it hurt.
     const grouped = {}
     last7.forEach(s => {
-      const key = s.categoryLabel || s.category || 'Other'
-      if (!grouped[key]) grouped[key] = []
-      grouped[key].push(s)
+      const region = s.bodyLabel || s.bodyRegion || 'Unspecified area'
+      const cat    = s.categoryLabel || s.category || 'Symptom'
+      const key    = `${region}|${cat}`
+      if (!grouped[key]) grouped[key] = { region, cat, syms: [] }
+      grouped[key].syms.push(s)
     })
 
-    Object.entries(grouped).forEach(([cat, syms]) => {
+    Object.values(grouped).forEach(({ region, cat, syms }) => {
       if (y > PAGE_H - 40) return // safety — don't overflow page
-      const avg    = syms.reduce((a, s) => a + (s.severity || 0), 0) / syms.length
-      const sc     = severityColor(avg)
+      const avg   = syms.reduce((a, s) => a + (s.severity || 0), 0) / syms.length
+      const sc    = severityColor(avg)
+      // "Right Shoulder" + "Pain" reads naturally as "Right Shoulder Pain";
+      // other categories ("Digestive", "Respiratory") read fine appended too.
+      const title = `${region} ${cat}`
 
       rect(doc, MARGIN, y, CONTENT_W, 14, C.gray100)
 
-      // Category + count
-      text(doc, cat, MARGIN + 4, y + 2, { size: 9, weight: 'bold', col: C.gray900 })
+      // Region + category, and count
+      text(doc, title, MARGIN + 4, y + 2, { size: 9, weight: 'bold', col: C.gray900 })
       text(doc, `${syms.length} log${syms.length > 1 ? 's' : ''}`, MARGIN + 4, y + 7, { size: 7, col: C.gray600 })
 
-      // Avg severity badge
-      const badge = `Avg ${avg.toFixed(1)}/10`
+      // Severity badge — average when there are multiple logs, exact value otherwise
+      const badge = syms.length > 1 ? `Avg ${avg.toFixed(1)}/10` : `${avg.toFixed(0)}/10`
       fillRgb(doc, sc)
-      doc.roundedRect(PAGE_W - MARGIN - 22, y + 3, 21, 8, 2, 2, 'F')
-      text(doc, badge, PAGE_W - MARGIN - 11, y + 4.5, { size: 6.5, weight: 'bold', col: C.white, align: 'center' })
+      doc.roundedRect(PAGE_W - MARGIN - 24, y + 3, 23, 8, 2, 2, 'F')
+      text(doc, badge, PAGE_W - MARGIN - 12.5, y + 4.5, { size: 6.5, weight: 'bold', col: C.white, align: 'center' })
 
       y += 16
     })
@@ -357,6 +394,19 @@ export async function generateGPReport({ currentUser, currentMember, symptoms, c
   text(doc, 'Kaapu is not a medical device. Not for clinical use.', PAGE_W - MARGIN, footerY + 3, { size: 7, col: C.gray400, align: 'right' })
 
   // ── Save ───────────────────────────────────────────────────────────────────
+  // iOS Safari (and any WKWebView, including this app's own Capacitor shell)
+  // never honours the <a download> attribute that jsPDF's doc.save() relies
+  // on — tapping the resulting link just navigates instead of downloading,
+  // which reads as "nothing happened". The standard iOS pattern is to open
+  // the PDF in the built-in viewer instead; the user then taps the Share icon
+  // to save it to Files. Everywhere else, doc.save() already works fine.
   const filename = `Kaapu-GP-Report-${memberName.replace(/\s+/g, '-')}-${now.toISOString().slice(0, 10)}.pdf`
-  doc.save(filename)
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+
+  if (isIOS) {
+    const blobUrl = doc.output('bloburl')
+    window.open(blobUrl, '_blank')
+  } else {
+    doc.save(filename)
+  }
 }

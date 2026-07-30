@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef } f
 import { Capacitor } from '@capacitor/core'
 import { supabase, supabaseReady } from '../supabase'
 import { startAlarm, stopActiveAlarm } from '../utils/audio'
+import { severityLabel } from '../utils/severity'
 
 // ── Push Notifications (lazy — native iOS + Android via Capacitor) ────────────
 let _pushPlugin = null
@@ -71,7 +72,7 @@ function buildEmergencySummary({ member, conditions, medications, symptoms, chec
   if (medications.length) lines.push(`Current medications: ${medications.map(m => `${m.name} ${m.dosage}`).join(', ')}`)
   const hrs72 = symptoms.filter(s => Date.now() - new Date(s.timestamp).getTime() < 72 * 3600000)
   const high  = hrs72.filter(s => s.severity >= 7)
-  if (high.length)  lines.push(`⚠️ HIGH (72h): ${high.map(s => `${s.bodyLabel} ${s.type} ${s.severity}/10`).join(' | ')}`)
+  if (high.length)  lines.push(`⚠️ HIGH (72h): ${high.map(s => `${s.bodyLabel} ${s.type} (${severityLabel(s.severity)})`).join(' | ')}`)
   if (hrs72.length) lines.push(`Recent: ${hrs72.map(s => `${s.type} at ${s.bodyLabel}`).join(', ')}`)
   const lastCI = checkIns[0]
   lines.push(lastCI
@@ -956,7 +957,7 @@ export function AppProvider({ children }) {
   const checkForAlerts = useCallback((symptomList, userId) => {
     symptomList.filter(s => !s.resolved).forEach(s => {
       if (s.severity >= 7)
-        pushNotif({ id: `alert-${s.id}`, type: 'danger', forUserId: userId, message: `High severity (${s.severity}/10) ${s.categoryLabel} at ${s.bodyLabel}. Consider reaching out to a doctor.` })
+        pushNotif({ id: `alert-${s.id}`, type: 'danger', forUserId: userId, message: `${severityLabel(s.severity)} ${s.categoryLabel} at ${s.bodyLabel}. Consider reaching out to a doctor.` })
       else if (s.severity >= 5)
         pushNotif({ id: `alert-warn-${s.id}`, type: 'warning', forUserId: userId, message: `Moderate ${s.categoryLabel} at ${s.bodyLabel} — monitor closely.` })
     })
@@ -1473,7 +1474,7 @@ export function AppProvider({ children }) {
       if (emergencyContacts.length > 0) {
         const activeConditions  = conditions.filter(c => c.memberId === currentMember.id).map(c => c.name)
         const activeMedications = medications.filter(m => m.memberId === currentMember.id).map(m => m.name + (m.dosage ? ` ${m.dosage}` : ''))
-        const activeSymptoms    = symptoms.filter(s => s.memberId === currentMember.id && s.status === 'active').map(s => `${s.bodyLabel} (${s.type}, ${s.severity}/10)`)
+        const activeSymptoms    = symptoms.filter(s => s.memberId === currentMember.id && s.status === 'active').map(s => `${s.bodyLabel} (${s.type}, ${severityLabel(s.severity)})`)
 
         supabase.functions.invoke('send-emergency-sms', {
           body: {

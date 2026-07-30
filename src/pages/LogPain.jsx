@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext'
 import BodyScene from '../components/Body3D/BodyScene'
 import SymptomForm from '../components/Symptoms/SymptomForm'
 import { SYMPTOM_CATEGORIES, BODY_REGIONS } from '../data/mockData'
+import { severityLabel } from '../utils/severity'
 
 // ── Voice NLP ─────────────────────────────────────────────────────────────────
 
@@ -147,9 +148,9 @@ function SymptomPill({ symptom, onResolve }) {
         <p className="text-[10px] text-gray-400">{symptom.type} · {symptom.duration}</p>
       </div>
       <div className="flex items-center gap-1.5">
-        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
           sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
-        }`}>{sev >= 7 ? '⚠ High' : sev >= 5 ? 'Mid' : 'Low'}</span>
+        }`}>{severityLabel(sev)}</span>
         <button onClick={() => onResolve(symptom.id)} className="p-1 text-gray-300 hover:text-rose-400 transition-colors">
           <X size={12} />
         </button>

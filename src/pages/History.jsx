@@ -13,7 +13,7 @@ import {
   SYMPTOM_CATEGORIES, FEELING_CONFIG,
   CHRONIC_CONDITION_PRESETS,
 } from '../data/mockData'
-import { severityLabel } from '../utils/severity'
+import { severityLabel, severityColor } from '../utils/severity'
 import ConditionCard from '../components/Conditions/ConditionCard'
 import AddMedicationModal from '../components/Medications/AddMedicationModal'
 import DailyCheckIn  from '../components/CheckIn/DailyCheckIn'
@@ -129,7 +129,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
   }
   const cat      = SYMPTOM_CATEGORIES.find(c => c.id === item.category)
   const sev      = item.severity
-  const sevColor = sev >= 7 ? '#ef4444' : sev >= 5 ? '#f97316' : '#10b981'
+  const sevColor = severityColor(sev)
   const isContinuation = item._dayIndex > 0
   return (
     <motion.div layout className={`glass-card rounded-2xl overflow-hidden ${isContinuation ? 'opacity-80' : ''}`}>

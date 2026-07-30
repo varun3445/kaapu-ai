@@ -8,6 +8,7 @@ import { format } from 'date-fns'
 import { useApp } from '../context/AppContext'
 import { SYMPTOM_CATEGORIES, FEELING_CONFIG, CHRONIC_CONDITION_PRESETS } from '../data/mockData'
 import { Avatar } from '../components/Family/FamilySwitcher'
+import { severityLabel } from '../utils/severity'
 
 function PatientSymptomCard({ symptom }) {
   const cat = SYMPTOM_CATEGORIES.find(c => c.id === symptom.category)
@@ -24,7 +25,7 @@ function PatientSymptomCard({ symptom }) {
       <div className="text-right">
         <p className="text-sm font-bold" style={{
           color: sev >= 7 ? '#ef4444' : sev >= 5 ? '#f97316' : '#10b981'
-        }}>{sev}/10</p>
+        }}>{severityLabel(sev)}</p>
         {sev >= 7 && <AlertTriangle size={12} className="text-rose-400 ml-auto" />}
       </div>
     </div>
@@ -549,7 +550,7 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
                   <span className="text-lg">{cat?.icon}</span>
                   <div className="flex-1">
                     <p className="text-xs font-bold text-gray-700">{s.bodyLabel} — {s.type}</p>
-                    <p className="text-[10px] text-gray-400">{format(new Date(s.timestamp), 'MMM d')} · Sev {s.severity}/10 · {s.duration}</p>
+                    <p className="text-[10px] text-gray-400">{format(new Date(s.timestamp), 'MMM d')} · {severityLabel(s.severity)} · {s.duration}</p>
                   </div>
                   {s.resolved && <span className="text-[10px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">✓</span>}
                 </div>

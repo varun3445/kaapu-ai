@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext'
 import { SYMPTOM_CATEGORIES, FEELING_CONFIG } from '../data/mockData'
 import { Avatar } from '../components/Family/FamilySwitcher'
 import { supabase, supabaseReady } from '../supabase'
+import { severityLabel } from '../utils/severity'
 
 // ── Shared helper ─────────────────────────────────────────────────────────────
 function formatUID(val) {
@@ -348,7 +349,7 @@ function SymptomRow({ symptom }) {
       </div>
       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
         sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
-      }`}>{sev}/10</span>
+      }`}>{severityLabel(sev)}</span>
     </div>
   )
 }

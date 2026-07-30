@@ -11,8 +11,11 @@ const C = {
   gray200:   [229, 231, 235],
   gray100:   [243, 244, 246],
   white:     [255, 255, 255],
+  darkRed:   [185, 28,  28],
   rose:      [239, 68,  68],
+  orange:    [249, 115, 22],
   amber:     [245, 158, 11],
+  lime:      [132, 204, 22],
   green:     [34,  197, 94],
 }
 
@@ -174,10 +177,13 @@ function drawChart(doc, data, x, y, w, h, opts = {}) {
   return y + h + 4
 }
 
-// ── Symptom severity badge ─────────────────────────────────────────────────────
+// ── Symptom severity badge — mirrors the 6-tier boundaries in utils/severity ──
 function severityColor(avg) {
-  if (avg >= 7) return C.rose
-  if (avg >= 4) return C.amber
+  if (avg >= 10) return C.darkRed
+  if (avg >= 8)  return C.rose
+  if (avg >= 7)  return C.orange
+  if (avg >= 5)  return C.amber
+  if (avg >= 3)  return C.lime
   return C.green
 }
 
@@ -366,11 +372,16 @@ export async function generateGPReport({ currentUser, currentMember, symptoms, c
       text(doc, title, MARGIN + 4, y + 2, { size: 9, weight: 'bold', col: C.gray900 })
       text(doc, `${syms.length} log${syms.length > 1 ? 's' : ''}`, MARGIN + 4, y + 7, { size: 7, col: C.gray600 })
 
-      // Severity badge — tier wording (Mild/Moderate/Severe), not a raw score
+      // Severity badge — 6-tier wording, some labels ("Moderate-Severe") are
+      // much longer than others ("Mild"), so size the badge to the text
+      // rather than a fixed width that would clip the longer ones.
       const badge = severityLabel(avg)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(6.5)
+      const badgeW = doc.getTextWidth(badge) + 6
       fillRgb(doc, sc)
-      doc.roundedRect(PAGE_W - MARGIN - 24, y + 3, 23, 8, 2, 2, 'F')
-      text(doc, badge, PAGE_W - MARGIN - 12.5, y + 4.5, { size: 6.5, weight: 'bold', col: C.white, align: 'center' })
+      doc.roundedRect(PAGE_W - MARGIN - badgeW, y + 3, badgeW, 8, 2, 2, 'F')
+      text(doc, badge, PAGE_W - MARGIN - badgeW / 2, y + 4.5, { size: 6.5, weight: 'bold', col: C.white, align: 'center' })
 
       y += 16
     })

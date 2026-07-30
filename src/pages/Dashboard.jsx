@@ -8,6 +8,7 @@ import { calculateMoodFromSymptoms } from '../context/AppContext'
 import BodyScene from '../components/Body3D/BodyScene'
 import SymptomForm from '../components/Symptoms/SymptomForm'
 import { FEELING_CONFIG, SYMPTOM_CATEGORIES, CHRONIC_CONDITION_PRESETS } from '../data/mockData'
+import { severityLabel } from '../utils/severity'
 import ConditionCard from '../components/Conditions/ConditionCard'
 import AddMedicationModal from '../components/Medications/AddMedicationModal'
 import { format, isToday } from 'date-fns'
@@ -115,7 +116,7 @@ function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain
                         style={{ background: (cat?.color || '#6366f1') + '22' }}>{cat?.icon}</div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-gray-800 truncate">{s.bodyLabel}</p>
-                        <p className="text-[10px] text-gray-400">{s.type} · sev {sev}/10</p>
+                        <p className="text-[10px] text-gray-400">{s.type} · {severityLabel(sev)}</p>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
@@ -369,7 +370,7 @@ function SymptomPill({ symptom, onResolve }) {
       <div className="flex items-center gap-1.5">
         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
           sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
-        }`}>{sev >= 7 ? '⚠ High' : sev >= 5 ? 'Mid' : 'Low'}</span>
+        }`}>{severityLabel(sev)}</span>
         <button onClick={() => onResolve(symptom.id)} className="p-1 text-gray-300 hover:text-rose-400 transition-colors">
           <X size={12} />
         </button>

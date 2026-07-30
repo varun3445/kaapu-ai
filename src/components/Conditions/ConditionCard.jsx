@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, ChevronUp, Trash2, Pill, TrendingUp } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import { SYMPTOM_CATEGORIES } from '../../data/mockData'
+import { severityLabel } from '../../utils/severity'
 
 const SEVERITY_COLORS = {
   mild:     { bg: '#d1fae5', text: '#065f46', label: 'Mild' },
@@ -138,7 +139,7 @@ export default function ConditionCard({ condition, medications, symptoms }) {
                   <div>
                     <p className="text-[10px] text-amber-600 font-semibold mb-0.5">Active Symptoms</p>
                     <p className="text-xs text-amber-700">
-                      {linkedSymptoms.map(s => `${s.bodyLabel} (${s.severity}/10)`).join(', ')}
+                      {linkedSymptoms.map(s => `${s.bodyLabel} (${severityLabel(s.severity)})`).join(', ')}
                     </p>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext'
 import BodyScene from '../components/Body3D/BodyScene'
 import SymptomForm from '../components/Symptoms/SymptomForm'
 import { SYMPTOM_CATEGORIES } from '../data/mockData'
+import { severityLabel } from '../utils/severity'
 
 function PinCard({ symptom, onResolve }) {
   const cat = SYMPTOM_CATEGORIES.find(c => c.id === symptom.category)
@@ -21,7 +22,7 @@ function PinCard({ symptom, onResolve }) {
       <div className="flex flex-col items-end gap-1">
         <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
           sev >= 7 ? 'bg-rose-100 text-rose-600' : sev >= 5 ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
-        }`}>{sev}/10</span>
+        }`}>{severityLabel(sev)}</span>
         <button onClick={() => onResolve(symptom.id)} className="text-[10px] text-gray-300 hover:text-emerald-500 transition-colors font-medium">
           Resolve ✓
         </button>

@@ -5,6 +5,7 @@ import { format, isToday, isYesterday } from 'date-fns'
 import { useLocation } from 'react-router-dom'
 import { useApp } from '../../context/AppContext'
 import { warmAudio, stopActiveAlarm } from '../../utils/audio'
+import { severityLabel } from '../../utils/severity'
 import EmergencyFlow from './EmergencyFlow'
 
 // ── My-own emergency summary modal (for the person who triggered it) ──────────
@@ -157,7 +158,7 @@ function EmergencySummaryModal() {
                       <p key={s.id} className={`text-[11px] ${s.severity >= 7 ? 'text-rose-600 font-semibold' : 'text-gray-600'}`}>
                         {s.bodyLabel} — {s.type}
                         <span className={`ml-1 font-bold ${s.severity >= 7 ? 'text-rose-600' : s.severity >= 5 ? 'text-amber-500' : 'text-emerald-600'}`}>
-                          {s.severity}/10
+                          {severityLabel(s.severity)}
                         </span>
                         {s.timestamp && <span className="text-gray-400 font-normal"> · since {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>}
                       </p>
@@ -179,7 +180,7 @@ function EmergencySummaryModal() {
                     {recentSymptoms.filter(s => s.resolved).slice(0, 4).map(s => (
                       <p key={s.id} className="text-[11px] text-gray-500">
                         {s.bodyLabel} — {s.type}
-                        <span className="ml-1 text-gray-400">· {s.severity}/10</span>
+                        <span className="ml-1 text-gray-400">· {severityLabel(s.severity)}</span>
                         {s.timestamp && (
                           <span className="text-gray-400"> · {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>
                         )}

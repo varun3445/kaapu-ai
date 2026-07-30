@@ -2,13 +2,9 @@ import { useState } from 'react'
 import { X, ChevronDown, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SYMPTOM_CATEGORIES } from '../../data/mockData'
+import { severityLabel as SEV_LABEL, severityColor as SEV_COLOR } from '../../utils/severity'
 
 const DURATIONS = ['Just started', 'A few hours', '1 day', '2–3 days', '1 week', '2+ weeks', 'Ongoing']
-
-const SEV_COLOR = (s) =>
-  s <= 3 ? '#10b981' : s <= 5 ? '#f59e0b' : s <= 7 ? '#f97316' : '#ef4444'
-const SEV_LABEL = (s) =>
-  s <= 2 ? 'Mild' : s <= 4 ? 'Mild–Moderate' : s <= 6 ? 'Moderate' : s <= 8 ? 'Severe' : 'Very Severe'
 
 export default function SymptomForm({ region, onSubmit, onClose, initialNotes = '' }) {
   const [categoryId, setCategoryId] = useState('')

@@ -22,7 +22,7 @@ function GoogleLogo() {
 
 
 export default function Auth() {
-  const { login, signup, signInWithOAuth } = useApp()
+  const { login, signup, signInWithOAuth, isPasswordRecovery, resetPassword, updatePassword } = useApp()
   const [mode,    setMode]    = useState('login')   // 'login' | 'signup'
   const [role,    setRole]    = useState('user')
   const [form,    setForm]    = useState({ name: '', familyName: '', email: '', password: '', age: '', gender: 'female' })
@@ -32,6 +32,14 @@ export default function Auth() {
   const [error,       setError]       = useState('')
   const [loading, setLoading] = useState(false)
   const [slowHint, setSlowHint] = useState(false)
+  const [confirmEmail, setConfirmEmail] = useState('')
+  const [forgotMode, setForgotMode] = useState('idle') // 'idle' | 'form' | 'sent' | 'notFound'
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
+  const [passwordUpdateError, setPasswordUpdateError] = useState('')
+  const [passwordUpdateLoading, setPasswordUpdateLoading] = useState(false)
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })); setError('') }
 
@@ -69,7 +77,11 @@ export default function Auth() {
           consentGivenAt: new Date().toISOString(),
         })
       }
-      if (result?.error) setError(result.error)
+      if (result?.needsEmailConfirmation) {
+        setConfirmEmail(form.email)
+      } else if (result?.error) {
+        setError(result.error)
+      }
     } catch (err) {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -79,10 +91,183 @@ export default function Auth() {
     }
   }
 
+  async function handleForgotSubmit(e) {
+    e.preventDefault()
+    setForgotLoading(true)
+    const result = await resetPassword(forgotEmail)
+    setForgotLoading(false)
+    if (result.notFound) { setForgotMode('notFound'); return }
+    if (result.error) { setForgotMode('notFound'); return }
+    setForgotMode('sent')
+  }
+
+  async function handleNewPassword(e) {
+    e.preventDefault()
+    setPasswordUpdateError('')
+    if (newPassword !== newPasswordConfirm) { setPasswordUpdateError('Passwords do not match.'); return }
+    if (newPassword.length < 6) { setPasswordUpdateError('Password must be at least 6 characters.'); return }
+    setPasswordUpdateLoading(true)
+    const result = await updatePassword(newPassword)
+    setPasswordUpdateLoading(false)
+    if (result.error) setPasswordUpdateError(result.error)
+  }
+
   // Demo login shortcuts
   async function demoLogin(e, p) {
     setForm(f => ({ ...f, email: e, password: p }))
     await login(e, p)
+  }
+
+  // ── Set new password (user clicked reset link in email) ─────────────────────
+  if (isPasswordRecovery) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#eeeae6' }}>
+        <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+          <div style={{ position: 'absolute', top: '-10%', left: '-15%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)', filter: 'blur(48px)' }} />
+        </div>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm glass-elevated rounded-3xl p-8">
+          <h2 className="text-xl font-extrabold text-gray-900 mb-1">Set new password</h2>
+          <p className="text-sm text-gray-400 mb-6">Choose a password you haven't used before.</p>
+          <form onSubmit={handleNewPassword} className="space-y-4">
+            <input type="password" placeholder="New password *" value={newPassword}
+              onChange={e => { setNewPassword(e.target.value); setPasswordUpdateError('') }}
+              className="input-field" autoComplete="new-password" />
+            <input type="password" placeholder="Confirm new password *" value={newPasswordConfirm}
+              onChange={e => { setNewPasswordConfirm(e.target.value); setPasswordUpdateError('') }}
+              className="input-field" autoComplete="new-password" />
+            {passwordUpdateError && (
+              <div className="px-3 py-2 rounded-xl" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)' }}>
+                <p className="text-xs text-rose-600 font-medium">{passwordUpdateError}</p>
+              </div>
+            )}
+            <button type="submit" disabled={passwordUpdateLoading}
+              className="w-full py-3.5 rounded-2xl font-bold text-sm bg-primary-600 text-white disabled:opacity-60">
+              {passwordUpdateLoading
+                ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Updating…</span>
+                : 'Update password'}
+            </button>
+          </form>
+        </motion.div>
+        <style>{`.input-field{width:100%;padding:12px 16px;border:0.75px solid rgba(0,0,0,0.09);border-radius:14px;font-size:14px;font-family:'Figtree',sans-serif;outline:none;transition:border-color 0.15s,box-shadow 0.15s,background 0.15s;background:rgba(255,255,255,0.55);color:#111827;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.9);}.input-field::placeholder{color:rgba(107,114,128,0.7);}.input-field:focus{border-color:rgba(99,102,241,0.45);box-shadow:0 0 0 3px rgba(99,102,241,0.1),inset 0 1px 0 rgba(255,255,255,0.95);background:rgba(255,255,255,0.78);}`}</style>
+      </div>
+    )
+  }
+
+  // ── Forgot password screens ──────────────────────────────────────────────────
+  if (forgotMode !== 'idle') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#eeeae6' }}>
+        <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+          <div style={{ position: 'absolute', top: '-10%', left: '-15%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)', filter: 'blur(48px)' }} />
+          <div style={{ position: 'absolute', bottom: '10%', right: '10%', width: '45%', height: '45%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.22) 0%, transparent 70%)', filter: 'blur(48px)' }} />
+        </div>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm glass-elevated rounded-3xl p-8">
+
+          {forgotMode === 'form' && (
+            <>
+              <button onClick={() => setForgotMode('idle')}
+                className="text-sm font-semibold text-primary-600 mb-5 block">← Back</button>
+              <h2 className="text-xl font-extrabold text-gray-900 mb-1">Reset password</h2>
+              <p className="text-sm text-gray-400 mb-6">Enter your email and we'll send a reset link.</p>
+              <form onSubmit={handleForgotSubmit} className="space-y-4">
+                <input type="email" placeholder="Email address *" value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
+                  className="input-field" autoComplete="email" />
+                <button type="submit" disabled={forgotLoading}
+                  className="w-full py-3.5 rounded-2xl font-bold text-sm bg-primary-600 text-white disabled:opacity-60">
+                  {forgotLoading
+                    ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Checking…</span>
+                    : 'Send reset link'}
+                </button>
+              </form>
+            </>
+          )}
+
+          {forgotMode === 'sent' && (
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+                style={{ background: 'rgba(99,102,241,0.12)' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,1)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/>
+                </svg>
+              </div>
+              <h2 className="text-xl font-extrabold text-gray-900 mb-2">Check your email</h2>
+              <p className="text-sm text-gray-500 mb-1">We sent a reset link to</p>
+              <p className="text-sm font-semibold text-gray-800 mb-5">{forgotEmail}</p>
+              <p className="text-xs text-gray-400 mb-6">Click the link in the email to set a new password. Check your spam folder if you don't see it.</p>
+              <button onClick={() => { setForgotMode('idle'); setForgotEmail('') }}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm bg-primary-600 text-white">
+                Back to Sign In
+              </button>
+            </div>
+          )}
+
+          {forgotMode === 'notFound' && (
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+                style={{ background: 'rgba(239,68,68,0.1)' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.8)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+              </div>
+              <h2 className="text-xl font-extrabold text-gray-900 mb-2">Account not found</h2>
+              <p className="text-sm text-gray-500 mb-6">
+                We couldn't find an account for <span className="font-semibold text-gray-700">{forgotEmail}</span>. Double-check the email or create a new account.
+              </p>
+              <button onClick={() => { setForgotMode('idle'); setForgotEmail(''); setMode('signup') }}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm bg-primary-600 text-white mb-3">
+                Create an account
+              </button>
+              <button onClick={() => setForgotMode('form')}
+                className="w-full py-3 rounded-2xl font-semibold text-sm text-gray-500">
+                Try a different email
+              </button>
+            </div>
+          )}
+        </motion.div>
+        <style>{`.input-field{width:100%;padding:12px 16px;border:0.75px solid rgba(0,0,0,0.09);border-radius:14px;font-size:14px;font-family:'Figtree',sans-serif;outline:none;transition:border-color 0.15s,box-shadow 0.15s,background 0.15s;background:rgba(255,255,255,0.55);color:#111827;backdrop-filter:blur(8px);box-shadow:inset 0 1px 0 rgba(255,255,255,0.9);}.input-field::placeholder{color:rgba(107,114,128,0.7);}.input-field:focus{border-color:rgba(99,102,241,0.45);box-shadow:0 0 0 3px rgba(99,102,241,0.1),inset 0 1px 0 rgba(255,255,255,0.95);background:rgba(255,255,255,0.78);}`}</style>
+      </div>
+    )
+  }
+
+  if (confirmEmail) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: '#eeeae6' }}>
+        <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+          <div style={{ position: 'absolute', top: '-10%', left: '-15%', width: '55%', height: '55%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)', filter: 'blur(48px)' }} />
+          <div style={{ position: 'absolute', bottom: '10%', right: '10%', width: '45%', height: '45%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(139,92,246,0.22) 0%, transparent 70%)', filter: 'blur(48px)' }} />
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-sm glass-elevated rounded-3xl p-8 text-center"
+        >
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+            style={{ background: 'rgba(99,102,241,0.12)' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(99,102,241,1)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="3"/>
+              <path d="M2 7l10 7 10-7"/>
+            </svg>
+          </div>
+          <h2 className="text-xl font-extrabold text-gray-900 mb-2">Check your email</h2>
+          <p className="text-sm text-gray-500 leading-relaxed mb-1">
+            We sent a verification link to
+          </p>
+          <p className="text-sm font-semibold text-gray-800 mb-5">{confirmEmail}</p>
+          <p className="text-xs text-gray-400 leading-relaxed mb-6">
+            Click the link in the email to activate your account. Check your spam folder if you don't see it.
+          </p>
+          <button
+            onClick={() => { setConfirmEmail(''); setMode('login'); setForm(f => ({ ...f, email: confirmEmail, password: '' })) }}
+            className="w-full py-3.5 rounded-2xl font-bold text-sm bg-primary-600 text-white"
+          >
+            Back to Sign In
+          </button>
+        </motion.div>
+      </div>
+    )
   }
 
   return (
@@ -289,6 +474,15 @@ export default function Auth() {
                     </button>
                   )}
                 </motion.div>
+              )}
+
+              {mode === 'login' && (
+                <div className="flex justify-end -mt-1">
+                  <button type="button" onClick={() => { setForgotEmail(form.email); setForgotMode('form') }}
+                    className="text-xs font-semibold text-primary-600 hover:text-primary-700 py-1">
+                    Forgot password?
+                  </button>
+                </div>
               )}
 
               {slowHint && (

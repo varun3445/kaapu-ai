@@ -140,6 +140,7 @@ export function AppProvider({ children }) {
   const [notifCentreOpen, setNotifCentreOpen] = useState(false)
   const [activeEmergency, setActiveEmergency] = useState(null)
   const [skinColor,       setSkinColorState]  = useState(() => lsLoad(LS.skinColor, '#C49272'))
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
 
   // Push notification registration ref (prevent duplicate registrations)
   const symptomsRef = useRef(symptoms)
@@ -193,6 +194,8 @@ export function AppProvider({ children }) {
         } finally {
           loadingRef.current = false
         }
+      } else if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true)
       } else if (event === 'SIGNED_OUT') {
         if (!isDemoRef.current) _clearState()
       }
@@ -246,14 +249,29 @@ export function AppProvider({ children }) {
                     || 'User'
       const familyId = `fam-${uid}`
       const uid9     = generateUID()
-      const newUser  = { id: uid, email: authUser.email, name, role: 'user', familyId, uid: uid9, age: null, gender: 'other' }
+
+      // Merge age/gender/role saved during email-confirmation signup
+      let pending = {}
+      try {
+        const raw = sessionStorage.getItem('kaapu_pending_profile')
+        if (raw) { pending = JSON.parse(raw); sessionStorage.removeItem('kaapu_pending_profile') }
+      } catch (_) {}
+
+      const newUser  = {
+        id: uid, email: authUser.email, name, familyId, uid: uid9,
+        role: pending.role || 'user',
+        age: pending.age || null,
+        gender: pending.gender || 'other',
+        ...(pending.consentGivenAt ? { consentGivenAt: pending.consentGivenAt } : {}),
+      }
+      const lastName   = name.split(' ').slice(-1)[0] || name
       await _sbq(Promise.all([
         supabase.from('users').insert(newUser),
-        supabase.from('families').insert({ id: familyId, name: `${name}'s Family` }),
+        supabase.from('families').insert({ id: familyId, name: `${lastName} Family` }),
         supabase.from('members').insert({
           id: `mem-${uid}`, familyId, userId: uid, name,
-          age: null, gender: 'other', relationship: 'Self',
-          avatar: name.slice(0, 2).toUpperCase(), avatarColor: '#6366f1',
+          age: pending.age || null, gender: pending.gender || 'other',
+          relationship: 'Self', avatar: name.slice(0, 2).toUpperCase(), avatarColor: '#6366f1',
         }),
       ]))
       userRow = newUser
@@ -780,6 +798,18 @@ export function AppProvider({ children }) {
       }
       if (!authData?.user) return { error: 'Sign up failed. Please try again.' }
 
+      // Email confirmation is enabled — no session yet. Save profile data
+      // so _loadUserData can use it when the user confirms and logs in.
+      if (!authData.session) {
+        sessionStorage.setItem('kaapu_pending_profile', JSON.stringify({
+          age: parseInt(data.age) || null,
+          gender: data.gender || 'other',
+          role: data.role || 'user',
+          consentGivenAt: data.consentGivenAt || null,
+        }))
+        return { needsEmailConfirmation: true }
+      }
+
       const uid      = authData.user.id
       const familyId = `fam-${uid}`
       const uid9     = generateUID()
@@ -851,6 +881,24 @@ export function AppProvider({ children }) {
       options: { redirectTo },
     })
     if (error) return { error: error.message }
+    return { ok: true }
+  }, [])
+
+  const resetPassword = useCallback(async (email) => {
+    if (!supabase) return { error: 'Supabase not configured.' }
+    const { data } = await supabase.from('users').select('id').eq('email', email.trim().toLowerCase()).maybeSingle()
+    if (!data) return { notFound: true }
+    const redirectTo = window.location.origin
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
+    if (error) return { error: error.message }
+    return { ok: true }
+  }, [])
+
+  const updatePassword = useCallback(async (newPassword) => {
+    if (!supabase) return { error: 'Supabase not configured.' }
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) return { error: error.message }
+    setIsPasswordRecovery(false)
     return { ok: true }
   }, [])
 
@@ -1481,6 +1529,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       appLoading, isDemoMode,
       currentUser, login, signup, logout, signInWithOAuth, updateProfile,
+      isPasswordRecovery, resetPassword, updatePassword,
       currentMember, myFamilyMembers, members, addMember, removeMember, switchMember,
       familyRequests, sendFamilyRequest, respondFamilyRequest,
       notifCentreOpen, setNotifCentreOpen,

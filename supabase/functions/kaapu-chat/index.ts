@@ -44,9 +44,11 @@ function buildHealthContext(context: any): string {
     parts.push(`Medications: ${context.medications.map((m: any) => m.name).join(', ')}`)
   }
   if (context.activeSymptoms?.length) {
+    // [id: ...] is included so the model can target a specific symptom with a
+    // [[note:id:text]] marker (see NOTES rule below) — never used in the reply itself.
     const list = context.activeSymptoms
       .slice(0, 10)
-      .map((s: any) => `${s.categoryLabel || s.category} at ${s.bodyLabel || s.bodyArea} (severity: ${severityLabel(s.severity)}${s.duration ? ', ' + s.duration : ''})`)
+      .map((s: any) => `[id: ${s.id}] ${s.categoryLabel || s.category} at ${s.bodyLabel || s.bodyArea} (severity: ${severityLabel(s.severity)}${s.duration ? ', ' + s.duration : ''})`)
       .join('; ')
     parts.push(`Active symptoms: ${list}`)
   }
@@ -148,7 +150,8 @@ Deno.serve(async (req) => {
 
 [RESPONSE STYLE: Reply like a warm friend texting — short, plain sentences, no bullet points or markdown. 2-4 sentences max unless more is clearly needed. No sign-offs.]
 [NOTES: Symptom "note" fields are raw speech-to-text and are sometimes garbled or mistranscribed. Treat them as a rough hint at most — never state as fact something a note merely implies (e.g. a posture, cause, or behavior). If a note is unclear, either ignore it or ask the user to clarify rather than asserting your own interpretation of it.]
-[ACTION MARKERS: Silently append [[suggest:resolve]] if the user says a symptom is gone/better/resolved. Append [[suggest:log]] if they mention a new symptom they haven't logged. Append nothing otherwise. Never explain these.]`
+[POSSIBLE CAUSES: If the user mentions something that could plausibly explain one of their ACTIVE symptoms (an activity, exposure, posture, stress, etc.), say in your reply that it could be a contributing factor — don't just deflect to "ask your GP" for this part. Then silently append one [[note:<id>:<short note>]] marker per symptom it plausibly explains, using the exact id shown in [id: ...] in the Active symptoms context above. The note text should be under 12 words, phrased as an observation, e.g. "Possible cause: heavy lifting." Only use ids that appear in the context; never invent one. Skip this entirely if no active symptom is a plausible match.]
+[ACTION MARKERS: Silently append [[suggest:resolve]] if the user says a symptom is gone/better/resolved. Append [[suggest:log]] if they mention a new symptom they haven't logged. Append [[suggest:gp-report]] if you recommend the user contact their GP, doctor, or healthcare provider for any reason — this lets the app offer to generate a GP visit report, so use it whenever that suggestion appears, even alongside a [[note:...]] marker. Only one of resolve/log/gp-report per reply. Append nothing otherwise. Never explain these.]`
     }
 
     await sendEvent(apiKey, sessionId, messageText)
@@ -161,7 +164,15 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Parse and strip action markers
+    // Parse and strip note markers first — zero or more can appear alongside
+    // a single suggest: action below.
+    const noteUpdates: { symptomId: string; text: string }[] = []
+    content = content.replace(/\[\[note:([^:\]]+):([^\]]+)\]\]/gi, (_match, id, text) => {
+      noteUpdates.push({ symptomId: String(id).trim(), text: String(text).trim() })
+      return ''
+    }).trim()
+
+    // Parse and strip the single suggest: action marker
     let action: string | null = null
     if (/\[\[suggest:resolve\]\]/i.test(content)) {
       action   = 'resolve'
@@ -169,10 +180,13 @@ Deno.serve(async (req) => {
     } else if (/\[\[suggest:log\]\]/i.test(content)) {
       action   = 'log'
       content  = content.replace(/\[\[suggest:log\]\]/gi, '').trim()
+    } else if (/\[\[suggest:gp-report\]\]/i.test(content)) {
+      action   = 'gp-report'
+      content  = content.replace(/\[\[suggest:gp-report\]\]/gi, '').trim()
     }
 
     return new Response(
-      JSON.stringify({ content, action, agentSessionId: sessionId }),
+      JSON.stringify({ content, action, noteUpdates, agentSessionId: sessionId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (err) {

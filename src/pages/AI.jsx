@@ -2,10 +2,11 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, RefreshCw, ChevronDown, History, X, MessageSquare, AlertTriangle, BookmarkCheck, Loader2, CheckCircle, PlusCircle, Trash2 } from 'lucide-react'
+import { Send, Sparkles, RefreshCw, ChevronDown, History, X, MessageSquare, AlertTriangle, BookmarkCheck, Loader2, CheckCircle, PlusCircle, Trash2, FileText } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
 import { useNavigate } from 'react-router-dom'
+import { generateGPReport } from '../utils/gpReport'
 
 const MAX_HISTORY = 20
 
@@ -175,7 +176,7 @@ function MessageBubble({ msg }) {
 }
 
 // ── Action chip shown below an AI message ────────────────────────────────────
-function ActionChip({ action, onResolve, onLog, done }) {
+function ActionChip({ action, onResolve, onLog, onGpReport, gpReportLoading, done }) {
   if (!action || done) return null
   if (action === 'resolve') return (
     <motion.button
@@ -193,6 +194,19 @@ function ActionChip({ action, onResolve, onLog, done }) {
       className="flex items-center gap-1.5 ml-9 mt-1 mb-2 px-3 py-1.5 rounded-2xl text-[11px] font-semibold bg-primary-50 border border-primary-200 text-primary-700 shadow-sm"
     >
       <PlusCircle size={12} /> Log new symptom
+    </motion.button>
+  )
+  if (action === 'gp-report') return (
+    <motion.button
+      initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+      onClick={onGpReport}
+      disabled={gpReportLoading}
+      className="flex items-center gap-1.5 ml-9 mt-1 mb-2 px-3 py-1.5 rounded-2xl text-[11px] font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700 shadow-sm disabled:opacity-60"
+    >
+      {gpReportLoading
+        ? <><Loader2 size={12} className="animate-spin" /> Generating…</>
+        : <><FileText size={12} /> Download GP visit report</>
+      }
     </motion.button>
   )
   return null
@@ -374,6 +388,7 @@ export default function AI() {
   const [savingNotes,          setSavingNotes]          = useState(false)
   const [notesSaved,           setNotesSaved]           = useState(false)
   const [actionDoneIdx,        setActionDoneIdx]        = useState(new Set()) // message indices whose action chip is done
+  const [gpReportLoading,      setGpReportLoading]      = useState(false)
   const currentSessionId  = useRef(null) // stable ID for the Supabase chat history row
   const agentSessionIdRef = useRef(null) // stable ID for the Managed Agent session
   const bottomRef  = useRef(null)
@@ -403,6 +418,30 @@ export default function AI() {
       if (parsed?.insight) setPendingWeeklyInsight(parsed)
     } catch (_) {}
   }, [])
+
+  // Append AI-suggested cause notes onto the relevant symptom(s) so they show
+  // up under "Notes" in the GP report — see [[note:id:text]] in kaapu-chat.
+  function applyNoteUpdates(noteUpdates) {
+    if (!noteUpdates?.length) return
+    noteUpdates.forEach(({ symptomId, text }) => {
+      if (!symptomId || !text) return
+      const sym = symptoms.find(s => s.id === symptomId)
+      if (!sym) return
+      const existing = sym.notes ? sym.notes + '\n' : ''
+      updateSymptom(symptomId, { notes: existing + text })
+    })
+  }
+
+  async function handleGpReport(msgIdx) {
+    if (gpReportLoading) return
+    setGpReportLoading(true)
+    try {
+      await generateGPReport({ currentUser, currentMember, symptoms, conditions, medications })
+      setActionDoneIdx(prev => new Set([...prev, msgIdx]))
+    } finally {
+      setGpReportLoading(false)
+    }
+  }
 
   // ── Action chip handlers ──────────────────────────────────────────────────
   function handleResolve(msgIdx) {
@@ -533,6 +572,7 @@ export default function AI() {
       })
       if (fnError || !data?.content) throw new Error('empty')
       if (data.agentSessionId) agentSessionIdRef.current = data.agentSessionId
+      applyNoteUpdates(data.noteUpdates)
       const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
       const nextMessages = [aiMsg]
       setMessages(nextMessages)
@@ -565,6 +605,7 @@ export default function AI() {
       })
       if (fnError || !data?.content) throw new Error(fnError?.message || 'empty_response')
       if (data.agentSessionId) agentSessionIdRef.current = data.agentSessionId
+      applyNoteUpdates(data.noteUpdates)
       const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
       const finalMessages = [...newMessages, aiMsg]
       setMessages(finalMessages)
@@ -685,6 +726,8 @@ export default function AI() {
                   done={actionDoneIdx.has(i)}
                   onResolve={() => handleResolve(i)}
                   onLog={() => handleLogNew(i)}
+                  onGpReport={() => handleGpReport(i)}
+                  gpReportLoading={gpReportLoading}
                 />
               )}
             </div>

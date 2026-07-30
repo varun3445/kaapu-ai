@@ -13,6 +13,7 @@ import {
   SYMPTOM_CATEGORIES, FEELING_CONFIG,
   CHRONIC_CONDITION_PRESETS,
 } from '../data/mockData'
+import { severityLabel } from '../utils/severity'
 import ConditionCard from '../components/Conditions/ConditionCard'
 import AddMedicationModal from '../components/Medications/AddMedicationModal'
 import DailyCheckIn  from '../components/CheckIn/DailyCheckIn'
@@ -157,7 +158,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <p className="text-sm font-bold" style={{ color: sevColor }}>{sev}/10</p>
+            <p className="text-sm font-bold" style={{ color: sevColor }}>{severityLabel(sev)}</p>
             <p className="text-[10px] text-gray-300">{symptomDurationLabel(item)}</p>
           </div>
           {open ? <ChevronUp size={13} className="text-gray-300" /> : <ChevronDown size={13} className="text-gray-300" />}
@@ -169,7 +170,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
             <div className="px-4 pb-4 border-t border-gray-50 pt-3 space-y-3">
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { l:'Severity', v:`${sev}/10`, c: sevColor },
+                  { l:'Severity', v: severityLabel(sev), c: sevColor },
                   { l:'Duration', v: symptomDurationLabel(item), c:'#374151' },
                   { l:'Logged',   v: format(new Date(item.timestamp), 'MMM d'), c:'#374151' },
                 ].map(s => (

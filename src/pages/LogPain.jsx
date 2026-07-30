@@ -95,6 +95,16 @@ const CATEGORY_RULES = [
   { id: 'pain',         kw: ['pain','ache','hurt','hurts','sore','sharp','stabbing','throbbing','burning','aching','tender','pressure','spasm','stiff','stiffness'] },
 ]
 
+// The browser's built-in speech recognizer frequently mishears "pain" as
+// "been" (e.g. "I have pain in my shoulder" → "I have been on my shoulder").
+// This is a narrow, pattern-scoped fix rather than a blanket word swap, so it
+// doesn't clobber legitimate uses of "been" ("I've been having headaches").
+function correctMishearings(text) {
+  return text
+    .replace(/\b(have|has|having) been (on|in|at)\b/gi, '$1 pain $2')
+    .replace(/\bi'?ve been (on|in|at)\b/gi, "I've had pain $1")
+}
+
 function parseVoice(text) {
   const lower = text.toLowerCase()
   const regionId = REGION_RULES.reduce((found, rule) =>
@@ -234,7 +244,8 @@ export default function LogPain() {
     setTimeout(() => { setVoicePhase('idle'); setVoicePlot(null) }, 3500)
   }, [voiceConfirm, addSymptom])
 
-  const handleTranscript = useCallback((text) => {
+  const handleTranscript = useCallback((rawText) => {
+    const text = correctMishearings(rawText)
     // If we're waiting on a severity response, try to parse severity from
     // whatever was just said instead of re-running region detection.
     if (voiceConfirmRef.current) {

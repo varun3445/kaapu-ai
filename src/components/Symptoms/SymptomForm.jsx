@@ -179,8 +179,8 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
           <div className="bg-white rounded-3xl px-4 py-4" style={{ border: '1.5px solid rgba(0,0,0,0.07)' }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Severity</p>
-              <span className="text-sm font-extrabold tabular-nums" style={{ color: SEV_COLOR(severity) }}>
-                {severity}/10 — {SEV_LABEL(severity)}
+              <span className="text-sm font-extrabold" style={{ color: SEV_COLOR(severity) }}>
+                {SEV_LABEL(severity)}
               </span>
             </div>
             <input

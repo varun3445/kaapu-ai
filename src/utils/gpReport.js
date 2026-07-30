@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import { severityLabel } from './severity'
 
 // ── Colours ───────────────────────────────────────────────────────────────────
 const C = {
@@ -365,8 +366,8 @@ export async function generateGPReport({ currentUser, currentMember, symptoms, c
       text(doc, title, MARGIN + 4, y + 2, { size: 9, weight: 'bold', col: C.gray900 })
       text(doc, `${syms.length} log${syms.length > 1 ? 's' : ''}`, MARGIN + 4, y + 7, { size: 7, col: C.gray600 })
 
-      // Severity badge — average when there are multiple logs, exact value otherwise
-      const badge = syms.length > 1 ? `Avg ${avg.toFixed(1)}/10` : `${avg.toFixed(0)}/10`
+      // Severity badge — tier wording (Mild/Moderate/Severe), not a raw score
+      const badge = severityLabel(avg)
       fillRgb(doc, sc)
       doc.roundedRect(PAGE_W - MARGIN - 24, y + 3, 23, 8, 2, 2, 'F')
       text(doc, badge, PAGE_W - MARGIN - 12.5, y + 4.5, { size: 6.5, weight: 'bold', col: C.white, align: 'center' })

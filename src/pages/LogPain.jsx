@@ -17,6 +17,8 @@ const VOICE_PIN_POSITIONS = {
   'chest':             { x:  0,     y:  0.22, z:  0.16 },
   'abdomen':           { x:  0,     y:  0.07, z:  0.14 },
   'pelvis':            { x:  0,     y: -0.06, z:  0.14 },
+  'left-hip':          { x:  0.22,  y: -0.06, z:  0.10 },
+  'right-hip':         { x: -0.22,  y: -0.06, z:  0.10 },
   'left-shoulder':     { x:  0.35,  y:  0.30, z:  0.07 },
   'right-shoulder':    { x: -0.35,  y:  0.30, z:  0.07 },
   'left-upper-arm':    { x:  0.50,  y:  0.30, z:  0.06 },
@@ -43,6 +45,8 @@ const REGION_RULES = [
   { id: 'neck',            kw: ['stiff neck','neck pain','sore neck','neck','throat','collar'] },
   { id: 'chest',           kw: ['chest pain','chest tightness','chest','heart','breast','sternum','rib','lung','breathing','breath','cough'] },
   { id: 'abdomen',         kw: ['stomach ache','stomach pain','tummy ache','abdomen','stomach','belly','tummy','gut','nausea','bloat','indigestion'] },
+  { id: 'left-hip',        kw: ['left hip','hip left','left side of my back','left lower back'] },
+  { id: 'right-hip',       kw: ['right hip','hip right','right side of my back','right lower back'] },
   { id: 'pelvis',          kw: ['lower abdomen','pelvic pain','pelvis','groin','hip pain','hip'] },
   { id: 'left-shoulder',   kw: ['left shoulder','shoulder left','left trap'] },
   { id: 'right-shoulder',  kw: ['right shoulder','shoulder right','right trap','shoulder'] },
@@ -80,12 +84,14 @@ function parseVoice(text) {
     found || (rule.kw.some(k => lower.includes(k)) ? rule.id : null)
   , null)
   const position   = regionId ? VOICE_PIN_POSITIONS[regionId] : null
-  const bodyRegion = regionId ? (BODY_REGIONS.find(r => r.id === regionId) || { id: regionId, label: regionId }) : null
+  const bodyRegion = regionId ? BODY_REGIONS.find(r => r.id === regionId) : null
+  const regionLabel = bodyRegion?.label ||
+    (regionId ? regionId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : null)
   const categoryId = CATEGORY_RULES.reduce((found, rule) =>
     found || (rule.kw.some(k => lower.includes(k)) ? rule.id : null)
   , null) || 'pain'
   const cat = SYMPTOM_CATEGORIES.find(c => c.id === categoryId)
-  return { regionId, regionLabel: bodyRegion?.label || regionId, position, categoryId, cat, type: cat?.types[0] || 'General' }
+  return { regionId, regionLabel, position, categoryId, cat, type: cat?.types[0] || 'General' }
 }
 
 // ── Symptom pill ──────────────────────────────────────────────────────────────
@@ -350,13 +356,11 @@ export default function LogPain() {
         </div>
       )}
 
-      {/* ── Voice button — fixed above bottom nav ── */}
+      {/* ── Voice button — tap to start, auto-stops when speech ends ── */}
       {supported && (
         <div className="flex-shrink-0 flex justify-center pb-3 pt-2 bg-indigo-50">
           <motion.button
-            onPointerDown={start}
-            onPointerUp={stop}
-            onPointerLeave={stop}
+            onClick={listening ? stop : start}
             animate={listening ? { scale: 1.08 } : { scale: 1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             className={`flex items-center gap-3 px-8 py-4 rounded-full font-bold text-sm shadow-lg transition-colors ${
@@ -366,7 +370,7 @@ export default function LogPain() {
             }`}
           >
             <Mic size={22} className={listening ? 'animate-pulse' : ''} />
-            {listening ? 'Listening…' : 'Hold to speak'}
+            {listening ? 'Listening…' : 'Tap to speak'}
           </motion.button>
         </div>
       )}

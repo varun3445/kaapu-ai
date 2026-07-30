@@ -90,7 +90,7 @@ function AddMemberModal({ onClose, onSave }) {
   )
 }
 
-function MemberCard({ member, isCurrent, onSwitch, symptoms }) {
+function MemberCard({ member, isCurrent, symptoms }) {
   const activeSymptoms = symptoms.filter(s => s.memberId === member.id && !s.resolved)
   return (
     <motion.div
@@ -118,14 +118,6 @@ function MemberCard({ member, isCurrent, onSwitch, symptoms }) {
             </p>
           )}
         </div>
-        {!isCurrent && (
-          <button
-            onClick={() => onSwitch(member)}
-            className="text-xs font-semibold text-primary-600 bg-primary-50 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors"
-          >
-            Switch
-          </button>
-        )}
       </div>
 
       {/* Quick stats */}
@@ -146,12 +138,20 @@ function MemberCard({ member, isCurrent, onSwitch, symptoms }) {
 }
 
 export default function Profile() {
-  const { myFamilyMembers, currentMember, symptoms, switchMember, addMember, currentUser, logout } = useApp()
+  const { myFamilyMembers, currentMember, symptoms, addMember, currentUser, logout } = useApp()
   const [showAdd, setShowAdd] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
 
   function handleAddMember(data) {
     addMember(data)
     setShowAdd(false)
+  }
+
+  function handleLogout() {
+    setLoggingOut(true)
+    // Defer to next tick so the spinner renders for a frame before
+    // logout() clears state and unmounts this page.
+    setTimeout(logout, 50)
   }
 
   const menuItems = [
@@ -185,7 +185,6 @@ export default function Profile() {
               key={m.id}
               member={m}
               isCurrent={m.id === currentMember?.id}
-              onSwitch={switchMember}
               symptoms={symptoms}
             />
           ))}
@@ -220,10 +219,13 @@ export default function Profile() {
 
       {/* Sign out */}
       <button
-        onClick={logout}
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-rose-100 text-rose-500 font-semibold text-sm hover:bg-rose-50 transition-colors"
+        onClick={handleLogout}
+        disabled={loggingOut}
+        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl border-2 border-rose-100 text-rose-500 font-semibold text-sm hover:bg-rose-50 transition-colors disabled:opacity-60"
       >
-        <LogOut size={16} /> Sign Out
+        {loggingOut
+          ? <><span className="w-4 h-4 border-2 border-rose-300 border-t-rose-500 rounded-full animate-spin" /> Signing out…</>
+          : <><LogOut size={16} /> Sign Out</>}
       </button>
 
       <AnimatePresence>

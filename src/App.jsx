@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { AppProvider, useApp } from './context/AppContext'
 import AppLayout              from './components/Layout/AppLayout'
 import Auth                   from './pages/Auth'
@@ -9,6 +11,42 @@ import AI                     from './pages/AI'
 import LogPain                from './pages/LogPain'
 import DoctorPortal           from './pages/DoctorPortal'
 import EmergencyContactGate   from './components/Onboarding/EmergencyContactGate'
+
+// Funny, low-stakes copy so a multi-second load never reads as "stuck"
+const LOADING_MESSAGES = [
+  'Waking up the servers…',
+  'Untangling your health data…',
+  'Reticulating splines…',
+  'Convincing the database to cooperate…',
+  'Plugging in the networks…',
+  'Collecting your resources…',
+  'Herding symptoms into place…',
+  'Negotiating with the cloud…',
+  'Dusting off your dashboard…',
+  'Bribing the servers with coffee…',
+]
+
+function LoadingMessage() {
+  const [index, setIndex] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setIndex(i => (i + 1) % LOADING_MESSAGES.length), 1700)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <AnimatePresence mode="wait">
+      <motion.p
+        key={index}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -6 }}
+        transition={{ duration: 0.25 }}
+        className="text-xs text-gray-400 font-medium"
+      >
+        {LOADING_MESSAGES[index]}
+      </motion.p>
+    </AnimatePresence>
+  )
+}
 
 function PrivateRoute({ children }) {
   const { currentUser } = useApp()
@@ -34,6 +72,7 @@ function AppRoutes() {
       >
         <img src="/logo.png" alt="Kaapu" className="w-16 h-16 object-contain animate-pulse" style={{ mixBlendMode: 'multiply' }} />
         <p className="text-sm font-semibold text-gray-400 tracking-wide">Kaapu</p>
+        <LoadingMessage />
       </div>
     )
   }

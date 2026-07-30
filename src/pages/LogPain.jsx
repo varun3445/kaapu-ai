@@ -11,34 +11,37 @@ import { SYMPTOM_CATEGORIES, BODY_REGIONS } from '../data/mockData'
 // 3D world-space pin positions for voice-detected regions
 // Coord system: Y up (head ~0.72, feet ~-0.67), X negative = model right arm,
 // X positive = model left arm, Z positive = front. Z offset ~0.1-0.2 = front surface.
-// Z values derived from collider surface depth + 0.045 (matches click-placed pin offset).
+// Z values are tuned per body-part depth, NOT a single uniform offset — the
+// torso is much thicker front-to-back than the limbs, so a value that clears
+// the chest buries a pin in the abdomen, while a value that clears the arms
+// floats one off the shoulder. Torso/hip get more forward push, limbs get less.
 // Shoulder X moved to ±0.17 (shoulder sphere centre) not ±0.35 (upper arm).
 const VOICE_PIN_POSITIONS = {
-  'head':              { x:  0,     y:  0.82, z:  0.28 },
-  'neck':              { x:  0,     y:  0.42, z:  0.12 },
-  'chest':             { x:  0,     y:  0.22, z:  0.14 },
-  'abdomen':           { x:  0,     y:  0.07, z:  0.13 },
-  'pelvis':            { x:  0,     y: -0.06, z:  0.13 },
-  'left-hip':          { x:  0.17,  y: -0.05, z:  0.12 },
-  'right-hip':         { x: -0.17,  y: -0.05, z:  0.12 },
-  'left-shoulder':     { x:  0.17,  y:  0.30, z:  0.13 },
-  'right-shoulder':    { x: -0.17,  y:  0.30, z:  0.13 },
-  'left-upper-arm':    { x:  0.35,  y:  0.30, z:  0.12 },
-  'right-upper-arm':   { x: -0.35,  y:  0.30, z:  0.12 },
-  'left-elbow':        { x:  0.48,  y:  0.30, z:  0.12 },
-  'right-elbow':       { x: -0.48,  y:  0.30, z:  0.12 },
-  'left-lower-arm':    { x:  0.60,  y:  0.30, z:  0.11 },
-  'right-lower-arm':   { x: -0.60,  y:  0.30, z:  0.11 },
-  'left-hand':         { x:  0.74,  y:  0.30, z:  0.09 },
-  'right-hand':        { x: -0.74,  y:  0.30, z:  0.09 },
-  'left-thigh':        { x:  0.11,  y: -0.22, z:  0.12 },
-  'right-thigh':       { x: -0.11,  y: -0.22, z:  0.12 },
-  'left-knee':         { x:  0.13,  y: -0.38, z:  0.12 },
-  'right-knee':        { x: -0.13,  y: -0.38, z:  0.12 },
+  'head':              { x:  0,     y:  0.82, z:  0.26 },
+  'neck':              { x:  0,     y:  0.42, z:  0.15 },
+  'chest':             { x:  0,     y:  0.22, z:  0.17 },
+  'abdomen':           { x:  0,     y:  0.07, z:  0.18 },
+  'pelvis':            { x:  0,     y: -0.06, z:  0.17 },
+  'left-hip':          { x:  0.17,  y: -0.05, z:  0.16 },
+  'right-hip':         { x: -0.17,  y: -0.05, z:  0.16 },
+  'left-shoulder':     { x:  0.17,  y:  0.30, z:  0.08 },
+  'right-shoulder':    { x: -0.17,  y:  0.30, z:  0.08 },
+  'left-upper-arm':    { x:  0.35,  y:  0.30, z:  0.07 },
+  'right-upper-arm':   { x: -0.35,  y:  0.30, z:  0.07 },
+  'left-elbow':        { x:  0.48,  y:  0.30, z:  0.065 },
+  'right-elbow':       { x: -0.48,  y:  0.30, z:  0.065 },
+  'left-lower-arm':    { x:  0.60,  y:  0.30, z:  0.06 },
+  'right-lower-arm':   { x: -0.60,  y:  0.30, z:  0.06 },
+  'left-hand':         { x:  0.74,  y:  0.30, z:  0.05 },
+  'right-hand':        { x: -0.74,  y:  0.30, z:  0.05 },
+  'left-thigh':        { x:  0.11,  y: -0.22, z:  0.14 },
+  'right-thigh':       { x: -0.11,  y: -0.22, z:  0.14 },
+  'left-knee':         { x:  0.13,  y: -0.38, z:  0.13 },
+  'right-knee':        { x: -0.13,  y: -0.38, z:  0.13 },
   'left-shin':         { x:  0.13,  y: -0.55, z:  0.11 },
   'right-shin':        { x: -0.13,  y: -0.55, z:  0.11 },
-  'left-foot':         { x:  0.13,  y: -0.67, z:  0.18 },
-  'right-foot':        { x: -0.13,  y: -0.67, z:  0.18 },
+  'left-foot':         { x:  0.13,  y: -0.67, z:  0.17 },
+  'right-foot':        { x: -0.13,  y: -0.67, z:  0.17 },
 }
 
 // Multi-word phrases FIRST so they take priority over single-word matches
@@ -94,6 +97,19 @@ function parseVoice(text) {
   , null) || 'pain'
   const cat = SYMPTOM_CATEGORIES.find(c => c.id === categoryId)
   return { regionId, regionLabel, position, categoryId, cat, type: cat?.types[0] || 'General' }
+}
+
+// Parses a spoken severity response ("pretty mild", "it's a 7", "really bad") into 1-10.
+// Returns null if nothing recognisable so the caller can leave the tap buttons up.
+function parseSeverity(text) {
+  const lower = text.toLowerCase()
+  if (/\b(unbearable|excruciating|worst|extreme|10)\b/.test(lower)) return 9
+  if (/\b(severe|really bad|very bad|intense|awful|terrible|9|8)\b/.test(lower)) return 8
+  if (/\b(moderate|medium|okay|manageable|so.?so|noticeable|5|6|7)\b/.test(lower)) return 5
+  if (/\b(mild|slight|minor|light|little|small|barely|1|2|3|4)\b/.test(lower)) return 2
+  const num = lower.match(/\b([1-9]|10)\b/)
+  if (num) return Math.min(9, Math.max(1, parseInt(num[1], 10)))
+  return null
 }
 
 // ── Symptom pill ──────────────────────────────────────────────────────────────
@@ -176,6 +192,8 @@ export default function LogPain() {
   const [voicePhase,     setVoicePhase]     = useState('idle') // idle | analysing | confirm | plotted | tap
   const [voicePlot,      setVoicePlot]      = useState(null)   // { label } on success
   const [voiceConfirm,   setVoiceConfirm]   = useState(null)   // pending region waiting for severity
+  const voiceConfirmRef = useRef(null)
+  useEffect(() => { voiceConfirmRef.current = voiceConfirm }, [voiceConfirm])
 
   const activeSymptoms = currentSymptoms.filter(s => !s.resolved)
   const pins = useMemo(() =>
@@ -205,6 +223,13 @@ export default function LogPain() {
   }, [voiceConfirm, addSymptom])
 
   const handleTranscript = useCallback((text) => {
+    // If we're waiting on a severity response, try to parse severity from
+    // whatever was just said instead of re-running region detection.
+    if (voiceConfirmRef.current) {
+      const severity = parseSeverity(text)
+      if (severity != null) confirmVoice(severity)
+      return
+    }
     setVoiceNotes(text)
     setVoiceToast(text)
     setVoicePhase('analysing')
@@ -218,9 +243,18 @@ export default function LogPain() {
         setTimeout(() => setVoicePhase('idle'), 4000)
       }
     }, 900)
-  }, [])
+  }, [confirmVoice])
 
   const { listening, supported, transcript, start, stop } = useVoiceInput({ onTranscript: handleTranscript })
+
+  // Re-open the mic automatically once a region is detected so the user can
+  // just SAY how severe it is, instead of only being able to tap a button.
+  useEffect(() => {
+    if (voicePhase === 'confirm' && supported && !listening) {
+      const t = setTimeout(() => start(), 500)
+      return () => clearTimeout(t)
+    }
+  }, [voicePhase, supported]) // eslint-disable-line
 
   function handleRegionClick({ id, label, position }) {
     setSelectedRegion({ id, label, position })
@@ -264,7 +298,8 @@ export default function LogPain() {
               <div className="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0" />
               <p className="text-sm font-bold text-gray-900">{voiceConfirm.regionLabel} detected</p>
             </div>
-            <p className="text-xs text-gray-400 mb-3">How severe is it?</p>
+            <p className="text-xs text-gray-400 mb-1">How severe is it?</p>
+            <p className="text-[10px] text-indigo-400 font-medium mb-3">Tap a level, or just say how bad it is</p>
             <div className="flex gap-2">
               {[
                 { label: 'Mild',     severity: 2, cls: 'border-emerald-200 text-emerald-700 bg-emerald-50 active:bg-emerald-100' },
@@ -273,7 +308,7 @@ export default function LogPain() {
               ].map(({ label, severity, cls }) => (
                 <button
                   key={label}
-                  onClick={() => confirmVoice(severity)}
+                  onClick={() => { if (listening) stop(); confirmVoice(severity) }}
                   className={`flex-1 py-2.5 rounded-2xl text-xs font-bold border-2 transition-colors ${cls}`}
                 >
                   {label}
@@ -281,7 +316,7 @@ export default function LogPain() {
               ))}
             </div>
             <button
-              onClick={() => { setVoicePhase('idle'); setVoiceConfirm(null) }}
+              onClick={() => { if (listening) stop(); setVoicePhase('idle'); setVoiceConfirm(null) }}
               className="mt-2.5 w-full text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
             >
               Cancel

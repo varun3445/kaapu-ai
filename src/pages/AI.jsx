@@ -421,12 +421,15 @@ export default function AI() {
 
   // Append AI-suggested cause notes onto the relevant symptom(s) so they show
   // up under "Notes" in the GP report — see [[note:id:text]] in kaapu-chat.
+  // Skips text already present so re-mentioning the same cause in a later
+  // turn (or the agent re-emitting a marker) doesn't duplicate the line.
   function applyNoteUpdates(noteUpdates) {
     if (!noteUpdates?.length) return
     noteUpdates.forEach(({ symptomId, text }) => {
       if (!symptomId || !text) return
       const sym = symptoms.find(s => s.id === symptomId)
       if (!sym) return
+      if (sym.notes && sym.notes.includes(text)) return
       const existing = sym.notes ? sym.notes + '\n' : ''
       updateSymptom(symptomId, { notes: existing + text })
     })

@@ -111,18 +111,26 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
   const [open, setOpen] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [editStart, setEditStart] = useState('')
-  const [editEnd,   setEditEnd]   = useState('')
+  const [editStart,    setEditStart]    = useState('')
+  const [editEnd,      setEditEnd]      = useState('')
+  const [editNotes,    setEditNotes]    = useState('')
+  const [editSeverity, setEditSeverity] = useState(3)
 
   function openEdit() {
     setEditStart(item.timestamp ? item.timestamp.slice(0, 10) : '')
     setEditEnd(item.resolvedAt  ? item.resolvedAt.slice(0, 10) : '')
+    setEditNotes(item.notes || '')
+    setEditSeverity(item.severity || 3)
     setEditing(true)
   }
 
   function saveEdit() {
     if (!editStart) return
-    const updates = { timestamp: new Date(editStart).toISOString() }
+    const updates = {
+      timestamp: new Date(editStart).toISOString(),
+      notes:     editNotes.trim(),
+      severity:  editSeverity,
+    }
     if (item.resolved && editEnd) updates.resolvedAt = new Date(editEnd).toISOString()
     onEdit(item.id, updates)
     setEditing(false)
@@ -183,7 +191,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
               {item.notes && (
                 <div className="bg-blue-50 rounded-xl px-3 py-2.5">
                   <p className="text-[10px] text-blue-400 uppercase tracking-wider font-semibold mb-1">Notes</p>
-                  <p className="text-xs text-blue-700">{item.notes}</p>
+                  <p className="text-xs text-blue-700 whitespace-pre-line">{item.notes}</p>
                 </div>
               )}
               {sev >= SEVERITY_HIGH_THRESHOLD && !item.resolved && (
@@ -202,7 +210,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                   {!readOnly && onEdit && !editing && (
                     <button onClick={openEdit}
                       className="flex items-center gap-1 text-xs font-semibold text-indigo-400 hover:text-indigo-600">
-                      <Pencil size={12} /> Edit dates
+                      <Pencil size={12} /> Edit
                     </button>
                   )}
                   {!readOnly && onDelete && (
@@ -220,7 +228,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                     className="overflow-hidden"
                   >
                     <div className="rounded-2xl bg-indigo-50 border border-indigo-100 px-4 py-3 mt-1 space-y-2.5">
-                      <p className="text-[11px] font-semibold text-indigo-700">Edit dates</p>
+                      <p className="text-[11px] font-semibold text-indigo-700">Edit symptom</p>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
                           <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold block mb-1">Start date</label>
@@ -235,6 +243,20 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                               className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
                           </div>
                         )}
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold">Severity</label>
+                          <span className="text-[11px] font-bold" style={{ color: severityColor(editSeverity) }}>{severityLabel(editSeverity)}</span>
+                        </div>
+                        <input type="range" min={1} max={6} step={1} value={editSeverity}
+                          onChange={e => setEditSeverity(Number(e.target.value))}
+                          className="w-full accent-indigo-500" />
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold block mb-1">Notes</label>
+                        <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={3}
+                          className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
                       </div>
                       <div className="flex gap-2">
                         <button onClick={saveEdit}

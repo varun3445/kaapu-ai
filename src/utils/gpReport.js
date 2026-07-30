@@ -36,15 +36,19 @@ function line(doc, x1, y1, x2, y2, col, lw = 0.3) {
   doc.line(x1, y1, x2, y2)
 }
 
-function rect(doc, x, y, w, h, col) {
+function rect(doc, x, y, w, h, col, radius = 2.5) {
   fillRgb(doc, col)
-  doc.rect(x, y, w, h, 'F')
+  doc.roundedRect(x, y, w, h, radius, radius, 'F')
 }
+
+// FONT_FAMILY falls back to 'helvetica' if the Plus Jakarta Sans embed failed
+// (e.g. offline) — see registerFonts() below, called once per document.
+let FONT_FAMILY = 'helvetica'
 
 function text(doc, str, x, y, opts = {}) {
   textRgb(doc, opts.col || C.gray900)
   doc.setFontSize(opts.size || 9)
-  doc.setFont('helvetica', opts.weight || 'normal')
+  doc.setFont(FONT_FAMILY, opts.weight || 'normal')
   doc.text(String(str ?? ''), x, y, { align: opts.align || 'left', baseline: 'top' })
 }
 
@@ -83,11 +87,57 @@ function getLogoDataUrl() {
 // Warm the cache as soon as this module is imported.
 getLogoDataUrl()
 
+// ── Fetch the Plus Jakarta Sans TTFs and convert to base64 for jsPDF's VFS ────
+// Same eager-cache-at-module-load pattern as the logo, for the same reason:
+// keeps the iOS Safari window.open() path free of a real async gap.
+async function loadFontBase64(url) {
+  try {
+    const res  = await fetch(url)
+    const blob = await res.blob()
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result)
+      reader.onerror   = reject
+      reader.readAsDataURL(blob)
+    })
+    return dataUrl.split(',')[1] // strip the "data:font/ttf;base64," prefix
+  } catch (_) {
+    return null
+  }
+}
+
+let _fontsPromise = null
+function getFonts() {
+  if (!_fontsPromise) {
+    _fontsPromise = Promise.all([
+      loadFontBase64('/fonts/PlusJakartaSans-Regular.ttf'),
+      loadFontBase64('/fonts/PlusJakartaSans-Bold.ttf'),
+    ])
+  }
+  return _fontsPromise
+}
+getFonts()
+
+// Registers Plus Jakarta Sans on this document and sets FONT_FAMILY to use it;
+// silently keeps the jsPDF default (Helvetica) if either file failed to load.
+function registerFonts(doc, [regularB64, boldB64]) {
+  if (!regularB64 || !boldB64) { FONT_FAMILY = 'helvetica'; return }
+  try {
+    doc.addFileToVFS('PlusJakartaSans-Regular.ttf', regularB64)
+    doc.addFont('PlusJakartaSans-Regular.ttf', 'PlusJakartaSans', 'normal')
+    doc.addFileToVFS('PlusJakartaSans-Bold.ttf', boldB64)
+    doc.addFont('PlusJakartaSans-Bold.ttf', 'PlusJakartaSans', 'bold')
+    FONT_FAMILY = 'PlusJakartaSans'
+  } catch (_) {
+    FONT_FAMILY = 'helvetica'
+  }
+}
+
 const LOGO_ASPECT = 1768 / 2236 // source logo.png is 2236×1768
 
 // ── Draw Kaapu logo (image + wordmark), right-aligned at x ───────────────────
 function drawLogo(doc, x, y, logoDataUrl) {
-  doc.setFont('helvetica', 'bold')
+  doc.setFont(FONT_FAMILY, 'bold')
   doc.setFontSize(14)
   const wordmarkW = doc.getTextWidth('Kaapu')
 
@@ -99,7 +149,7 @@ function drawLogo(doc, x, y, logoDataUrl) {
 
   textRgb(doc, C.indigo)
   doc.text('Kaapu', x, y, { align: 'right', baseline: 'top' })
-  doc.setFont('helvetica', 'normal')
+  doc.setFont(FONT_FAMILY, 'normal')
   doc.setFontSize(8)
   textRgb(doc, C.gray400)
   doc.text('Health Companion', x, y + 6, { align: 'right', baseline: 'top' })
@@ -190,7 +240,8 @@ function severityColor(avg) {
 // ── Main export ───────────────────────────────────────────────────────────────
 export async function generateGPReport({ currentUser, currentMember, symptoms, conditions, medications }) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
-  doc.setFont('helvetica', 'normal')
+  registerFonts(doc, await getFonts())
+  doc.setFont(FONT_FAMILY, 'normal')
 
   const now        = new Date()
   const thirtyAgo  = new Date(now - 30 * 864e5)
@@ -366,24 +417,36 @@ export async function generateGPReport({ currentUser, currentMember, symptoms, c
       // other categories ("Digestive", "Respiratory") read fine appended too.
       const title = `${region} ${cat}`
 
-      rect(doc, MARGIN, y, CONTENT_W, 14, C.gray100)
+      // Notes were captured (manually or via the AI's cause-detection) but
+      // never actually rendered here — pull the distinct ones across every
+      // log in this group and wrap them under a "Note" line, same idea as
+      // the reference report's per-symptom note box.
+      const noteText = [...new Set(syms.map(s => s.notes).filter(Boolean))].join(' · ')
+      const noteLines = noteText ? doc.splitTextToSize(noteText, CONTENT_W - 8) : []
+      const boxH = 14 + (noteLines.length ? noteLines.length * 3.6 + 2 : 0)
+
+      rect(doc, MARGIN, y, CONTENT_W, boxH, C.gray100)
 
       // Region + category, and count
       text(doc, title, MARGIN + 4, y + 2, { size: 9, weight: 'bold', col: C.gray900 })
       text(doc, `${syms.length} log${syms.length > 1 ? 's' : ''}`, MARGIN + 4, y + 7, { size: 7, col: C.gray600 })
 
+      if (noteLines.length) {
+        noteLines.forEach((ln, i) => text(doc, ln, MARGIN + 4, y + 11 + i * 3.6, { size: 6.5, col: C.gray600 }))
+      }
+
       // Severity badge — 6-tier wording, some labels ("Moderate-Severe") are
       // much longer than others ("Mild"), so size the badge to the text
       // rather than a fixed width that would clip the longer ones.
       const badge = severityLabel(avg)
-      doc.setFont('helvetica', 'bold')
+      doc.setFont(FONT_FAMILY, 'bold')
       doc.setFontSize(6.5)
       const badgeW = doc.getTextWidth(badge) + 6
       fillRgb(doc, sc)
       doc.roundedRect(PAGE_W - MARGIN - badgeW, y + 3, badgeW, 8, 2, 2, 'F')
       text(doc, badge, PAGE_W - MARGIN - badgeW / 2, y + 4.5, { size: 6.5, weight: 'bold', col: C.white, align: 'center' })
 
-      y += 16
+      y += boxH + 2
     })
   }
 

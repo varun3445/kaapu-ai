@@ -1,9 +1,95 @@
-// kaapu-chat — AI health assistant powered by Claude
-// POST { messages: [{role, content}], context?: { memberName, conditions, medications, symptoms } }
+// kaapu-chat — Kaapu Health Specialist via Anthropic Managed Agents
+// POST { messages: [{role, content}], context?, agentSessionId? }
+// Returns { content, action, agentSessionId }
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+const AGENT_ID = 'agent_01PjYC4mhrVUbaQ6SS8a97R9'
+const ENV_ID   = 'env_01CAMjYFuh5uVY564nhKHjPh'
+const BASE     = 'https://api.anthropic.com/v1'
+
+function agentHeaders(key: string) {
+  return {
+    'x-api-key': key,
+    'anthropic-version': '2023-06-01',
+    'anthropic-beta': 'managed-agents-2026-04-01',
+    'content-type': 'application/json',
+  }
+}
+
+function buildHealthContext(context: any): string {
+  if (!context) return ''
+  const parts: string[] = []
+  if (context.memberName) parts.push(`User: ${context.memberName}`)
+  if (context.conditions?.length) {
+    parts.push(`Conditions: ${context.conditions.map((c: any) => c.name).join(', ')}`)
+  }
+  if (context.medications?.length) {
+    parts.push(`Medications: ${context.medications.map((m: any) => m.name).join(', ')}`)
+  }
+  if (context.activeSymptoms?.length) {
+    const list = context.activeSymptoms
+      .slice(0, 10)
+      .map((s: any) => `${s.categoryLabel || s.category} at ${s.bodyLabel || s.bodyArea} (severity ${s.severity}/10${s.duration ? ', ' + s.duration : ''})`)
+      .join('; ')
+    parts.push(`Active symptoms: ${list}`)
+  }
+  if (context.symptomHistory?.length) {
+    const hist = context.symptomHistory
+      .slice(0, 40)
+      .map((s: any) => {
+        const status = s.resolved
+          ? `[resolved${s.resolvedDate ? ' ' + s.resolvedDate : ''}]`
+          : '[active]'
+        return `${s.date}: ${s.category} — ${s.type} at ${s.bodyArea}, severity ${s.severity}/10${s.duration ? ', ' + s.duration : ''} ${status}${s.notes ? ', note: ' + s.notes : ''}`
+      })
+      .join('\n')
+    parts.push(`Symptom history:\n${hist}`)
+  }
+  if (!parts.length) return ''
+  return `[HEALTH CONTEXT]\n${parts.join('\n')}\n[/HEALTH CONTEXT]\n\n`
+}
+
+async function createSession(key: string): Promise<string> {
+  const res = await fetch(`${BASE}/sessions`, {
+    method: 'POST',
+    headers: agentHeaders(key),
+    body: JSON.stringify({ agent: AGENT_ID, environment_id: ENV_ID, title: 'kaapu-chat' }),
+  })
+  const data = await res.json()
+  if (!data.id) throw new Error(`Session creation failed: ${JSON.stringify(data).slice(0, 200)}`)
+  return data.id
+}
+
+async function sendEvent(key: string, sessionId: string, text: string): Promise<void> {
+  await fetch(`${BASE}/sessions/${sessionId}/events`, {
+    method: 'POST',
+    headers: agentHeaders(key),
+    body: JSON.stringify({
+      events: [{ type: 'user.message', content: [{ type: 'text', text }] }],
+    }),
+  })
+}
+
+async function pollResponse(key: string, sessionId: string, maxMs = 45000): Promise<string> {
+  const deadline = Date.now() + maxMs
+  let lastText = ''
+  while (Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 1500))
+    const res = await fetch(`${BASE}/sessions/${sessionId}/events`, { headers: agentHeaders(key) })
+    if (!res.ok) continue
+    const data = await res.json()
+    const events: any[] = data.data || []
+    const agentMsgs = events.filter((e: any) => e.type === 'agent.message')
+    if (agentMsgs.length) {
+      lastText = agentMsgs[agentMsgs.length - 1].content?.[0]?.text || ''
+    }
+    if (events.some((e: any) => e.type === 'session.status_idle') && lastText) break
+  }
+  return lastText
 }
 
 Deno.serve(async (req) => {
@@ -20,125 +106,63 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages, context } = await req.json()
+    const { messages, context, agentSessionId: incomingSessionId } = await req.json()
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
         JSON.stringify({ error: 'invalid_input' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Build health context block for the system prompt
-    let healthContext = ''
-    if (context) {
-      const parts: string[] = []
-      if (context.memberName) parts.push(`You are speaking with ${context.memberName}.`)
-      if (context.conditions?.length) {
-        parts.push(`Their active health conditions: ${context.conditions.map((c: any) => c.name).join(', ')}.`)
-      }
-      if (context.medications?.length) {
-        const medList = context.medications
-          .map((m: any) => m.dosage ? `${m.name} (${m.dosage})` : m.name)
-          .join(', ')
-        parts.push(`Current medications: ${medList}.`)
-      }
-      // Active (unresolved) symptoms
-      if (context.activeSymptoms?.length) {
-        const symList = context.activeSymptoms
-          .slice(0, 10)
-          .map((s: any) => `${s.categoryLabel || s.category} at ${s.bodyLabel || s.bodyArea} (severity ${s.severity}/10${s.duration ? ', ' + s.duration : ''})`)
-          .join(', ')
-        parts.push(`Currently active symptoms: ${symList}.`)
-      }
-      // Full symptom history — lets AI answer "when did I last have X" questions
-      if (context.symptomHistory?.length) {
-        const histList = context.symptomHistory
-          .slice(0, 40)
-          .map((s: any) => {
-            const status = s.resolved ? ` [resolved${s.resolvedDate ? ' ' + s.resolvedDate : ''}]` : ' [active]'
-            return `${s.date}: ${s.category} — ${s.type} at ${s.bodyArea}, severity ${s.severity}/10${s.duration ? ', ' + s.duration : ''}${status}${s.notes ? ', note: ' + s.notes : ''}`
-          })
-          .join('\n')
-        parts.push(`Symptom history (last 90 days):\n${histList}`)
-      }
-      // Legacy fallback for older clients
-      if (!context.symptomHistory && context.recentSymptoms?.length) {
-        const symList = context.recentSymptoms
-          .slice(0, 5)
-          .map((s: any) => `${s.categoryLabel} (severity ${s.severity}/10)`)
-          .join(', ')
-        parts.push(`Recent symptoms logged: ${symList}.`)
-      }
-      if (parts.length) {
-        healthContext = `\n\nUser health context:\n${parts.join('\n')}`
-      }
+    const lastUserMsg = [...messages].reverse().find((m: any) => m.role === 'user')
+    if (!lastUserMsg) {
+      return new Response(
+        JSON.stringify({ error: 'no_user_message' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
-    const systemPrompt = `You are Kaapu, a caring friend who happens to know a lot about health. You text like a real person — warm, direct, and brief.
+    let sessionId = incomingSessionId
+    let messageText: string = lastUserMsg.content
 
-How you write:
-- Keep replies short. 2-4 sentences max unless the person is clearly asking for detail. If you need to say more, split it into a follow-up question instead.
-- Never use bullet points, dashes, asterisks, bold, or any markdown. Plain conversational text only.
-- Sound like a friend texting, not a doctor writing notes. No "I'd strongly recommend" or "it is important to note" — just talk normally.
-- Ask one focused question at a time, not a list of questions.
-- If something sounds serious, say so plainly and briefly — then ask one thing. Don't write a warning essay.
-- Never diagnose. Never prescribe. If something needs a doctor, say it in one sentence and move on.
-- No sign-offs, no "take care!", no "I hope that helps!" — just the message.
+    // New conversation — create session and inject health context + response rules
+    if (!sessionId) {
+      sessionId = await createSession(apiKey)
+      const healthCtx = buildHealthContext(context)
+      // Prepend health context and action marker instructions to the first message only
+      messageText = `${healthCtx}${messageText}
 
-Action markers (append silently at the very end, no space before, never explain them):
-- If the user says their symptom/pain is gone, resolved, better, or fixed → append [[suggest:resolve]]
-- If the user mentions a new symptom or pain they haven't logged → append [[suggest:log]]
-- Otherwise append nothing.${healthContext}`
+[RESPONSE STYLE: Reply like a warm friend texting — short, plain sentences, no bullet points or markdown. 2-4 sentences max unless more is clearly needed. No sign-offs.]
+[ACTION MARKERS: Silently append [[suggest:resolve]] if the user says a symptom is gone/better/resolved. Append [[suggest:log]] if they mention a new symptom they haven't logged. Append nothing otherwise. Never explain these.]`
+    }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: messages.map((m: any) => ({
-          role: m.role,
-          content: m.content,
-        })),
-      }),
-    })
+    await sendEvent(apiKey, sessionId, messageText)
+    let content = await pollResponse(apiKey, sessionId)
 
-    if (!response.ok) {
-      const errText = await response.text()
-      console.error('Anthropic API error:', response.status, errText)
+    if (!content) {
       return new Response(
-        JSON.stringify({ error: 'api_error' }),
+        JSON.stringify({ error: 'timeout', agentSessionId: sessionId }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    const data = await response.json()
-    let content = data?.content?.[0]?.text?.trim() ?? ''
-
     // Parse and strip action markers
     let action: string | null = null
-    const resolveMatch = content.match(/\[\[suggest:resolve\]\]/i)
-    const logMatch     = content.match(/\[\[suggest:log\]\]/i)
-    if (resolveMatch) {
-      action  = 'resolve'
-      content = content.replace(/\[\[suggest:resolve\]\]/gi, '').trim()
-    } else if (logMatch) {
-      action  = 'log'
-      content = content.replace(/\[\[suggest:log\]\]/gi, '').trim()
+    if (/\[\[suggest:resolve\]\]/i.test(content)) {
+      action   = 'resolve'
+      content  = content.replace(/\[\[suggest:resolve\]\]/gi, '').trim()
+    } else if (/\[\[suggest:log\]\]/i.test(content)) {
+      action   = 'log'
+      content  = content.replace(/\[\[suggest:log\]\]/gi, '').trim()
     }
 
     return new Response(
-      JSON.stringify({ content, action }),
+      JSON.stringify({ content, action, agentSessionId: sessionId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (err) {
-    console.error('kaapu-chat unhandled error:', err)
+    console.error('kaapu-chat error:', err)
     return new Response(
       JSON.stringify({ error: 'server_error' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

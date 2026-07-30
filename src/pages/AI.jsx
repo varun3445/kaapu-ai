@@ -374,7 +374,8 @@ export default function AI() {
   const [savingNotes,          setSavingNotes]          = useState(false)
   const [notesSaved,           setNotesSaved]           = useState(false)
   const [actionDoneIdx,        setActionDoneIdx]        = useState(new Set()) // message indices whose action chip is done
-  const currentSessionId = useRef(null) // stable ID for the active conversation
+  const currentSessionId  = useRef(null) // stable ID for the Supabase chat history row
+  const agentSessionIdRef = useRef(null) // stable ID for the Managed Agent session
   const bottomRef  = useRef(null)
   const scrollRef  = useRef(null)
   const inputRef   = useRef(null)
@@ -427,7 +428,8 @@ export default function AI() {
     } else {
       await saveSession(messages, userId)
     }
-    currentSessionId.current = null
+    currentSessionId.current  = null
+    agentSessionIdRef.current = null
     setMessages([])
     setError(null)
     setInput('')
@@ -527,9 +529,10 @@ export default function AI() {
     setLoading(true)
     try {
       const { data, error: fnError } = await supabase.functions.invoke('kaapu-chat', {
-        body: { messages: [{ role: 'user', content }], context: buildContext() },
+        body: { messages: [{ role: 'user', content }], context: buildContext(), agentSessionId: agentSessionIdRef.current },
       })
       if (fnError || !data?.content) throw new Error('empty')
+      if (data.agentSessionId) agentSessionIdRef.current = data.agentSessionId
       const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
       const nextMessages = [aiMsg]
       setMessages(nextMessages)
@@ -558,9 +561,10 @@ export default function AI() {
       if (!supabaseReady || !supabase) throw new Error('not_ready')
       const apiMessages = newMessages.map(({ role, content }) => ({ role, content }))
       const { data, error: fnError } = await supabase.functions.invoke('kaapu-chat', {
-        body: { messages: apiMessages, context: buildContext() },
+        body: { messages: apiMessages, context: buildContext(), agentSessionId: agentSessionIdRef.current },
       })
       if (fnError || !data?.content) throw new Error(fnError?.message || 'empty_response')
+      if (data.agentSessionId) agentSessionIdRef.current = data.agentSessionId
       const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
       const finalMessages = [...newMessages, aiMsg]
       setMessages(finalMessages)
@@ -588,7 +592,7 @@ export default function AI() {
         { role: 'user', content: summaryPrompt },
       ]
       const { data, error: fnError } = await supabase.functions.invoke('kaapu-chat', {
-        body: { messages: apiMessages, context: buildContext() },
+        body: { messages: apiMessages, context: buildContext(), agentSessionId: agentSessionIdRef.current },
       })
       if (fnError || !data?.content) throw new Error('summary_failed')
       const summary = data.content.trim()

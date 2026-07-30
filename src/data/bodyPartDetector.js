@@ -59,12 +59,19 @@ export function detectBodyPart(point, bbox) {
     const side    = isRightArm ? 'Right' : 'Left'
     const sideId  = isRightArm ? 'right' : 'left'
     const armFrac = isRightArm ? (0.32 - nx) / 0.32 : (nx - 0.68) / 0.32
-    if (armFrac < 0.20) return { id: `${sideId}-shoulder`,  label: `${side} Shoulder` }
-    if (armFrac < 0.45) return { id: `${sideId}-upper-arm`, label: `Upper ${side} Arm` }
-    if (armFrac < 0.55) return { id: `${sideId}-elbow`,     label: `${side} Elbow` }
-    if (armFrac < 0.87) return { id: `${sideId}-forearm`,   label: `${side} Forearm` }
-    if (armFrac < 0.94) return { id: `${sideId}-wrist`,     label: `${side} Wrist` }
-    return                      { id: `${sideId}-hand`,      label: `${side} Hand` }
+    if (armFrac < 0.15) return { id: `${sideId}-shoulder`,   label: `${side} Shoulder` }
+    if (armFrac < 0.42) return { id: `${sideId}-upper-arm`,  label: `Upper ${side} Arm` }
+    if (armFrac < 0.52) return { id: `${sideId}-elbow`,      label: `${side} Elbow` }
+    if (armFrac < 0.82) return { id: `${sideId}-lower-arm`,  label: `${side} Forearm` }
+    if (armFrac < 0.90) return { id: `${sideId}-hand`,       label: `${side} Wrist` }
+    return                      { id: `${sideId}-hand`,       label: `${side} Hand` }
+  }
+
+  // ── SHOULDER JOINT (body-arm junction, nx 0.32–0.46 or 0.54–0.68) ──
+  // Hits when clicking the shoulder sphere that is within the torso x-range
+  if (ny > 0.50 && ny < 0.65 && !isCentre) {
+    if (isRight) return { id: 'right-shoulder', label: 'Right Shoulder' }
+    return               { id: 'left-shoulder',  label: 'Left Shoulder' }
   }
 
   // ── NECK ──────────────────────────────────────── ny 0.60–0.67
@@ -116,13 +123,15 @@ export function detectBodyPart(point, bbox) {
     return                 { id: 'tailbone',    label: 'Tailbone / Coccyx' }
   }
 
-  // ── UPPER THIGH / GROIN ───────────────────────── ny 0.23–0.32
+  // ── HIP JOINT / UPPER THIGH / GROIN ──────────── ny 0.23–0.32
   if (ny > 0.23) {
     if (isCentre && ny > 0.27 && isFront) return { id: 'groin', label: 'Groin' }
     const side   = isRight || (!isLeft && nx < 0.5) ? 'Right' : 'Left'
     const sideId = side === 'Right' ? 'right' : 'left'
-    if (isFront) return { id: `${sideId}-upper-thigh`,    label: `Upper ${side} Thigh` }
-    return              { id: `${sideId}-upper-hamstring`, label: `${side} Hamstring (Upper)` }
+    // Top of this band is the hip joint sphere
+    if (ny > 0.29) return { id: `${sideId}-thigh`, label: `${side} Hip` }
+    if (isFront) return { id: `${sideId}-thigh`,   label: `Upper ${side} Thigh` }
+    return              { id: `${sideId}-thigh`,   label: `${side} Hamstring` }
   }
 
   // ── KNEE ──────────────────────────────────────── ny 0.14–0.23

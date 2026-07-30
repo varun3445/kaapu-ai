@@ -55,35 +55,50 @@ function BodyColliders({ bodyGroupRef, bboxRef, onHover }) {
   const parts = [
     // HEAD — large sphere matching stickman proportions
     { type: 'sphere', args: [0.28, 8, 8],            pos: [0,     0.72,  0]                          },
-    // NECK — very short on this model
-    { type: 'cyl',    args: [0.07, 0.07, 0.07, 8],   pos: [0,     0.42,  0]                          },
+    // NECK — short cylinder
+    { type: 'cyl',    args: [0.07, 0.07, 0.10, 8],   pos: [0,     0.43,  0]                          },
     // UPPER CHEST
     { type: 'box',    args: [0.38, 0.18, 0.20],       pos: [0,     0.22,  0]                          },
     // MID TORSO / ABDOMEN
     { type: 'box',    args: [0.34, 0.16, 0.18],       pos: [0,     0.07,  0]                          },
     // HIPS / PELVIS
     { type: 'box',    args: [0.36, 0.14, 0.18],       pos: [0,    -0.06,  0]                          },
-    // T-POSE ARMS — horizontal at true shoulder height y≈0.30
+    // SHOULDER JOINTS — sphere at body-arm junction
+    { type: 'sphere', args: [0.09, 8, 8],             pos: [-0.17, 0.30,  0]                          },
+    { type: 'sphere', args: [0.09, 8, 8],             pos: [ 0.17, 0.30,  0]                          },
+    // UPPER ARMS — from shoulder joint to elbow
     { type: 'cyl',    args: [0.08, 0.075, 0.28, 8],  pos: [-0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
     { type: 'cyl',    args: [0.08, 0.075, 0.28, 8],  pos: [ 0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
+    // ELBOW JOINTS
     { type: 'sphere', args: [0.08, 8, 8],             pos: [-0.47, 0.30, 0]                          },
     { type: 'sphere', args: [0.08, 8, 8],             pos: [ 0.47, 0.30, 0]                          },
+    // FOREARMS
     { type: 'cyl',    args: [0.07, 0.065, 0.24, 8],  pos: [-0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
     { type: 'cyl',    args: [0.07, 0.065, 0.24, 8],  pos: [ 0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
-    { type: 'box',    args: [0.12, 0.10, 0.08],       pos: [-0.73, 0.30, 0]                          },
-    { type: 'box',    args: [0.12, 0.10, 0.08],       pos: [ 0.73, 0.30, 0]                          },
-    // UPPER LEGS
-    { type: 'cyl',    args: [0.08, 0.08, 0.24, 8],   pos: [-0.11,-0.22,  0]                          },
-    { type: 'cyl',    args: [0.08, 0.08, 0.24, 8],   pos: [ 0.11,-0.22,  0]                          },
+    // WRIST JOINTS
+    { type: 'sphere', args: [0.07, 8, 8],             pos: [-0.73, 0.30, 0]                          },
+    { type: 'sphere', args: [0.07, 8, 8],             pos: [ 0.73, 0.30, 0]                          },
+    // HANDS
+    { type: 'box',    args: [0.12, 0.10, 0.08],       pos: [-0.80, 0.30, 0]                          },
+    { type: 'box',    args: [0.12, 0.10, 0.08],       pos: [ 0.80, 0.30, 0]                          },
+    // HIP JOINTS — sphere at pelvis-thigh junction
+    { type: 'sphere', args: [0.09, 8, 8],             pos: [-0.11, -0.12, 0]                          },
+    { type: 'sphere', args: [0.09, 8, 8],             pos: [ 0.11, -0.12, 0]                          },
+    // UPPER LEGS / THIGHS
+    { type: 'cyl',    args: [0.08, 0.08, 0.20, 8],   pos: [-0.11,-0.22,  0]                          },
+    { type: 'cyl',    args: [0.08, 0.08, 0.20, 8],   pos: [ 0.11,-0.22,  0]                          },
     // KNEES
     { type: 'sphere', args: [0.08, 8, 8],             pos: [-0.13,-0.38,  0]                          },
     { type: 'sphere', args: [0.08, 8, 8],             pos: [ 0.13,-0.38,  0]                          },
-    // LOWER LEGS
+    // LOWER LEGS / SHINS
     { type: 'cyl',    args: [0.065, 0.055, 0.26, 8], pos: [-0.13,-0.55,  0]                          },
     { type: 'cyl',    args: [0.065, 0.055, 0.26, 8], pos: [ 0.13,-0.55,  0]                          },
+    // ANKLE JOINTS
+    { type: 'sphere', args: [0.065, 8, 8],            pos: [-0.13, -0.63, 0]                          },
+    { type: 'sphere', args: [0.065, 8, 8],            pos: [ 0.13, -0.63, 0]                          },
     // FEET
-    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [-0.13,-0.67, 0.04]                        },
-    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [ 0.13,-0.67, 0.04]                        },
+    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [-0.13,-0.68, 0.04]                        },
+    { type: 'box',    args: [0.12, 0.08, 0.22],       pos: [ 0.13,-0.68, 0.04]                        },
   ]
 
   return (
@@ -145,35 +160,50 @@ function GeometryBody({ skinColor = '#C49272' }) {
   const parts = [
     // HEAD — large, stickman-proportioned
     { type: 'sphere', args: [0.24, 24, 24],            pos: [0,     0.72,  0]                          },
-    // NECK — very short
-    { type: 'cyl',    args: [0.048, 0.048, 0.06, 16],  pos: [0,     0.42,  0]                          },
+    // NECK
+    { type: 'cyl',    args: [0.048, 0.048, 0.10, 16],  pos: [0,     0.43,  0]                          },
     // UPPER CHEST
     { type: 'box',    args: [0.30, 0.14, 0.14],         pos: [0,     0.22,  0]                          },
-    // MID TORSO
+    // MID TORSO / ABDOMEN
     { type: 'box',    args: [0.26, 0.12, 0.12],         pos: [0,     0.07,  0]                          },
-    // HIPS
+    // HIPS / PELVIS
     { type: 'box',    args: [0.28, 0.10, 0.12],         pos: [0,    -0.06,  0]                          },
-    // T-POSE ARMS at true shoulder height y≈0.30
+    // SHOULDER JOINTS — sphere at body-arm junction
+    { type: 'sphere', args: [0.065, 16, 16],             pos: [-0.17, 0.30,  0]                          },
+    { type: 'sphere', args: [0.065, 16, 16],             pos: [ 0.17, 0.30,  0]                          },
+    // UPPER ARMS
     { type: 'cyl',    args: [0.05, 0.045, 0.26, 16],   pos: [-0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
     { type: 'cyl',    args: [0.05, 0.045, 0.26, 16],   pos: [ 0.32, 0.30, 0], rot: [0,0, Math.PI/2] },
+    // ELBOW JOINTS
     { type: 'sphere', args: [0.05, 16, 16],              pos: [-0.47, 0.30, 0]                          },
     { type: 'sphere', args: [0.05, 16, 16],              pos: [ 0.47, 0.30, 0]                          },
+    // FOREARMS
     { type: 'cyl',    args: [0.04, 0.035, 0.22, 16],   pos: [-0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
     { type: 'cyl',    args: [0.04, 0.035, 0.22, 16],   pos: [ 0.60, 0.30, 0], rot: [0,0, Math.PI/2] },
-    { type: 'box',    args: [0.10, 0.07, 0.05],          pos: [-0.73, 0.30, 0]                          },
-    { type: 'box',    args: [0.10, 0.07, 0.05],          pos: [ 0.73, 0.30, 0]                          },
-    // UPPER LEGS
-    { type: 'cyl',    args: [0.054, 0.050, 0.22, 16],  pos: [-0.11, -0.22, 0]                          },
-    { type: 'cyl',    args: [0.054, 0.050, 0.22, 16],  pos: [ 0.11, -0.22, 0]                          },
+    // WRIST JOINTS
+    { type: 'sphere', args: [0.042, 16, 16],             pos: [-0.73, 0.30, 0]                          },
+    { type: 'sphere', args: [0.042, 16, 16],             pos: [ 0.73, 0.30, 0]                          },
+    // HANDS
+    { type: 'box',    args: [0.10, 0.07, 0.05],          pos: [-0.80, 0.30, 0]                          },
+    { type: 'box',    args: [0.10, 0.07, 0.05],          pos: [ 0.80, 0.30, 0]                          },
+    // HIP JOINTS — sphere at pelvis-thigh junction
+    { type: 'sphere', args: [0.06, 16, 16],              pos: [-0.11, -0.12, 0]                          },
+    { type: 'sphere', args: [0.06, 16, 16],              pos: [ 0.11, -0.12, 0]                          },
+    // UPPER LEGS / THIGHS
+    { type: 'cyl',    args: [0.054, 0.050, 0.18, 16],  pos: [-0.11, -0.22, 0]                          },
+    { type: 'cyl',    args: [0.054, 0.050, 0.18, 16],  pos: [ 0.11, -0.22, 0]                          },
     // KNEES
     { type: 'sphere', args: [0.053, 16, 16],             pos: [-0.13, -0.38, 0]                          },
     { type: 'sphere', args: [0.053, 16, 16],             pos: [ 0.13, -0.38, 0]                          },
-    // LOWER LEGS
+    // LOWER LEGS / SHINS
     { type: 'cyl',    args: [0.043, 0.036, 0.24, 16],  pos: [-0.13, -0.55, 0]                          },
     { type: 'cyl',    args: [0.043, 0.036, 0.24, 16],  pos: [ 0.13, -0.55, 0]                          },
+    // ANKLE JOINTS
+    { type: 'sphere', args: [0.044, 16, 16],             pos: [-0.13, -0.63, 0]                          },
+    { type: 'sphere', args: [0.044, 16, 16],             pos: [ 0.13, -0.63, 0]                          },
     // FEET
-    { type: 'box',    args: [0.09, 0.055, 0.18],         pos: [-0.13, -0.67, 0.04]                       },
-    { type: 'box',    args: [0.09, 0.055, 0.18],         pos: [ 0.13, -0.67, 0.04]                       },
+    { type: 'box',    args: [0.09, 0.055, 0.18],         pos: [-0.13, -0.68, 0.04]                       },
+    { type: 'box',    args: [0.09, 0.055, 0.18],         pos: [ 0.13, -0.68, 0.04]                       },
   ]
 
   return (

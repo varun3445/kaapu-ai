@@ -7,52 +7,85 @@ import SymptomForm from '../components/Symptoms/SymptomForm'
 import { SYMPTOM_CATEGORIES, BODY_REGIONS } from '../data/mockData'
 
 // ── Voice NLP ─────────────────────────────────────────────────────────────────
+
+// 3D world-space pin positions for voice-detected regions
+// Coord system: Y up (head ~0.72, feet ~-0.67), X negative = model right arm,
+// X positive = model left arm, Z positive = front. Z offset ~0.1-0.2 = front surface.
+const VOICE_PIN_POSITIONS = {
+  'head':              { x:  0,     y:  0.80, z:  0.25 },
+  'neck':              { x:  0,     y:  0.42, z:  0.09 },
+  'chest':             { x:  0,     y:  0.22, z:  0.16 },
+  'abdomen':           { x:  0,     y:  0.07, z:  0.14 },
+  'pelvis':            { x:  0,     y: -0.06, z:  0.14 },
+  'left-shoulder':     { x:  0.35,  y:  0.30, z:  0.07 },
+  'right-shoulder':    { x: -0.35,  y:  0.30, z:  0.07 },
+  'left-upper-arm':    { x:  0.50,  y:  0.30, z:  0.06 },
+  'right-upper-arm':   { x: -0.50,  y:  0.30, z:  0.06 },
+  'left-elbow':        { x:  0.63,  y:  0.30, z:  0.06 },
+  'right-elbow':       { x: -0.63,  y:  0.30, z:  0.06 },
+  'left-lower-arm':    { x:  0.72,  y:  0.30, z:  0.05 },
+  'right-lower-arm':   { x: -0.72,  y:  0.30, z:  0.05 },
+  'left-hand':         { x:  0.79,  y:  0.30, z:  0.04 },
+  'right-hand':        { x: -0.79,  y:  0.30, z:  0.04 },
+  'left-thigh':        { x:  0.11,  y: -0.22, z:  0.09 },
+  'right-thigh':       { x: -0.11,  y: -0.22, z:  0.09 },
+  'left-knee':         { x:  0.13,  y: -0.38, z:  0.09 },
+  'right-knee':        { x: -0.13,  y: -0.38, z:  0.09 },
+  'left-shin':         { x:  0.13,  y: -0.55, z:  0.08 },
+  'right-shin':        { x: -0.13,  y: -0.55, z:  0.08 },
+  'left-foot':         { x:  0.13,  y: -0.67, z:  0.14 },
+  'right-foot':        { x: -0.13,  y: -0.67, z:  0.14 },
+}
+
+// Multi-word phrases FIRST so they take priority over single-word matches
 const REGION_RULES = [
-  { id: 'head',            kw: ['head','headache','skull','forehead','temple','face','eye','ear','nose','mouth','jaw','cheek','migraine'] },
-  { id: 'neck',            kw: ['neck','throat','collar'] },
-  { id: 'chest',           kw: ['chest','heart','breast','rib','sternum','lung','breathing','breath','cough'] },
-  { id: 'abdomen',         kw: ['abdomen','stomach','belly','tummy','gut','nausea','bloat'] },
-  { id: 'pelvis',          kw: ['pelvis','groin','hip','lower abdomen'] },
-  { id: 'left-shoulder',   kw: ['left shoulder','shoulder left'] },
-  { id: 'right-shoulder',  kw: ['right shoulder','shoulder right'] },
-  { id: 'left-upper-arm',  kw: ['left upper arm','left arm'] },
-  { id: 'right-upper-arm', kw: ['right upper arm','right arm'] },
+  { id: 'head',            kw: ['headache','migraine','forehead','temple','face','skull','sinus','eye','ear','nose','mouth','jaw','cheek','head'] },
+  { id: 'neck',            kw: ['stiff neck','neck pain','sore neck','neck','throat','collar'] },
+  { id: 'chest',           kw: ['chest pain','chest tightness','chest','heart','breast','sternum','rib','lung','breathing','breath','cough'] },
+  { id: 'abdomen',         kw: ['stomach ache','stomach pain','tummy ache','abdomen','stomach','belly','tummy','gut','nausea','bloat','indigestion'] },
+  { id: 'pelvis',          kw: ['lower abdomen','pelvic pain','pelvis','groin','hip pain','hip'] },
+  { id: 'left-shoulder',   kw: ['left shoulder','shoulder left','left trap'] },
+  { id: 'right-shoulder',  kw: ['right shoulder','shoulder right','right trap','shoulder'] },
+  { id: 'left-upper-arm',  kw: ['left upper arm','left bicep','upper left arm','left arm'] },
+  { id: 'right-upper-arm', kw: ['right upper arm','right bicep','upper right arm','right arm','arm'] },
   { id: 'left-elbow',      kw: ['left elbow','elbow left'] },
-  { id: 'right-elbow',     kw: ['right elbow','elbow right'] },
-  { id: 'left-lower-arm',  kw: ['left forearm','left lower arm'] },
-  { id: 'right-lower-arm', kw: ['right forearm','right lower arm'] },
-  { id: 'left-hand',       kw: ['left hand','left wrist','left finger'] },
-  { id: 'right-hand',      kw: ['right hand','right wrist','right finger'] },
-  { id: 'left-thigh',      kw: ['left thigh','left upper leg'] },
-  { id: 'right-thigh',     kw: ['right thigh','right upper leg'] },
+  { id: 'right-elbow',     kw: ['right elbow','elbow right','elbow'] },
+  { id: 'left-lower-arm',  kw: ['left forearm','left lower arm','left tricep'] },
+  { id: 'right-lower-arm', kw: ['right forearm','right lower arm','right tricep','forearm'] },
+  { id: 'left-hand',       kw: ['left hand','left wrist','left finger','left palm','left thumb'] },
+  { id: 'right-hand',      kw: ['right hand','right wrist','right finger','right palm','right thumb','wrist','hand','finger'] },
+  { id: 'left-thigh',      kw: ['left thigh','left quad','left hamstring','upper left leg','left upper leg'] },
+  { id: 'right-thigh',     kw: ['right thigh','right quad','right hamstring','upper right leg','right upper leg','thigh'] },
   { id: 'left-knee',       kw: ['left knee'] },
-  { id: 'right-knee',      kw: ['right knee'] },
+  { id: 'right-knee',      kw: ['right knee','knee'] },
   { id: 'left-shin',       kw: ['left shin','left calf','left lower leg'] },
-  { id: 'right-shin',      kw: ['right shin','right calf','right lower leg'] },
-  { id: 'left-foot',       kw: ['left foot','left ankle','left toe'] },
-  { id: 'right-foot',      kw: ['right foot','right ankle','right toe'] },
+  { id: 'right-shin',      kw: ['right shin','right calf','right lower leg','shin','calf'] },
+  { id: 'left-foot',       kw: ['left foot','left ankle','left toe','left heel'] },
+  { id: 'right-foot',      kw: ['right foot','right ankle','right toe','right heel','ankle','foot','heel','toe'] },
 ]
 
 const CATEGORY_RULES = [
-  { id: 'neurological', kw: ['headache','migraine','dizzy','dizziness','numb','numbness','tingle','tingling','blurred','vision'] },
-  { id: 'respiratory',  kw: ['breath','breathing','cough','coughing','wheeze','wheezing','tight'] },
-  { id: 'digestive',    kw: ['nausea','stomach','bloat','cramp','indigestion','vomit','sick'] },
-  { id: 'fatigue',      kw: ['tired','fatigue','weak','weakness','exhausted','energy'] },
-  { id: 'swelling',     kw: ['swollen','swelling','inflamed','puffy','puffed'] },
+  { id: 'neurological', kw: ['headache','migraine','dizzy','dizziness','numb','numbness','tingle','tingling','blurred vision','vision'] },
+  { id: 'respiratory',  kw: ['breath','breathing','cough','coughing','wheeze','wheezing','tight','shortness'] },
+  { id: 'digestive',    kw: ['nausea','stomach','bloat','cramp','indigestion','vomit','sick','constipat','diarrhea'] },
+  { id: 'fatigue',      kw: ['tired','fatigue','weak','weakness','exhausted','energy','lethargy'] },
+  { id: 'swelling',     kw: ['swollen','swelling','inflamed','inflammation','puffy','puffed'] },
   { id: 'skin',         kw: ['rash','itch','itching','dry','bruise','bruising'] },
-  { id: 'pain',         kw: ['pain','ache','hurt','hurts','sore','sharp','stabbing','throbbing','burning','aching'] },
+  { id: 'pain',         kw: ['pain','ache','hurt','hurts','sore','sharp','stabbing','throbbing','burning','aching','tender','pressure','spasm','stiff','stiffness'] },
 ]
 
 function parseVoice(text) {
   const lower = text.toLowerCase()
-  const region = REGION_RULES.reduce((found, rule) =>
-    found || (rule.kw.some(k => lower.includes(k)) ? BODY_REGIONS.find(r => r.id === rule.id) : null)
+  const regionId = REGION_RULES.reduce((found, rule) =>
+    found || (rule.kw.some(k => lower.includes(k)) ? rule.id : null)
   , null)
+  const position   = regionId ? VOICE_PIN_POSITIONS[regionId] : null
+  const bodyRegion = regionId ? (BODY_REGIONS.find(r => r.id === regionId) || { id: regionId, label: regionId }) : null
   const categoryId = CATEGORY_RULES.reduce((found, rule) =>
     found || (rule.kw.some(k => lower.includes(k)) ? rule.id : null)
   , null) || 'pain'
   const cat = SYMPTOM_CATEGORIES.find(c => c.id === categoryId)
-  return { region, categoryId, cat, type: cat?.types[0] || 'General' }
+  return { regionId, regionLabel: bodyRegion?.label || regionId, position, categoryId, cat, type: cat?.types[0] || 'General' }
 }
 
 // ── Symptom pill ──────────────────────────────────────────────────────────────
@@ -148,20 +181,20 @@ export default function LogPain() {
     setVoiceToast(text)
     setVoicePhase('analysing')
     setTimeout(() => {
-      const { region, categoryId, cat, type } = parseVoice(text)
-      if (region) {
+      const { regionId, regionLabel, position, categoryId, cat, type } = parseVoice(text)
+      if (regionId && position) {
         addSymptom({
-          bodyRegion:    region.id,
-          bodyLabel:     region.label,
+          bodyRegion:    regionId,
+          bodyLabel:     regionLabel,
           category:      categoryId,
           categoryLabel: cat?.label || categoryId,
           type,
           severity:      5,
           duration:      'Just started',
           notes:         text,
-          pinPosition:   region.position,
+          pinPosition:   position,
         })
-        setVoicePlot({ label: region.label })
+        setVoicePlot({ label: regionLabel })
         setVoicePhase('plotted')
         setTimeout(() => { setVoicePhase('idle'); setVoicePlot(null) }, 3500)
       } else {
@@ -274,42 +307,24 @@ export default function LogPain() {
               style={{ background: 'rgba(238,240,255,0.7)', backdropFilter: 'blur(2px)' }}
             >
               {listening ? (
-                <>
-                  {/* Pulsing rings */}
-                  {[0,1,2].map(i => (
-                    <motion.div key={i}
-                      className="absolute rounded-full border-2 border-indigo-400"
-                      animate={{ scale: [1, 2.2 + i * 0.4], opacity: [0.6, 0] }}
-                      transition={{ duration: 1.4, repeat: Infinity, delay: i * 0.45, ease: 'easeOut' }}
-                      style={{ width: 56, height: 56 }}
+                <div className="flex gap-2.5 items-center">
+                  {[0, 1, 2].map(i => (
+                    <motion.div
+                      key={i}
+                      className="w-3 h-3 rounded-full bg-indigo-500"
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{ duration: 0.65, repeat: Infinity, delay: i * 0.15, ease: 'easeInOut' }}
                     />
                   ))}
-                  <div className="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-300 z-10">
-                    <Mic size={24} className="text-white animate-pulse" />
-                  </div>
-                  <div className="mt-4 bg-white/90 rounded-2xl px-5 py-2.5 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-0.5 items-end h-4">
-                        {[0,1,2,3,4].map(i => (
-                          <motion.div key={i} className="w-1 bg-indigo-500 rounded-full"
-                            animate={{ height: [4, 16, 4] }}
-                            transition={{ duration: 0.55, repeat: Infinity, delay: i * 0.1 }} />
-                        ))}
-                      </div>
-                      <p className="text-sm font-semibold text-indigo-700 max-w-[200px] truncate">
-                        {transcript || 'Listening…'}
-                      </p>
-                    </div>
-                  </div>
-                </>
+                </div>
               ) : (
                 <>
                   <motion.div
-                    className="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center"
+                    className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                   >
-                    <div className="w-10 h-10 rounded-full border-3 border-indigo-500 border-t-transparent" style={{ borderWidth: 3, borderTopColor: 'transparent', borderColor: '#6366f1', borderTopColor: 'transparent' }} />
+                    <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid #6366f1', borderTopColor: 'transparent' }} />
                   </motion.div>
                   <p className="mt-3 text-sm font-bold text-indigo-700">Analysing…</p>
                 </>

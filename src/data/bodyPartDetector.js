@@ -60,10 +60,10 @@ export function detectBodyPart(point, bbox) {
     const sideId  = isRightArm ? 'right' : 'left'
     const armFrac = isRightArm ? (0.32 - nx) / 0.32 : (nx - 0.68) / 0.32
     if (armFrac < 0.15) return { id: `${sideId}-shoulder`,   label: `${side} Shoulder` }
-    if (armFrac < 0.42) return { id: `${sideId}-upper-arm`,  label: `Upper ${side} Arm` }
-    if (armFrac < 0.52) return { id: `${sideId}-elbow`,      label: `${side} Elbow` }
-    if (armFrac < 0.82) return { id: `${sideId}-lower-arm`,  label: `${side} Forearm` }
-    if (armFrac < 0.90) return { id: `${sideId}-hand`,       label: `${side} Wrist` }
+    if (armFrac < 0.35) return { id: `${sideId}-upper-arm`,  label: `Upper ${side} Arm` }
+    if (armFrac < 0.55) return { id: `${sideId}-elbow`,      label: `${side} Elbow` }
+    if (armFrac < 0.85) return { id: `${sideId}-lower-arm`,  label: `${side} Forearm` }
+    if (armFrac < 0.95) return { id: `${sideId}-hand`,       label: `${side} Wrist` }
     return                      { id: `${sideId}-hand`,       label: `${side} Hand` }
   }
 

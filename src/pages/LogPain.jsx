@@ -11,32 +11,34 @@ import { SYMPTOM_CATEGORIES, BODY_REGIONS } from '../data/mockData'
 // 3D world-space pin positions for voice-detected regions
 // Coord system: Y up (head ~0.72, feet ~-0.67), X negative = model right arm,
 // X positive = model left arm, Z positive = front. Z offset ~0.1-0.2 = front surface.
+// Z values derived from collider surface depth + 0.045 (matches click-placed pin offset).
+// Shoulder X moved to ±0.17 (shoulder sphere centre) not ±0.35 (upper arm).
 const VOICE_PIN_POSITIONS = {
-  'head':              { x:  0,     y:  0.80, z:  0.25 },
-  'neck':              { x:  0,     y:  0.42, z:  0.09 },
-  'chest':             { x:  0,     y:  0.22, z:  0.16 },
-  'abdomen':           { x:  0,     y:  0.07, z:  0.14 },
-  'pelvis':            { x:  0,     y: -0.06, z:  0.14 },
-  'left-hip':          { x:  0.22,  y: -0.06, z:  0.10 },
-  'right-hip':         { x: -0.22,  y: -0.06, z:  0.10 },
-  'left-shoulder':     { x:  0.35,  y:  0.30, z:  0.07 },
-  'right-shoulder':    { x: -0.35,  y:  0.30, z:  0.07 },
-  'left-upper-arm':    { x:  0.50,  y:  0.30, z:  0.06 },
-  'right-upper-arm':   { x: -0.50,  y:  0.30, z:  0.06 },
-  'left-elbow':        { x:  0.63,  y:  0.30, z:  0.06 },
-  'right-elbow':       { x: -0.63,  y:  0.30, z:  0.06 },
-  'left-lower-arm':    { x:  0.72,  y:  0.30, z:  0.05 },
-  'right-lower-arm':   { x: -0.72,  y:  0.30, z:  0.05 },
-  'left-hand':         { x:  0.79,  y:  0.30, z:  0.04 },
-  'right-hand':        { x: -0.79,  y:  0.30, z:  0.04 },
-  'left-thigh':        { x:  0.11,  y: -0.22, z:  0.09 },
-  'right-thigh':       { x: -0.11,  y: -0.22, z:  0.09 },
-  'left-knee':         { x:  0.13,  y: -0.38, z:  0.09 },
-  'right-knee':        { x: -0.13,  y: -0.38, z:  0.09 },
-  'left-shin':         { x:  0.13,  y: -0.55, z:  0.08 },
-  'right-shin':        { x: -0.13,  y: -0.55, z:  0.08 },
-  'left-foot':         { x:  0.13,  y: -0.67, z:  0.14 },
-  'right-foot':        { x: -0.13,  y: -0.67, z:  0.14 },
+  'head':              { x:  0,     y:  0.82, z:  0.28 },
+  'neck':              { x:  0,     y:  0.42, z:  0.12 },
+  'chest':             { x:  0,     y:  0.22, z:  0.14 },
+  'abdomen':           { x:  0,     y:  0.07, z:  0.13 },
+  'pelvis':            { x:  0,     y: -0.06, z:  0.13 },
+  'left-hip':          { x:  0.17,  y: -0.05, z:  0.12 },
+  'right-hip':         { x: -0.17,  y: -0.05, z:  0.12 },
+  'left-shoulder':     { x:  0.17,  y:  0.30, z:  0.13 },
+  'right-shoulder':    { x: -0.17,  y:  0.30, z:  0.13 },
+  'left-upper-arm':    { x:  0.35,  y:  0.30, z:  0.12 },
+  'right-upper-arm':   { x: -0.35,  y:  0.30, z:  0.12 },
+  'left-elbow':        { x:  0.48,  y:  0.30, z:  0.12 },
+  'right-elbow':       { x: -0.48,  y:  0.30, z:  0.12 },
+  'left-lower-arm':    { x:  0.60,  y:  0.30, z:  0.11 },
+  'right-lower-arm':   { x: -0.60,  y:  0.30, z:  0.11 },
+  'left-hand':         { x:  0.74,  y:  0.30, z:  0.09 },
+  'right-hand':        { x: -0.74,  y:  0.30, z:  0.09 },
+  'left-thigh':        { x:  0.11,  y: -0.22, z:  0.12 },
+  'right-thigh':       { x: -0.11,  y: -0.22, z:  0.12 },
+  'left-knee':         { x:  0.13,  y: -0.38, z:  0.12 },
+  'right-knee':        { x: -0.13,  y: -0.38, z:  0.12 },
+  'left-shin':         { x:  0.13,  y: -0.55, z:  0.11 },
+  'right-shin':        { x: -0.13,  y: -0.55, z:  0.11 },
+  'left-foot':         { x:  0.13,  y: -0.67, z:  0.18 },
+  'right-foot':        { x: -0.13,  y: -0.67, z:  0.18 },
 }
 
 // Multi-word phrases FIRST so they take priority over single-word matches
@@ -171,8 +173,9 @@ export default function LogPain() {
   const [hoverLabel,     setHoverLabel]     = useState(null)
   const [voiceNotes,     setVoiceNotes]     = useState('')
   const [voiceToast,     setVoiceToast]     = useState('')
-  const [voicePhase,     setVoicePhase]     = useState('idle') // idle | analysing | plotted | tap
+  const [voicePhase,     setVoicePhase]     = useState('idle') // idle | analysing | confirm | plotted | tap
   const [voicePlot,      setVoicePlot]      = useState(null)   // { label } on success
+  const [voiceConfirm,   setVoiceConfirm]   = useState(null)   // pending region waiting for severity
 
   const activeSymptoms = currentSymptoms.filter(s => !s.resolved)
   const pins = useMemo(() =>
@@ -182,6 +185,25 @@ export default function LogPain() {
     [activeSymptoms]
   )
 
+  const confirmVoice = useCallback((severity) => {
+    if (!voiceConfirm) return
+    addSymptom({
+      bodyRegion:    voiceConfirm.regionId,
+      bodyLabel:     voiceConfirm.regionLabel,
+      category:      voiceConfirm.categoryId,
+      categoryLabel: voiceConfirm.cat?.label || voiceConfirm.categoryId,
+      type:          voiceConfirm.type,
+      severity,
+      duration:      'Just started',
+      notes:         voiceConfirm.notes,
+      pinPosition:   voiceConfirm.position,
+    })
+    setVoicePlot({ label: voiceConfirm.regionLabel })
+    setVoiceConfirm(null)
+    setVoicePhase('plotted')
+    setTimeout(() => { setVoicePhase('idle'); setVoicePlot(null) }, 3500)
+  }, [voiceConfirm, addSymptom])
+
   const handleTranscript = useCallback((text) => {
     setVoiceNotes(text)
     setVoiceToast(text)
@@ -189,26 +211,14 @@ export default function LogPain() {
     setTimeout(() => {
       const { regionId, regionLabel, position, categoryId, cat, type } = parseVoice(text)
       if (regionId && position) {
-        addSymptom({
-          bodyRegion:    regionId,
-          bodyLabel:     regionLabel,
-          category:      categoryId,
-          categoryLabel: cat?.label || categoryId,
-          type,
-          severity:      5,
-          duration:      'Just started',
-          notes:         text,
-          pinPosition:   position,
-        })
-        setVoicePlot({ label: regionLabel })
-        setVoicePhase('plotted')
-        setTimeout(() => { setVoicePhase('idle'); setVoicePlot(null) }, 3500)
+        setVoiceConfirm({ regionId, regionLabel, position, categoryId, cat, type, notes: text })
+        setVoicePhase('confirm')
       } else {
         setVoicePhase('tap')
         setTimeout(() => setVoicePhase('idle'), 4000)
       }
     }, 900)
-  }, [addSymptom])
+  }, [])
 
   const { listening, supported, transcript, start, stop } = useVoiceInput({ onTranscript: handleTranscript })
 
@@ -243,6 +253,41 @@ export default function LogPain() {
 
       {/* Voice status bar */}
       <AnimatePresence>
+        {voicePhase === 'confirm' && voiceConfirm && (
+          <motion.div
+            key="confirm"
+            initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+            className="mx-4 mb-2 flex-shrink-0 bg-white rounded-3xl p-4 shadow-md"
+            style={{ border: '0.75px solid rgba(99,102,241,0.18)' }}
+          >
+            <div className="flex items-center gap-2 mb-2.5">
+              <div className="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0" />
+              <p className="text-sm font-bold text-gray-900">{voiceConfirm.regionLabel} detected</p>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">How severe is it?</p>
+            <div className="flex gap-2">
+              {[
+                { label: 'Mild',     severity: 2, cls: 'border-emerald-200 text-emerald-700 bg-emerald-50 active:bg-emerald-100' },
+                { label: 'Moderate', severity: 5, cls: 'border-amber-200  text-amber-700  bg-amber-50  active:bg-amber-100'  },
+                { label: 'Severe',   severity: 8, cls: 'border-rose-200   text-rose-700   bg-rose-50   active:bg-rose-100'   },
+              ].map(({ label, severity, cls }) => (
+                <button
+                  key={label}
+                  onClick={() => confirmVoice(severity)}
+                  className={`flex-1 py-2.5 rounded-2xl text-xs font-bold border-2 transition-colors ${cls}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => { setVoicePhase('idle'); setVoiceConfirm(null) }}
+              className="mt-2.5 w-full text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Cancel
+            </button>
+          </motion.div>
+        )}
         {voicePhase === 'plotted' && voicePlot && (
           <motion.div
             key="plotted"

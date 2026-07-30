@@ -18,7 +18,6 @@ dist/
 
 # Zips / local artifacts
 *.zip
-health-tracker-deploy.zip
 
 # Claude session files
 .claude/
@@ -28,3 +27,6 @@ android/
 ios/
 .gstack/
 .vercel
+
+*storybook.log
+storybook-static

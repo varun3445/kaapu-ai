@@ -708,6 +708,7 @@ export default function Dashboard() {
   const [notInstalled,   setNotInstalled]   = useState(false)
   const [showAddCond,    setShowAddCond]    = useState(false)
   const [showAddMed,     setShowAddMed]     = useState(false)
+  const [medicationToDelete, setMedicationToDelete] = useState(null)  // medication ID being confirmed for deletion
   const [selectedCond,   setSelectedCond]   = useState(null)  // condition object | null
 
   // Allow tour to open/close the body map modal via custom events
@@ -862,27 +863,56 @@ export default function Dashboard() {
             <div className="space-y-1.5">
               {currentMedications.map(m => {
                 const linkedCondition = currentConditions.find(c => c.id === m.conditionId)
+                const isConfirming = medicationToDelete === m.id
                 return (
-                  <div key={m.id} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50">
-                    <Pill size={13} className="text-indigo-400 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-indigo-800 truncate">{m.name}</p>
-                      <p className="text-[10px] text-indigo-400">
-                        {[m.dosage, m.frequency].filter(Boolean).join(' · ')}
-                        {linkedCondition && (
-                          <span className="ml-1 text-indigo-300">· {linkedCondition.icon} {linkedCondition.name}</span>
-                        )}
-                        {!linkedCondition && (
-                          <span className="ml-1 text-indigo-200">· unlinked</span>
-                        )}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => removeMedication(m.id)}
-                      className="w-6 h-6 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 hover:bg-rose-100 transition-colors"
-                    >
-                      <Trash2 size={10} className="text-rose-400" />
-                    </button>
+                  <div key={m.id}>
+                    {!isConfirming ? (
+                      <div className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50">
+                        <Pill size={13} className="text-indigo-400 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-indigo-800 truncate">{m.name}</p>
+                          <p className="text-[10px] text-indigo-400">
+                            {[m.dosage, m.frequency].filter(Boolean).join(' · ')}
+                            {linkedCondition && (
+                              <span className="ml-1 text-indigo-300">· {linkedCondition.icon} {linkedCondition.name}</span>
+                            )}
+                            {!linkedCondition && (
+                              <span className="ml-1 text-indigo-200">· unlinked</span>
+                            )}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setMedicationToDelete(m.id)}
+                          className="w-6 h-6 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 hover:bg-rose-100 transition-colors"
+                        >
+                          <Trash2 size={10} className="text-rose-400" />
+                        </button>
+                      </div>
+                    ) : (
+                      <AnimatePresence>
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3">
+                            <p className="text-[11px] font-semibold text-rose-700 mb-0.5">Remove {m.name}?</p>
+                            <p className="text-[10px] text-rose-400 mb-3 leading-relaxed">
+                              This can't be undone. The medication will be permanently removed.
+                            </p>
+                            <div className="flex gap-2">
+                              <button onClick={() => removeMedication(m.id)}
+                                className="flex-1 py-1.5 rounded-xl bg-rose-500 text-white text-[11px] font-bold">
+                                Yes, remove it
+                              </button>
+                              <button onClick={() => setMedicationToDelete(null)}
+                                className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                                Keep it
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </AnimatePresence>
+                    )}
                   </div>
                 )
               })}
@@ -1004,6 +1034,8 @@ export default function Dashboard() {
           />
         )}
       </AnimatePresence>
+
+      {/* ── Delete medication confirmation ──────────────────────────────── */}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Pill, Loader, Clock, Plus, Trash2 } from 'lucide-react'
+import { X, Pill, Loader } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import useMedicationInfo from '../../hooks/useMedicationInfo'
 
@@ -16,6 +16,12 @@ function extractDosageFromName(name) {
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const FREQS = ['Once daily', 'Twice daily', 'Three times daily', 'As needed (PRN)', 'Weekly', 'Other']
+const TIME_PRESETS = [
+  { label: 'Morning', time: '09:30' },
+  { label: 'Noon', time: '13:00' },
+  { label: 'Evening', time: '18:00' },
+  { label: 'Night', time: '21:30' },
+]
 
 export default function AddMedicationModal({ onClose, conditions }) {
   const { addMedication } = useApp()
@@ -25,7 +31,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
   const [condId,    setCondId]    = useState(conditions[0]?.id || '')
   const [dosageAutoFilled, setDosageAutoFilled] = useState(false)
   const [days,      setDays]      = useState([])   // [] = every day
-  const [times,     setTimes]     = useState([''])  // list of HH:MM strings
+  const [timePresets, setTimePresets] = useState([])  // array of preset labels (Morning, Noon, Evening, Night)
 
   const { info, loading } = useMedicationInfo(name)
 
@@ -51,40 +57,35 @@ export default function AddMedicationModal({ onClose, conditions }) {
     }
   }, [info])
 
-  // Sync number of time slots with frequency choice
+  // Reset timePresets when frequency changes
   useEffect(() => {
-    if (frequency === 'Once daily')        setTimes(t => t.slice(0,1).concat([''].slice(0, Math.max(0, 1 - t.filter(Boolean).length))).slice(0,1).map(v => v || ''))
-    if (frequency === 'Twice daily')       setTimes(['', ''])
-    if (frequency === 'Three times daily') setTimes(['', '', ''])
-    if (frequency === 'Weekly')            setTimes([''])
+    setTimePresets([])
   }, [frequency])
 
   function toggleDay(d) {
     setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d])
   }
 
-  function updateTime(i, val) {
-    setTimes(prev => prev.map((t, idx) => idx === i ? val : t))
-  }
-
-  function addTime() {
-    setTimes(prev => [...prev, ''])
-  }
-
-  function removeTime(i) {
-    setTimes(prev => prev.filter((_, idx) => idx !== i))
+  function toggleTimePreset(preset) {
+    setTimePresets(prev =>
+      prev.includes(preset.label)
+        ? prev.filter(p => p !== preset.label)
+        : [...prev, preset.label]
+    )
   }
 
   function handleSave(e) {
     e.preventDefault()
     if (!name) return
+    // Convert preset labels back to actual times
+    const times = timePresets.map(label => TIME_PRESETS.find(p => p.label === label)?.time).filter(Boolean)
     addMedication({
       name,
       dosage,
       frequency,
       conditionId: condId || null,
       days: days.length > 0 ? days : null,
-      times: times.filter(Boolean),
+      times: times.length > 0 ? times : null,
     })
     onClose()
   }
@@ -227,7 +228,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
             )}
           </AnimatePresence>
 
-          {/* Times */}
+          {/* Time Presets */}
           <AnimatePresence>
             {showTimes && (
               <motion.div
@@ -235,39 +236,23 @@ export default function AddMedicationModal({ onClose, conditions }) {
                 exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }}
                 className="overflow-hidden"
               >
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Time(s)</p>
-                <div className="space-y-2">
-                  {times.map((t, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <Clock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
-                        <input
-                          type="time"
-                          value={t}
-                          onChange={e => updateTime(i, e.target.value)}
-                          className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 bg-white"
-                        />
-                      </div>
-                      {times.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeTime(i)}
-                          className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-400 shrink-0"
-                        >
-                          <Trash2 size={12} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                  {times.length < 6 && (
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">When to take</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {TIME_PRESETS.map(preset => (
                     <button
+                      key={preset.label}
                       type="button"
-                      onClick={addTime}
-                      className="flex items-center gap-1.5 text-xs font-semibold text-primary-500 py-1"
+                      onClick={() => toggleTimePreset(preset)}
+                      className={`py-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${
+                        timePresets.includes(preset.label)
+                          ? 'border-primary-500 bg-primary-50 text-primary-700'
+                          : 'border-gray-100 text-gray-400'
+                      }`}
                     >
-                      <Plus size={13} /> Add another time
+                      <div>{preset.label}</div>
+                      <div className="text-[10px] font-normal text-gray-400 mt-0.5">{preset.time}</div>
                     </button>
-                  )}
+                  ))}
                 </div>
               </motion.div>
             )}

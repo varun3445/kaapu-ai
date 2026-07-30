@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, RefreshCw, ChevronDown, History, X, MessageSquare, AlertTriangle, BookmarkCheck, Loader2, CheckCircle, PlusCircle, Trash2, FileText } from 'lucide-react'
+import { Send, Sparkles, RefreshCw, ChevronDown, History, X, MessageSquare, AlertTriangle, BookmarkCheck, Loader2, CheckCircle, PlusCircle, Trash2, FileText, Mic, MicOff } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
 import { useNavigate } from 'react-router-dom'
@@ -389,11 +389,13 @@ export default function AI() {
   const [notesSaved,           setNotesSaved]           = useState(false)
   const [actionDoneIdx,        setActionDoneIdx]        = useState(new Set()) // message indices whose action chip is done
   const [gpReportLoading,      setGpReportLoading]      = useState(false)
+  const [isRecording,          setIsRecording]          = useState(false)
   const currentSessionId  = useRef(null) // stable ID for the Supabase chat history row
   const agentSessionIdRef = useRef(null) // stable ID for the Managed Agent session
   const bottomRef  = useRef(null)
   const scrollRef  = useRef(null)
   const inputRef   = useRef(null)
+  const recognitionRef = useRef(null)
 
   const hasMessages = messages.length > 0
 
@@ -561,6 +563,37 @@ export default function AI() {
   function handleScroll(e) {
     const el = e.currentTarget
     setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 80)
+  }
+
+  function toggleVoiceInput() {
+    if (isRecording) {
+      recognitionRef.current?.stop()
+      setIsRecording(false)
+    } else {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      if (!SpeechRecognition) {
+        alert('Voice input not supported on this device')
+        return
+      }
+      const recognition = new SpeechRecognition()
+      recognition.continuous = false
+      recognition.interimResults = false
+      recognition.onstart = () => setIsRecording(true)
+      recognition.onresult = (event) => {
+        let transcript = ''
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript
+        }
+        if (transcript) setInput(prev => prev + (prev ? ' ' : '') + transcript)
+      }
+      recognition.onerror = () => {
+        setIsRecording(false)
+        alert('Voice input error. Please try again.')
+      }
+      recognition.onend = () => setIsRecording(false)
+      recognitionRef.current = recognition
+      recognition.start()
+    }
   }
 
   // Call AI but only show the assistant's response (no user bubble) — used for streak auto-start
@@ -805,7 +838,7 @@ export default function AI() {
             AI-generated response — always check with your GP before acting on it.
           </p>
           <div className="flex items-center gap-2 max-w-lg mx-auto">
-            <div data-tour="ai-chat-input" className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
+            <div data-tour="ai-chat-input" className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center gap-2 focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
               <input
                 ref={inputRef}
                 type="text"
@@ -813,9 +846,16 @@ export default function AI() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask about your health…"
-                className="w-full text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-300"
+                className="flex-1 text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-300"
                 disabled={loading}
               />
+              <button
+                onClick={toggleVoiceInput}
+                disabled={loading}
+                className={`flex-shrink-0 transition-colors ${isRecording ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+              >
+                {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
+              </button>
             </div>
             <button
               onClick={() => sendMessage()}

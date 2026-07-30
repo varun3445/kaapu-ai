@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Phone, ShieldAlert } from 'lucide-react'
+import { Phone, ShieldAlert, ChevronDown } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 
 const REL_OPTIONS = ['Partner', 'Parent', 'Sibling', 'Friend', 'Doctor', 'Other']
@@ -94,15 +94,18 @@ export default function EmergencyContactGate() {
           />
 
           {/* Relationship */}
-          <select
-            value={relationship}
-            onChange={e => setRelationship(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none transition-all"
-            style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)', color: relationship ? '#1f2937' : '#9ca3af' }}
-          >
-            <option value="">Relationship…</option>
-            {REL_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
+          <div className="relative">
+            <select
+              value={relationship}
+              onChange={e => setRelationship(e.target.value)}
+              className="w-full pl-3 pr-4 py-2.5 rounded-xl text-sm focus:outline-none transition-all appearance-none"
+              style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)', color: relationship ? '#1f2937' : '#9ca3af' }}
+            >
+              <option value="">Relationship…</option>
+              {REL_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+          </div>
         </div>
 
         {/* Save button */}

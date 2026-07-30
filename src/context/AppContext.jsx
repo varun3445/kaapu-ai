@@ -933,9 +933,10 @@ export function AppProvider({ children }) {
       if (Object.keys(memberUpdates).length > 0) {
         await supabase.from('members').update(memberUpdates).eq('userId', currentUser.id)
       }
-      // 4. Re-read the user row so currentUser reflects what's actually in DB
+      // 4. Re-read the user row so currentUser reflects what's actually in DB.
+      // Merge updates on top of fresh so a slow/stale read never reverts what we just saved.
       const { data: fresh } = await supabase.from('users').select('*').eq('id', currentUser.id).single()
-      if (fresh) setCurrentUser(fresh)
+      if (fresh) setCurrentUser({ ...fresh, ...updates })
     }
   }, [currentUser, sbUpdate])
 

@@ -6,6 +6,7 @@ import Dashboard              from './pages/Dashboard'
 import History                from './pages/History'
 import Family                 from './pages/Family'
 import AI                     from './pages/AI'
+import LogPain                from './pages/LogPain'
 import DoctorPortal           from './pages/DoctorPortal'
 import EmergencyContactGate   from './components/Onboarding/EmergencyContactGate'
 
@@ -58,6 +59,7 @@ function AppRoutes() {
         <Route path="history"  element={<History />} />
         <Route path="ai"       element={<AI />} />
         <Route path="family"   element={<Family />} />
+        <Route path="log-pain" element={<LogPain />} />
       </Route>
       <Route path="/doctor" element={<DoctorRoute><DoctorPortal /></DoctorRoute>} />
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,11 +1,11 @@
 import { useState, useRef, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { format, isToday, isYesterday, subMonths, subYears } from 'date-fns'
+import { format, isToday, isYesterday, addMonths, subMonths, startOfMonth, endOfMonth, isSameMonth } from 'date-fns'
 import {
-  CheckCircle, ChevronDown, ChevronUp, FileText, Upload,
+  CheckCircle, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, FileText, Upload,
   X, Plus, FolderOpen, Pill, Heart, Search,
-  ArrowDownUp, Clock, SlidersHorizontal, Trash2, Edit3, Loader, Pencil,
+  ArrowDownUp, SlidersHorizontal, Trash2, Edit3, Loader, Pencil,
 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
@@ -1011,10 +1011,14 @@ export default function History() {
   const [showUpload,   setShowUpload]   = useState(false)
   const [viewDoc,      setViewDoc]      = useState(null)
   const [search,       setSearch]       = useState('')
-  const [timeRange,    setTimeRange]    = useState('all')
   const [sortOrder,    setSortOrder]    = useState('desc')  // 'desc' = newest first
   const [showFilters,  setShowFilters]  = useState(false)
   const [editCheckIn,  setEditCheckIn]  = useState(null)   // Date | null
+  const [viewMonth,    setViewMonth]    = useState(() => startOfMonth(new Date()))
+
+  const isCurrentMonth = isSameMonth(viewMonth, new Date())
+  function prevMonth() { setViewMonth(m => startOfMonth(subMonths(m, 1))) }
+  function nextMonth() { if (!isCurrentMonth) setViewMonth(m => startOfMonth(addMonths(m, 1))) }
 
   const allItems = useMemo(() => {
     // Expand each symptom across every calendar day it was active.
@@ -1056,22 +1060,17 @@ export default function History() {
   }, [symptomsToShow, checkInsToShow, documentsToShow])
 
   const filtered = useMemo(() => {
-    const now = new Date()
-    const cutoff =
-      timeRange === '6m' ? subMonths(now, 6) :
-      timeRange === '1y' ? subYears(now, 1)  : null
-
+    const monthStart = startOfMonth(viewMonth)
+    const monthEnd   = endOfMonth(viewMonth)
     const q = search.toLowerCase().trim()
 
     return allItems
       .filter(i => {
-        // Time range filter
-        if (cutoff && new Date(i._date) < cutoff) return false
-        // Type filter
+        const d = new Date(i._date)
+        if (d < monthStart || d > monthEnd) return false
         if (timelineTab === 'Symptoms'  && i._type !== 'symptom')  return false
         if (timelineTab === 'Check-ins' && i._type !== 'checkin')  return false
         if (timelineTab === 'Records'   && i._type !== 'document') return false
-        // Search filter
         if (q) {
           const haystack = [
             i.bodyLabel, i.type, i.category, i.categoryLabel,
@@ -1086,178 +1085,141 @@ export default function History() {
           ? new Date(b._date) - new Date(a._date)
           : new Date(a._date) - new Date(b._date)
       )
-  }, [allItems, timelineTab, timeRange, search, sortOrder])
+  }, [allItems, timelineTab, viewMonth, search, sortOrder])
 
   const grouped = groupByDate(filtered)
 
   return (
-    <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
-      {/* Page header */}
-      <div data-tour="history-header" className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-lg font-extrabold text-gray-900">Health</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {symptomsToShow.length} symptoms · {checkInsToShow.length} check-ins · {documentsToShow.length} records
-          </p>
-        </div>
-        <button data-tour="history-records-btn" onClick={() => setShowRecords(true)}
+    <div className="pb-6 max-w-lg mx-auto">
+
+      {/* ── Year + Records + Month nav header ── */}
+      <div className="px-4 pt-5 pb-3">
+        {/* Year row */}
+        <div data-tour="history-header" className="flex items-center justify-between mb-2">
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={format(viewMonth, 'yyyy')}
+              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }}
+              transition={{ duration: 0.18 }}
+              className="text-3xl font-extrabold leading-none"
+              style={{ color: '#6366f1' }}
+            >
+              {format(viewMonth, 'yyyy')}
+            </motion.p>
+          </AnimatePresence>
+          <button data-tour="history-records-btn" onClick={() => setShowRecords(true)}
             className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors">
             <FolderOpen size={13} /> Records
           </button>
+        </div>
+
+        {/* Month nav */}
+        <div className="flex items-center gap-3">
+          <button onClick={prevMonth}
+            className="w-8 h-8 rounded-full bg-white/80 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-white hover:text-primary-600 transition-colors shadow-sm">
+            <ChevronLeft size={15} />
+          </button>
+          <AnimatePresence mode="wait">
+            <motion.p
+              key={format(viewMonth, 'yyyy-MM')}
+              initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }}
+              transition={{ duration: 0.18 }}
+              className="text-sm font-bold text-gray-700 flex-1"
+            >
+              {format(viewMonth, 'MMMM yyyy')}
+              <span className="ml-2 text-[10px] font-semibold text-gray-400">
+                · {filtered.length} entr{filtered.length === 1 ? 'y' : 'ies'}
+              </span>
+            </motion.p>
+          </AnimatePresence>
+          <button onClick={nextMonth} disabled={isCurrentMonth}
+            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors shadow-sm ${
+              isCurrentMonth
+                ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed'
+                : 'bg-white/80 border-gray-200 text-gray-500 hover:bg-white hover:text-primary-600'
+            }`}>
+            <ChevronRight size={15} />
+          </button>
+        </div>
       </div>
 
-      {/* ── Timeline ── */}
-      <>
-        {/* Sub-tabs */}
-          <div className="flex bg-gray-100 rounded-2xl p-1 mb-3 gap-1 overflow-x-auto">
-            {TIMELINE_TABS.map(t => (
-              <button key={t} onClick={() => setTimelineTab(t)}
-                className={`flex-shrink-0 flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all ${
-                  timelineTab === t ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'
-                }`}>{t}</button>
-            ))}
-          </div>
+      <div className="px-4">
+      {/* Sub-tabs */}
+      <div className="flex bg-gray-100 rounded-2xl p-1 mb-3 gap-1 overflow-x-auto">
+        {TIMELINE_TABS.map(t => (
+          <button key={t} onClick={() => setTimelineTab(t)}
+            className={`flex-shrink-0 flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+              timelineTab === t ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+            }`}>{t}</button>
+        ))}
+      </div>
 
-          {/* Search + Filter button (side by side) */}
-          <div className="flex gap-2 mb-3">
-            {/* Search bar */}
-            <div className="relative flex-1">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Search…"
-                className="w-full pl-8 pr-8 py-2.5 rounded-2xl text-xs border border-gray-200 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white/70 backdrop-blur-sm"
-              />
-              {search && (
-                <button onClick={() => setSearch('')}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
-                  <X size={12} />
-                </button>
-              )}
-            </div>
-
-            {/* Filter button */}
-            <div className="relative">
-              <button
-                onClick={() => setShowFilters(f => !f)}
-                className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs font-semibold border transition-all flex-shrink-0 ${
-                  showFilters || timeRange !== 'all' || sortOrder !== 'desc'
-                    ? 'bg-primary-600 text-white border-primary-600 shadow-sm'
-                    : 'bg-white/70 text-gray-600 border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <SlidersHorizontal size={13} />
-                Filters
-                {(timeRange !== 'all' || sortOrder !== 'desc') && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white opacity-90 ml-0.5" />
-                )}
-              </button>
-
-              {/* Dropdown */}
-              <AnimatePresence>
-                {showFilters && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-1.5 z-50 glass-elevated rounded-2xl p-3 shadow-card-lg min-w-[200px]"
-                  >
-                    {/* Time range */}
-                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Time Range</p>
-                    <div className="space-y-1 mb-3">
-                      {TIME_RANGES.map(r => (
-                        <button key={r.id} onClick={() => setTimeRange(r.id)}
-                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
-                            timeRange === r.id ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'
-                          }`}>
-                          {r.id !== 'all' && <Clock size={11} className="text-gray-400" />}
-                          {r.id === 'all' && <span className="text-[11px]">∞</span>}
-                          {r.label}
-                          {timeRange === r.id && <span className="ml-auto text-primary-500">✓</span>}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Sort order */}
-                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Sort Order</p>
-                    <div className="space-y-1">
-                      {[{ id: 'desc', label: 'Newest first' }, { id: 'asc', label: 'Oldest first' }].map(s => (
-                        <button key={s.id} onClick={() => setSortOrder(s.id)}
-                          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all text-left ${
-                            sortOrder === s.id ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'
-                          }`}>
-                          <ArrowDownUp size={11} className={`text-gray-400 ${s.id === 'asc' ? 'scale-y-[-1]' : ''}`} />
-                          {s.label}
-                          {sortOrder === s.id && <span className="ml-auto text-primary-500">✓</span>}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Reset */}
-                    {(timeRange !== 'all' || sortOrder !== 'desc') && (
-                      <button
-                        onClick={() => { setTimeRange('all'); setSortOrder('desc') }}
-                        className="w-full mt-2 pt-2 border-t border-gray-100 text-[11px] text-gray-400 hover:text-rose-500 font-semibold transition-colors"
-                      >
-                        Reset filters
-                      </button>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-
-          {/* Active filter chips */}
-          {(search || timeRange !== 'all') && (
-            <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <p className="text-[11px] text-gray-400">
-                {filtered.length} result{filtered.length !== 1 ? 's' : ''}
-              </p>
-              {search && (
-                <span className="flex items-center gap-1 text-[11px] bg-primary-50 text-primary-700 font-semibold px-2 py-0.5 rounded-full">
-                  "{search}"
-                  <button onClick={() => setSearch('')}><X size={10} /></button>
-                </span>
-              )}
-              {timeRange !== 'all' && (
-                <span className="flex items-center gap-1 text-[11px] bg-primary-50 text-primary-700 font-semibold px-2 py-0.5 rounded-full">
-                  {TIME_RANGES.find(r => r.id === timeRange)?.label}
-                  <button onClick={() => setTimeRange('all')}><X size={10} /></button>
-                </span>
-              )}
-            </div>
+      {/* Search + Sort */}
+      <div className="flex gap-2 mb-3">
+        <div className="relative flex-1">
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search…"
+            className="w-full pl-8 pr-8 py-2.5 rounded-2xl text-xs border border-gray-200 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white/70 backdrop-blur-sm"
+          />
+          {search && (
+            <button onClick={() => setSearch('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+              <X size={12} />
+            </button>
           )}
+        </div>
+        <button
+          onClick={() => setSortOrder(s => s === 'desc' ? 'asc' : 'desc')}
+          className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs font-semibold border transition-all flex-shrink-0 ${
+            sortOrder !== 'desc'
+              ? 'bg-primary-600 text-white border-primary-600'
+              : 'bg-white/70 text-gray-600 border-gray-200'
+          }`}
+          title={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
+        >
+          <ArrowDownUp size={13} />
+        </button>
+      </div>
 
-          {grouped.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-5xl mb-3">📋</div>
-              <p className="text-sm font-semibold text-gray-600">Nothing here yet</p>
-              <p className="text-xs text-gray-400 mt-1">Log a symptom, check in, or upload a record.</p>
+      {search && (
+        <div className="flex items-center gap-2 mb-3">
+          <p className="text-[11px] text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</p>
+          <span className="flex items-center gap-1 text-[11px] bg-primary-50 text-primary-700 font-semibold px-2 py-0.5 rounded-full">
+            "{search}" <button onClick={() => setSearch('')}><X size={10} /></button>
+          </span>
+        </div>
+      )}
+
+      {grouped.length === 0 ? (
+        <div className="text-center py-16">
+          <div className="text-5xl mb-3">📋</div>
+          <p className="text-sm font-semibold text-gray-600">Nothing in {format(viewMonth, 'MMMM')}</p>
+          <p className="text-xs text-gray-400 mt-1">Try a different month or log a new entry.</p>
+        </div>
+      ) : (
+        <div className="space-y-5">
+          {grouped.map(([label, items]) => (
+            <div key={label}>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-primary-400" />
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</p>
+              </div>
+              <div className="space-y-2 ml-4">
+                {items.map(item =>
+                  item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} onDelete={!currentMember?.linkedFamilyId ? deleteSymptom : undefined} onEdit={!currentMember?.linkedFamilyId ? (id, data) => updateSymptom(id, data) : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
+                  item._type === 'checkin'  ? <CheckInCard   key={item.id} item={item} onEdit={!currentMember?.linkedFamilyId ? d => setEditCheckIn(d) : undefined} onDelete={!currentMember?.linkedFamilyId ? deleteCheckIn : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
+                  <DocTimelineCard key={item.id} item={item} onView={setViewDoc} />
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="space-y-5">
-              {grouped.map(([label, items]) => (
-                <div key={label}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-2 h-2 rounded-full bg-primary-400" />
-                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</p>
-                  </div>
-                  <div className="space-y-2 ml-4">
-                    {items.map(item =>
-                      item._type === 'symptom'  ? <SymptomCard   key={item.id} item={item} onResolve={resolveSymptom} onDelete={!currentMember?.linkedFamilyId ? deleteSymptom : undefined} onEdit={!currentMember?.linkedFamilyId ? (id, data) => updateSymptom(id, data) : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
-                      item._type === 'checkin'  ? <CheckInCard   key={item.id} item={item} onEdit={!currentMember?.linkedFamilyId ? d => setEditCheckIn(d) : undefined} onDelete={!currentMember?.linkedFamilyId ? deleteCheckIn : undefined} readOnly={!!currentMember?.linkedFamilyId} /> :
-                      <DocTimelineCard key={item.id} item={item} onView={setViewDoc} />
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-      </>
+          ))}
+        </div>
+      )}
+      </div>
 
       {/* Overlays */}
       <AnimatePresence>

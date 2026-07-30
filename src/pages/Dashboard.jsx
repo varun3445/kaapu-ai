@@ -1,10 +1,10 @@
 import { useState, useMemo, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, X, Smartphone, Activity, CheckCircle, Loader, RotateCcw, CheckCircle2, Search, Pill, Trash2 } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { calculateMoodFromSymptoms } from '../context/AppContext'
-import ActivityChart from '../components/Dashboard/ActivityChart'
 import BodyScene from '../components/Body3D/BodyScene'
 import SymptomForm from '../components/Symptoms/SymptomForm'
 import { FEELING_CONFIG, SYMPTOM_CATEGORIES, CHRONIC_CONDITION_PRESETS } from '../data/mockData'
@@ -692,6 +692,7 @@ function ConditionDetailModal({ condition, onClose, onAddMed }) {
 
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const navigate = useNavigate()
   const {
     currentMember, currentSymptoms, addSymptom, resolveSymptom, skinColor,
     currentConditions, removeCondition, currentMedications, addCondition, addMedication, removeMedication,
@@ -762,7 +763,7 @@ export default function Dashboard() {
           </div>
           <button
             data-tour="log-pain-btn"
-            onClick={() => setShowBodyMap(true)}
+            onClick={() => navigate('/log-pain')}
             className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors whitespace-nowrap"
           >
             <Plus size={13} /> Log Pain
@@ -934,9 +935,6 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* ── Activity chart ────────────────────────────────────────────────── */}
-      <ActivityChart onConnect={() => setShowConnect(true)} />
-
       {/* ── Day detail modal ──────────────────────────────────────────────── */}
       <AnimatePresence>
         {selectedDay && (
@@ -947,7 +945,7 @@ export default function Dashboard() {
             memberId={currentMember?.id}
             onClose={() => setSelectedDay(null)}
             onResolve={(id) => { resolveSymptom(id) }}
-            onLogPain={() => setShowBodyMap(true)}
+            onLogPain={() => navigate('/log-pain')}
           />
         )}
       </AnimatePresence>

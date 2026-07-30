@@ -10,13 +10,13 @@ const SEV_COLOR = (s) =>
 const SEV_LABEL = (s) =>
   s <= 2 ? 'Mild' : s <= 4 ? 'Mild–Moderate' : s <= 6 ? 'Moderate' : s <= 8 ? 'Severe' : 'Very Severe'
 
-export default function SymptomForm({ region, onSubmit, onClose }) {
+export default function SymptomForm({ region, onSubmit, onClose, initialNotes = '' }) {
   const [categoryId, setCategoryId] = useState('')
   const [typeIdx,    setTypeIdx]    = useState(0)
   const [customType, setCustomType] = useState('')
   const [severity,   setSeverity]   = useState(5)
   const [duration,   setDuration]   = useState(DURATIONS[0])
-  const [notes,      setNotes]      = useState('')
+  const [notes,      setNotes]      = useState(initialNotes)
 
   const category = SYMPTOM_CATEGORIES.find(c => c.id === categoryId)
   const types    = category?.types || []

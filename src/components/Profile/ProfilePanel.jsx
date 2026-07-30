@@ -6,12 +6,13 @@ import {
   Copy, Check as CheckIcon, MapPin, Clock, PauseCircle,
   Eye, EyeOff, Users, BarChart2, Save, Phone, Trash2,
   Download, AlertTriangle, FileText, TrendingUp, TrendingDown, Minus, Play,
-  Megaphone, Send, Pill, Sparkles,
+  Megaphone, Send, Pill, Sparkles, Zap, Crown, Star,
 } from 'lucide-react'
 import { TOUR_KEY } from '../Onboarding/OnboardingTour'
 import { useApp } from '../../context/AppContext'
 import { Avatar } from '../Family/FamilySwitcher'
 import { supabase } from '../../supabase'
+import { generateGPReport } from '../../utils/gpReport'
 
 // ── Save feedback modal ───────────────────────────────────────────────────────
 function SaveFeedbackModal({ result, onClose }) {
@@ -1070,6 +1071,161 @@ function EmergencyContactsPage({ onBack }) {
   )
 }
 
+// ── Plan Page ─────────────────────────────────────────────────────────────────
+const PLANS = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: null,
+    priceNote: 'Always free',
+    icon: Star,
+    accent: '#6b7280',
+    bg: 'bg-gray-50',
+    border: 'border-gray-200',
+    iconBg: 'bg-gray-100',
+    iconColor: 'text-gray-500',
+    badge: null,
+    features: [
+      'Core symptom logging, SOS trigger, medications, health timeline, emergency contacts',
+      'Emergency button never paywalled',
+    ],
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    price: '£8.99',
+    priceNote: '/month',
+    icon: Zap,
+    accent: '#6366f1',
+    bg: 'bg-indigo-50',
+    border: 'border-indigo-200',
+    iconBg: 'bg-indigo-100',
+    iconColor: 'text-indigo-500',
+    badge: 'Most popular',
+    features: [
+      'Full access to AI features — chatbot, weekly insights, doctor visit summary, and pattern detection',
+    ],
+  },
+  {
+    id: 'family',
+    name: 'Family',
+    price: '£17.99',
+    priceNote: '/month',
+    icon: Crown,
+    accent: '#7c3aed',
+    bg: 'bg-violet-50',
+    border: 'border-violet-200',
+    iconBg: 'bg-violet-100',
+    iconColor: 'text-violet-500',
+    badge: 'Best value',
+    features: [
+      'Up to 3 additional connected members — less than £4.50pp',
+      'Family dashboard, real-time alerts, shared location visibility',
+    ],
+  },
+]
+
+function PlanPage({ onBack }) {
+  const [toastMsg, setToastMsg] = useState(null)
+  // currentPlan will eventually come from user subscription state
+  const currentPlan = 'free'
+
+  function handleUpgrade(planId) {
+    setToastMsg('Stripe & App Store billing coming soon — stay tuned!')
+    setTimeout(() => setToastMsg(null), 3500)
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <BackHeader title="Your Plan" onBack={onBack} />
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+
+        {/* Current plan banner */}
+        <div className="glass-card rounded-2xl px-4 py-3.5 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
+            <Star size={15} className="text-gray-500" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Current plan</p>
+            <p className="text-sm font-extrabold text-gray-800">Free</p>
+          </div>
+          <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Active</span>
+        </div>
+
+        <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider pt-1">Upgrade</p>
+
+        {/* Plan cards */}
+        {PLANS.filter(p => p.id !== 'free').map(plan => {
+          const Icon = plan.icon
+          return (
+            <div key={plan.id}
+              className={`glass-card rounded-2xl overflow-hidden border ${plan.border}`}>
+              {/* Card header */}
+              <div className={`${plan.bg} px-4 py-3.5 flex items-center gap-3`}>
+                <div className={`w-8 h-8 rounded-xl ${plan.iconBg} flex items-center justify-center`}>
+                  <Icon size={15} className={plan.iconColor} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-extrabold text-gray-900">{plan.name}</p>
+                    {plan.badge && (
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                        style={{ background: plan.accent + '20', color: plan.accent }}>
+                        {plan.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm font-extrabold leading-none" style={{ color: plan.accent }}>
+                    {plan.price}
+                    <span className="text-[10px] font-semibold ml-0.5 opacity-70">{plan.priceNote}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Features */}
+              <div className="px-4 py-3 space-y-2">
+                {plan.features.map(f => (
+                  <div key={f} className="flex items-center gap-2.5">
+                    <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: plan.accent + '18' }}>
+                      <CheckIcon size={8} style={{ color: plan.accent }} />
+                    </div>
+                    <p className="text-[11px] text-gray-600">{f}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div className="px-4 pb-4">
+                <button onClick={() => handleUpgrade(plan.id)}
+                  className="w-full py-2.5 rounded-xl text-xs font-bold text-white transition-all active:scale-95"
+                  style={{ background: `linear-gradient(135deg, ${plan.accent}, ${plan.accent}cc)` }}>
+                  Upgrade to {plan.name}
+                </button>
+              </div>
+            </div>
+          )
+        })}
+
+        <p className="text-[10px] text-gray-400 text-center pb-2">
+          Billing via Stripe & App Store · Cancel anytime
+        </p>
+      </div>
+
+      {/* Toast */}
+      <AnimatePresence>
+        {toastMsg && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-8 left-5 right-5 bg-gray-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl text-center shadow-xl">
+            {toastMsg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
 // ── NHS ID Card ───────────────────────────────────────────────────────────────
 function NhsIdCard() {
   const { currentUser, updateProfile } = useApp()
@@ -1188,9 +1344,20 @@ function NhsIdCard() {
 
 // ── Main ProfilePanel ─────────────────────────────────────────────────────────
 export default function ProfilePanel({ open, onClose }) {
-  const { currentUser, currentMember, skinColor, setSkinColor, logout, isAdmin, sendBroadcast } = useApp()
+  const { currentUser, currentMember, skinColor, setSkinColor, logout, isAdmin, sendBroadcast, symptoms, conditions, medications } = useApp()
   const [copied, setCopied] = useState(false)
   const [page,   setPage]   = useState(null)
+  const [generatingReport, setGeneratingReport] = useState(false)
+
+  async function downloadGPReport() {
+    if (!currentUser || !currentMember) return
+    setGeneratingReport(true)
+    try {
+      await generateGPReport({ currentUser, currentMember, symptoms, conditions, medications })
+    } finally {
+      setGeneratingReport(false)
+    }
+  }
 
   const uid = currentUser?.uid || '—'
   const [nudgeMsg,    setNudgeMsg]    = useState("Don't forget to log today's check-in! 💙")
@@ -1223,10 +1390,11 @@ export default function ProfilePanel({ open, onClose }) {
   }, [])
 
   const SETTINGS = [
-    { id: 'emergency-contacts', icon: Phone,  label: 'Emergency Contacts', sub: `${(currentUser?.emergencyContacts || []).filter(c=>c.name).length || 'No'} contacts saved`, iconBg: 'bg-rose-50', iconColor: 'text-rose-500' },
-    { id: 'notifications',      icon: Bell,   label: 'Notifications',       sub: 'Check-in time, reminders & alerts' },
-    { id: 'privacy',            icon: Shield, label: 'Privacy & Sharing',   sub: 'Control who sees your data' },
-    { id: 'account',            icon: User,   label: 'Account',             sub: currentUser?.email },
+    { id: 'plan',               icon: Zap,    label: 'Plan',                sub: 'Free · Upgrade for more features', iconBg: 'bg-indigo-50', iconColor: 'text-indigo-500', badge: 'Free' },
+    { id: 'emergency-contacts', icon: Phone,  label: 'Emergency Contacts',  sub: `${(currentUser?.emergencyContacts || []).filter(c=>c.name).length || 'No'} contacts saved`, iconBg: 'bg-rose-50', iconColor: 'text-rose-500' },
+    { id: 'notifications',      icon: Bell,   label: 'Notifications',        sub: 'Check-in time, reminders & alerts' },
+    { id: 'privacy',            icon: Shield, label: 'Privacy & Sharing',    sub: 'Control who sees your data' },
+    { id: 'account',            icon: User,   label: 'Account',              sub: currentUser?.email },
   ]
 
   // Age subtitle — only show "·Xyo" if age is set
@@ -1260,6 +1428,7 @@ export default function ProfilePanel({ open, onClose }) {
                 {page === 'privacy'            && <PrivacyPage           onBack={() => setPage(null)} onOpenPrivacy={() => setPage('privacy-policy')} />}
                 {page === 'privacy-policy'     && <PrivacyPolicyPage     onBack={() => setPage('privacy')} />}
                 {page === 'account'            && <AccountPage           onBack={() => setPage(null)} />}
+                {page === 'plan'               && <PlanPage              onBack={() => setPage(null)} />}
               </motion.div>
             ) : (
               <motion.div key="main" initial={{ x:-40, opacity:0 }} animate={{ x:0, opacity:1 }} exit={{ x:-40, opacity:0 }}
@@ -1330,6 +1499,22 @@ export default function ProfilePanel({ open, onClose }) {
                   {/* NHS ID */}
                   <NhsIdCard />
 
+                  {/* GP Report */}
+                  <button onClick={downloadGPReport} disabled={generatingReport}
+                    className="w-full glass-card rounded-2xl px-4 py-3.5 flex items-center gap-3 hover:bg-white/60 transition-colors text-left disabled:opacity-50">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                      <FileText size={16} className="text-indigo-500" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-gray-800">Visiting your GP?</p>
+                      <p className="text-[10px] text-gray-400">Download your 30-day health summary PDF</p>
+                    </div>
+                    {generatingReport
+                      ? <div className="w-4 h-4 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                      : <Download size={14} className="text-indigo-400 flex-shrink-0" />
+                    }
+                  </button>
+
                   {/* Settings list */}
                   <div>
                     <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2.5">Settings</p>
@@ -1348,6 +1533,9 @@ export default function ProfilePanel({ open, onClose }) {
                               <p className="text-xs font-semibold text-gray-700">{item.label}</p>
                               <p className="text-[10px] text-gray-400 truncate max-w-[200px]">{item.sub}</p>
                             </div>
+                            {item.badge && (
+                              <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full mr-1">{item.badge}</span>
+                            )}
                             <ChevronRight size={13} className="text-gray-300" />
                           </button>
                         )

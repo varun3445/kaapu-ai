@@ -592,10 +592,14 @@ export default function AI() {
     recognition.maxAlternatives = 1
 
     let hasResult = false
+    let silenceTimer = null
+    let lastTranscript = ''
 
     recognition.onstart = () => {
       setIsRecording(true)
       hasResult = false
+      lastTranscript = ''
+      if (silenceTimer) clearTimeout(silenceTimer)
     }
 
     recognition.onresult = (event) => {
@@ -608,6 +612,7 @@ export default function AI() {
       if (transcript && event.isFinal) {
         hasResult = true
         setIsRecording(false)
+        if (silenceTimer) clearTimeout(silenceTimer)
         // Stop recognition immediately so onend fires and completes
         recognition.stop()
         // Send the message
@@ -615,16 +620,32 @@ export default function AI() {
       } else if (transcript) {
         // Show interim results while user is still speaking
         setInput(transcript)
+        lastTranscript = transcript
+
+        // Clear existing silence timer
+        if (silenceTimer) clearTimeout(silenceTimer)
+
+        // Set a new silence timer - if no new results for 1.5s, assume speech ended and send
+        silenceTimer = setTimeout(() => {
+          if (lastTranscript && !hasResult) {
+            hasResult = true
+            setIsRecording(false)
+            recognition.stop()
+            sendMessage(lastTranscript)
+          }
+        }, 1500)
       }
     }
 
     recognition.onerror = (event) => {
       setIsRecording(false)
+      if (silenceTimer) clearTimeout(silenceTimer)
       console.error('Speech recognition error:', event.error)
     }
 
     recognition.onend = () => {
       setIsRecording(false)
+      if (silenceTimer) clearTimeout(silenceTimer)
       // Auto-restart if in continuous mode and user didn't speak
       // If user spoke, let the message send without interruption
       if (continuousVoiceActive && !hasResult) {

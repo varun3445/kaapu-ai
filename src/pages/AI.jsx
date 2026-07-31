@@ -627,7 +627,7 @@ export default function AI() {
             recognition.stop()
             sendMessage(lastTranscript)
           }
-        }, 1500)
+        }, 2500)
       }
     }
 

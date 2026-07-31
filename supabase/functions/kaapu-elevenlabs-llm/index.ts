@@ -198,6 +198,25 @@ async function addMedicationTool(
   const self = await resolveSelf(userId, supabaseUrl, serviceKey)
   if (!self) return "I couldn't find your account to add that to — please try again in the app."
 
+  // Idempotency guard: ElevenLabs can invoke the same tool call more than
+  // once for what the caller experiences as a single confirmation (this
+  // webhook's two-step tool-call flow adds latency versus a plain reply,
+  // which can trip a retry on their end). If a medication with this exact
+  // name was already added for this member in the last 30 seconds, treat it
+  // as a duplicate of that same request rather than inserting again.
+  const recentCutoff = Date.now() - 30_000
+  const existing = await pgrest(
+    `medications?memberId=eq.${self.memberId}&name=eq.${encodeURIComponent(input.name)}&select=id`,
+    supabaseUrl, serviceKey,
+  )
+  const alreadyAddedRecently = existing.some((m: any) => {
+    const ts = Number(String(m.id).replace('med-', ''))
+    return Number.isFinite(ts) && ts > recentCutoff
+  })
+  if (alreadyAddedRecently) {
+    return `${input.name} is already added.`
+  }
+
   const days = input.days || []
   const times = input.times || []
   const row = {

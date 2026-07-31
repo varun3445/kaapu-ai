@@ -11,6 +11,7 @@ import { FEELING_CONFIG, SYMPTOM_CATEGORIES, CHRONIC_CONDITION_PRESETS } from '.
 import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
 import ConditionCard from '../components/Conditions/ConditionCard'
 import AddMedicationModal from '../components/Medications/AddMedicationModal'
+import EditMedicationModal from '../components/Medications/EditMedicationModal'
 import { format, isToday } from 'date-fns'
 import { useHealthData } from '../hooks/useHealthData'
 
@@ -710,6 +711,7 @@ export default function Dashboard() {
   const [showAddMed,     setShowAddMed]     = useState(false)
   const [medicationToDelete, setMedicationToDelete] = useState(null)  // medication ID being confirmed for deletion
   const [selectedCond,   setSelectedCond]   = useState(null)  // condition object | null
+  const [selectedMed,    setSelectedMed]    = useState(null)  // medication object | null, for edit modal
 
   // Allow tour to open/close the body map modal via custom events
   useEffect(() => {
@@ -867,7 +869,10 @@ export default function Dashboard() {
                 return (
                   <div key={m.id}>
                     {!isConfirming ? (
-                      <div className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50">
+                      <button
+                        onClick={() => setSelectedMed(m)}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50 text-left active:scale-[0.98] transition-transform"
+                      >
                         <Pill size={13} className="text-indigo-400 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-indigo-800 truncate">{m.name}</p>
@@ -881,13 +886,14 @@ export default function Dashboard() {
                             )}
                           </p>
                         </div>
-                        <button
-                          onClick={() => setMedicationToDelete(m.id)}
+                        <span
+                          role="button"
+                          onClick={e => { e.stopPropagation(); setMedicationToDelete(m.id) }}
                           className="w-6 h-6 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0 hover:bg-rose-100 transition-colors"
                         >
                           <Trash2 size={10} className="text-rose-400" />
-                        </button>
-                      </div>
+                        </span>
+                      </button>
                     ) : (
                       <AnimatePresence>
                         <motion.div
@@ -1031,6 +1037,19 @@ export default function Dashboard() {
             condition={selectedCond}
             onClose={() => setSelectedCond(null)}
             onAddMed={() => setShowAddMed(true)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Medication edit modal ──────────────────────────────────────────── */}
+      <AnimatePresence>
+        {selectedMed && (
+          <EditMedicationModal
+            key={selectedMed.id}
+            medication={selectedMed}
+            conditions={currentConditions}
+            onClose={() => setSelectedMed(null)}
+            onRequestDelete={(id) => setMedicationToDelete(id)}
           />
         )}
       </AnimatePresence>

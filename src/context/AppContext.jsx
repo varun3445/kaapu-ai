@@ -1395,6 +1395,11 @@ export function AppProvider({ children }) {
     setMedications(prev => [...prev, m]); sbInsert('medications', m); return m
   }, [currentMember, currentUser, sbInsert])
 
+  const updateMedication = useCallback((id, data) => {
+    setMedications(prev => prev.map(m => m.id === id ? { ...m, ...data } : m))
+    sbUpdate('medications', id, data)
+  }, [sbUpdate])
+
   const removeMedication = useCallback((id) => {
     setMedications(prev => prev.filter(m => m.id !== id)); sbDelete('medications', id)
   }, [sbDelete])
@@ -1546,7 +1551,7 @@ export function AppProvider({ children }) {
       notifications, dismissNotification, pushNotif,
       skinColor, setSkinColor,
       conditions, currentConditions, addCondition, removeCondition,
-      medications, currentMedications, addMedication, removeMedication,
+      medications, currentMedications, addMedication, updateMedication, removeMedication,
       riskProfiles, currentRiskProfile, setRiskProfile, getRiskProfile,
       emergencyEvents, activeEmergency, triggerEmergency, resolveEmergency, generateHealthID,
       isAdmin, sendBroadcast,

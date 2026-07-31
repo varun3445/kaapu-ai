@@ -594,11 +594,13 @@ export default function AI() {
     let hasResult = false
     let silenceTimer = null
     let lastTranscript = ''
+    let isProcessing = false
 
     recognition.onstart = () => {
       setIsRecording(true)
       hasResult = false
       lastTranscript = ''
+      isProcessing = false
       if (silenceTimer) clearTimeout(silenceTimer)
     }
 
@@ -611,6 +613,7 @@ export default function AI() {
 
       if (transcript && event.isFinal) {
         hasResult = true
+        isProcessing = true
         setIsRecording(false)
         if (silenceTimer) clearTimeout(silenceTimer)
         recognition.stop()
@@ -621,8 +624,9 @@ export default function AI() {
 
         if (silenceTimer) clearTimeout(silenceTimer)
         silenceTimer = setTimeout(() => {
-          if (lastTranscript && !hasResult) {
+          if (lastTranscript && !hasResult && !isProcessing) {
             hasResult = true
+            isProcessing = true
             setIsRecording(false)
             recognition.stop()
             sendMessage(lastTranscript)
@@ -634,6 +638,7 @@ export default function AI() {
     recognition.onerror = (event) => {
       setIsRecording(false)
       if (silenceTimer) clearTimeout(silenceTimer)
+      isProcessing = false
       console.error('Speech recognition error:', event.error)
       if (event.error === 'not-allowed') {
         console.error('Microphone permission denied or blocked')
@@ -647,7 +652,7 @@ export default function AI() {
     recognition.onend = () => {
       setIsRecording(false)
       if (silenceTimer) clearTimeout(silenceTimer)
-      if (continuousVoiceActive && !hasResult) {
+      if (continuousVoiceActive && !hasResult && !isProcessing) {
         setTimeout(() => {
           if (continuousVoiceActive) startListening()
         }, 300)

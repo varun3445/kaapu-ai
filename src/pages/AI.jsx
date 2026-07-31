@@ -727,16 +727,20 @@ export default function AI() {
         source.buffer = audioBuffer
         source.connect(audioContext.destination)
 
+        // Calculate audio duration
+        const duration = audioBuffer.duration * 1000 // Convert to ms
+
         source.onended = () => {
           setIsSpeaking(false)
-          // Resume listening after audio finishes (only if user had it on)
-          setTimeout(() => {
-            setContinuousVoiceActive(true)
-            startListening()
-          }, 500)
         }
 
         source.start(0)
+
+        // Resume listening after audio finishes + delay to ensure mic is quiet
+        setTimeout(() => {
+          setContinuousVoiceActive(true)
+          startListening()
+        }, duration + 1000) // Wait for audio to finish + 1 second buffer
       } catch (decodeErr) {
         console.error('Audio decode error:', decodeErr)
         setIsSpeaking(false)

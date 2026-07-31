@@ -690,11 +690,14 @@ export default function AI() {
     if (!voiceMode || !supabase) return
     setIsSpeaking(true)
 
-    // Stop listening while audio is playing to prevent feedback loop
+    // Stop listening while audio is playing to prevent feedback loop.
+    // Don't touch continuousVoiceActive here — the auto-restart useEffect
+    // (keyed on isSpeaking) is the single source of truth for resuming
+    // listening once playback ends. Flipping it here too caused two
+    // overlapping recognition sessions and doubled TTS playback.
     if (recognitionRef.current) {
       recognitionRef.current.stop()
     }
-    setContinuousVoiceActive(false)
 
     try {
       const { data, error } = await supabase.functions.invoke('kaapu-tts', {
@@ -727,20 +730,11 @@ export default function AI() {
         source.buffer = audioBuffer
         source.connect(audioContext.destination)
 
-        // Calculate audio duration
-        const duration = audioBuffer.duration * 1000 // Convert to ms
-
         source.onended = () => {
           setIsSpeaking(false)
         }
 
         source.start(0)
-
-        // Resume listening after audio finishes + delay to ensure mic is quiet
-        setTimeout(() => {
-          setContinuousVoiceActive(true)
-          startListening()
-        }, duration + 1000) // Wait for audio to finish + 1 second buffer
       } catch (decodeErr) {
         console.error('Audio decode error:', decodeErr)
         setIsSpeaking(false)

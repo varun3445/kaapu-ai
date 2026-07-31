@@ -592,12 +592,10 @@ export default function AI() {
     recognition.maxAlternatives = 1
 
     let hasResult = false
-    let messageBeingSent = false
 
     recognition.onstart = () => {
       setIsRecording(true)
       hasResult = false
-      messageBeingSent = false
     }
 
     recognition.onresult = (event) => {
@@ -609,12 +607,13 @@ export default function AI() {
 
       if (transcript && event.isFinal) {
         hasResult = true
-        messageBeingSent = true
         setIsRecording(false)
-        // Send the message
+        // Send the message and don't auto-restart listening
+        // The message will complete and user can speak again
         sendMessage(transcript)
       } else if (transcript) {
-        // Show interim results (don't update input to avoid interruption)
+        // Show interim results
+        setInput(transcript)
       }
     }
 
@@ -625,13 +624,9 @@ export default function AI() {
 
     recognition.onend = () => {
       setIsRecording(false)
-      // Auto-restart if in continuous mode and message was sent
-      if (continuousVoiceActive && hasResult && !messageBeingSent) {
-        setTimeout(() => {
-          if (continuousVoiceActive) startListening()
-        }, 800)
-      } else if (continuousVoiceActive && !hasResult) {
-        // Restart if user didn't speak
+      // Auto-restart if in continuous mode and user didn't speak
+      // If user spoke, let the message send without interruption
+      if (continuousVoiceActive && !hasResult) {
         setTimeout(() => {
           if (continuousVoiceActive) startListening()
         }, 300)

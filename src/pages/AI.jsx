@@ -400,6 +400,11 @@ export default function AI() {
   const inputRef   = useRef(null)
   const recognitionRef = useRef(null)
   const audioRef = useRef(null)
+  const isSpeakingRef = useRef(false)
+  const messagesRef = useRef(messages)
+
+  useEffect(() => { isSpeakingRef.current = isSpeaking }, [isSpeaking])
+  useEffect(() => { messagesRef.current = messages }, [messages])
 
   const hasMessages = messages.length > 0
 
@@ -580,6 +585,11 @@ export default function AI() {
   }
 
   function startListening() {
+    // Guard: never start a second recognition session while one is already live.
+    // Overlapping sessions were the cause of the "Recording... / Speaking..."
+    // UI showing at the same time and messages getting sent twice.
+    if (recognitionRef.current || isSpeakingRef.current) return
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) {
       alert('Voice input not supported on this device')
@@ -594,68 +604,76 @@ export default function AI() {
     let hasResult = false
     let silenceTimer = null
     let lastTranscript = ''
-    let isProcessing = false
+
+    const clearSilenceTimer = () => {
+      if (silenceTimer) {
+        clearTimeout(silenceTimer)
+        silenceTimer = null
+      }
+    }
+
+    // Only act on callbacks if this recognition instance is still the active one
+    const isCurrent = () => recognitionRef.current === recognition
 
     recognition.onstart = () => {
+      if (!isCurrent()) return
       setIsRecording(true)
       hasResult = false
       lastTranscript = ''
-      isProcessing = false
-      if (silenceTimer) clearTimeout(silenceTimer)
+      clearSilenceTimer()
     }
 
     recognition.onresult = (event) => {
+      if (!isCurrent() || hasResult) return
       let transcript = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript + ' '
       }
       transcript = transcript.trim()
+      if (!transcript) return
 
-      if (transcript && event.isFinal) {
+      setInput(transcript)
+      lastTranscript = transcript
+
+      if (event.isFinal) {
         hasResult = true
-        isProcessing = true
+        clearSilenceTimer()
         setIsRecording(false)
-        if (silenceTimer) clearTimeout(silenceTimer)
+        recognitionRef.current = null
         recognition.stop()
         sendMessage(transcript)
-      } else if (transcript) {
-        setInput(transcript)
-        lastTranscript = transcript
-
-        if (silenceTimer) clearTimeout(silenceTimer)
-        silenceTimer = setTimeout(() => {
-          if (lastTranscript && !hasResult && !isProcessing) {
-            hasResult = true
-            isProcessing = true
-            setIsRecording(false)
-            recognition.stop()
-            sendMessage(lastTranscript)
-          }
-        }, 2500)
+        return
       }
+
+      // Interim result — reset the silence timer; if speech doesn't
+      // continue for 2.5s, treat it as finished and send.
+      clearSilenceTimer()
+      silenceTimer = setTimeout(() => {
+        if (!isCurrent() || hasResult) return
+        hasResult = true
+        setIsRecording(false)
+        recognitionRef.current = null
+        recognition.stop()
+        sendMessage(lastTranscript)
+      }, 2500)
     }
 
     recognition.onerror = (event) => {
+      if (!isCurrent()) return
       setIsRecording(false)
-      if (silenceTimer) clearTimeout(silenceTimer)
-      isProcessing = false
+      clearSilenceTimer()
+      recognitionRef.current = null
       console.error('Speech recognition error:', event.error)
-      if (event.error === 'not-allowed') {
-        console.error('Microphone permission denied or blocked')
-      } else if (event.error === 'no-speech') {
-        console.error('No speech detected - try speaking louder')
-      } else if (event.error === 'network') {
-        console.error('Network error in speech recognition')
-      }
     }
 
     recognition.onend = () => {
+      if (!isCurrent()) return
       setIsRecording(false)
-      // Don't restart immediately if we got speech - let the silence timer fire
-      if (silenceTimer) {
-        // Keep the timer running - don't clear it
-      } else if (continuousVoiceActive && !hasResult && !isProcessing) {
-        // Only restart if we didn't get any speech at all
+      clearSilenceTimer()
+      recognitionRef.current = null
+      // If recognition ended with no speech captured at all, give the
+      // user a fresh listening window (Siri-style continuous mode).
+      if (continuousVoiceActive && !hasResult) {
         setTimeout(() => {
           if (continuousVoiceActive) startListening()
         }, 300)
@@ -667,6 +685,7 @@ export default function AI() {
       recognition.start()
     } catch (err) {
       console.error('Failed to start recognition:', err)
+      recognitionRef.current = null
       setIsRecording(false)
     }
   }
@@ -675,10 +694,11 @@ export default function AI() {
     if (continuousVoiceActive) {
       // Stop continuous voice mode
       setContinuousVoiceActive(false)
-      if (isRecording) {
-        recognitionRef.current?.stop()
-        setIsRecording(false)
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+        recognitionRef.current = null
       }
+      setIsRecording(false)
     } else {
       // Start continuous voice mode
       setContinuousVoiceActive(true)
@@ -778,7 +798,11 @@ export default function AI() {
     setInput('')
     setError(null)
     const userMsg    = { role: 'user', content, timestamp: Date.now() }
-    const newMessages = [...messages, userMsg]
+    // Read from messagesRef (not the `messages` closure) so a message sent
+    // from a slightly stale render (e.g. a voice-recognition callback that
+    // fired after another state update) still appends onto the latest state
+    // instead of overwriting it and appearing to "clear" the chat.
+    const newMessages = [...messagesRef.current, userMsg]
     setMessages(newMessages)
     setAtBottom(true)
     setLoading(true)

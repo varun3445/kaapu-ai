@@ -690,47 +690,36 @@ export default function AI() {
         setIsSpeaking(false)
         return
       }
-      // Convert base64 to blob
-      const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { type: 'audio/mpeg' })
-      const audioUrl = URL.createObjectURL(audioBlob)
 
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ''
+      // Convert base64 to audio buffer
+      const binaryString = atob(data.audioContent)
+      const bytes = new Uint8Array(binaryString.length)
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i)
       }
 
-      const audio = new Audio()
-      audio.src = audioUrl
-      audio.volume = 1.0
-      // Safari: must be played via user gesture context
-      audio.muted = false
+      // Use Web Audio API for reliable playback
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
 
-      audio.onended = () => {
-        setIsSpeaking(false)
-        URL.revokeObjectURL(audioUrl)
+      // Resume context if suspended (required for some browsers)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume()
       }
 
-      audio.onerror = (err) => {
-        console.error('Audio playback error:', err)
-        setIsSpeaking(false)
-        URL.revokeObjectURL(audioUrl)
-      }
-
-      audioRef.current = audio
-
-      // Try to play with error handling for Safari autoplay restrictions
       try {
-        const playPromise = audio.play()
-        if (playPromise !== undefined) {
-          playPromise.catch(playErr => {
-            console.error('Autoplay blocked:', playErr.name)
-            setIsSpeaking(false)
-          })
+        const audioBuffer = await audioContext.decodeAudioData(bytes.buffer)
+        const source = audioContext.createBufferSource()
+        source.buffer = audioBuffer
+        source.connect(audioContext.destination)
+
+        source.onended = () => {
+          setIsSpeaking(false)
         }
-      } catch (playErr) {
-        console.error('Play error:', playErr)
+
+        source.start(0)
+      } catch (decodeErr) {
+        console.error('Audio decode error:', decodeErr)
         setIsSpeaking(false)
-        URL.revokeObjectURL(audioUrl)
       }
     } catch (err) {
       console.error('speakText error:', err)

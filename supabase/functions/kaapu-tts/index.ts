@@ -39,8 +39,8 @@ Deno.serve(async (req) => {
         input: { text: text.substring(0, 5000) }, // Google limit is 5000 chars per request
         voice: {
           languageCode: 'en-GB',
-          name: 'en-GB-Neural2-C', // British voice (female, natural, premium)
-          // Alternative: 'en-GB-Neural2-D' (female, warm, premium)
+          name: 'en-GB-Neural2-D', // British voice (female, professional, premium)
+          // Alternative: 'en-GB-Neural2-C' (female, natural)
           // Cheaper: 'en-GB-Standard-C', 'en-GB-Standard-D'
         },
         audioConfig: {

@@ -610,9 +610,15 @@ export default function AI() {
         },
         onMessage: ({ message, role }) => {
           if (!message) return
-          const msg = { role: role === 'user' ? 'user' : 'assistant', content: message, timestamp: Date.now() }
+          const r = role === 'user' ? 'user' : 'assistant'
           setMessages(prev => {
-            const next = [...prev, msg]
+            // ElevenLabs can emit the same turn more than once (e.g. a
+            // tentative transcript followed by the same final one) — skip an
+            // exact repeat of the last message so it doesn't show twice and
+            // doesn't get replayed as a second turn to the LLM.
+            const last = prev[prev.length - 1]
+            if (last && last.role === r && last.content === message) return prev
+            const next = [...prev, { role: r, content: message, timestamp: Date.now() }]
             if (!currentSessionId.current) currentSessionId.current = `chat-${userId}-${Date.now()}`
             upsertSession(currentSessionId.current, next, userId)
             return next
@@ -632,7 +638,14 @@ export default function AI() {
   }
 
   function stopVoiceCall() {
-    elevenlabsConversationRef.current?.endSession()
+    const conv = elevenlabsConversationRef.current
+    if (conv) {
+      // Silence immediately — endSession() tears down the connection but any
+      // audio already queued for playback can keep sounding for a moment
+      // after, which read as "the AI keeps talking" when hanging up mid-reply.
+      try { conv.setVolume({ volume: 0 }) } catch (_) {}
+      conv.endSession()
+    }
     elevenlabsConversationRef.current = null
     setContinuousVoiceActive(false)
     setIsRecording(false)

@@ -31,6 +31,80 @@ function stripMarkers(text: string): string {
   return text.replace(USER_ID_MARKER, '').trim()
 }
 
+// Mirrors src/utils/severity.js and kaapu-chat/index.ts — keep in sync if the tiers change.
+function severityLabel(sev: number): string {
+  if (sev >= 6) return 'Very Severe'
+  if (sev >= 5) return 'Severe'
+  if (sev >= 4) return 'Moderate-Severe'
+  if (sev >= 3) return 'Moderate'
+  if (sev >= 2) return 'Mild-Moderate'
+  return 'Mild'
+}
+
+async function pgrest(path: string, url: string, serviceKey: string) {
+  const res = await fetch(`${url}/rest/v1/${path}`, {
+    headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+  })
+  if (!res.ok) return []
+  return res.json()
+}
+
+// Looks up the caller's own health data directly from Supabase (service role)
+// since, unlike kaapu-chat, this webhook is called by ElevenLabs — there's no
+// frontend request to attach context to. Mirrors kaapu-chat's
+// buildHealthContext() shape so the voice agent and text chat stay consistent.
+async function fetchHealthContext(userId: string): Promise<string> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!supabaseUrl || !serviceKey) return ''
+
+  try {
+    const users = await pgrest(`users?id=eq.${userId}&select=familyId`, supabaseUrl, serviceKey)
+    const familyId = users[0]?.familyId
+    if (!familyId) return ''
+
+    const members = await pgrest(`members?familyId=eq.${familyId}&userId=eq.${userId}&select=id,name`, supabaseUrl, serviceKey)
+    const member = members[0]
+    if (!member) return ''
+
+    const [conditions, medications, symptoms] = await Promise.all([
+      pgrest(`conditions?familyId=eq.${familyId}&memberId=eq.${member.id}&select=name`, supabaseUrl, serviceKey),
+      pgrest(`medications?familyId=eq.${familyId}&memberId=eq.${member.id}&select=name`, supabaseUrl, serviceKey),
+      pgrest(`symptoms?familyId=eq.${familyId}&memberId=eq.${member.id}&select=*`, supabaseUrl, serviceKey),
+    ])
+
+    const parts: string[] = [`User: ${member.name}`]
+    if (conditions.length) parts.push(`Conditions: ${conditions.map((c: any) => c.name).join(', ')}`)
+    if (medications.length) parts.push(`Medications: ${medications.map((m: any) => m.name).join(', ')}`)
+
+    const active = symptoms.filter((s: any) => !s.resolved)
+    if (active.length) {
+      const list = active
+        .slice(0, 10)
+        .map((s: any) => `${s.category} at ${s.bodyRegion || s.bodyLabel} (severity: ${severityLabel(s.severity)}${s.duration ? ', ' + s.duration : ''})`)
+        .join('; ')
+      parts.push(`Active symptoms: ${list}`)
+    }
+
+    const ninetyDaysAgo = Date.now() - 90 * 24 * 3600000
+    const history = symptoms
+      .filter((s: any) => new Date(s.timestamp).getTime() > ninetyDaysAgo)
+      .slice(0, 40)
+      .map((s: any) => {
+        const status = s.resolved ? `[resolved]` : '[active]'
+        return `${s.timestamp?.slice(0, 10)}: ${s.category} — severity: ${severityLabel(s.severity)} ${status}`
+      })
+      .join('\n')
+    if (history) parts.push(`Symptom history:\n${history}`)
+
+    if (parts.length <= 1) return ''
+    return `[HEALTH CONTEXT]\n${parts.join('\n')}\n[/HEALTH CONTEXT]\n\n`
+  } catch (err) {
+    console.error('fetchHealthContext error:', err)
+    return ''
+  }
+}
+
 function sseChunk(id: string, model: string, delta: Record<string, unknown>, finishReason: string | null) {
   return `data: ${JSON.stringify({
     id,
@@ -73,7 +147,9 @@ Deno.serve(async (req) => {
 
     const systemMsg = incomingMessages.find(m => m.role === 'system')
     const userId = systemMsg ? extractUserId(systemMsg.content) : null
-    const systemText = systemMsg ? stripMarkers(systemMsg.content) : ''
+    const baseSystemText = systemMsg ? stripMarkers(systemMsg.content) : ''
+    const healthContext = userId ? await fetchHealthContext(userId) : ''
+    const systemText = `${healthContext}${baseSystemText}`
 
     const conversationMessages = incomingMessages
       .filter(m => m.role === 'user' || m.role === 'assistant')
@@ -86,7 +162,7 @@ Deno.serve(async (req) => {
       })
     }
 
-    console.log('kaapu-elevenlabs-llm turn for userId:', userId)
+    console.log('kaapu-elevenlabs-llm turn for userId:', userId, 'hasHealthContext:', !!healthContext)
 
     const anthropicRes = await fetch(ANTHROPIC_MESSAGES_API, {
       method: 'POST',

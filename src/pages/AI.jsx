@@ -392,6 +392,7 @@ export default function AI() {
   const [isRecording,          setIsRecording]          = useState(false)
   const [voiceMode,            setVoiceMode]            = useState(false)
   const [isSpeaking,           setIsSpeaking]           = useState(false)
+  const [continuousVoiceActive, setContinuousVoiceActive] = useState(false)
   const currentSessionId  = useRef(null) // stable ID for the Supabase chat history row
   const agentSessionIdRef = useRef(null) // stable ID for the Managed Agent session
   const bottomRef  = useRef(null)
@@ -423,6 +424,16 @@ export default function AI() {
       if (parsed?.insight) setPendingWeeklyInsight(parsed)
     } catch (_) {}
   }, [])
+
+  // Auto-start listening after AI finishes speaking (Siri-like behavior)
+  useEffect(() => {
+    if (voiceMode && continuousVoiceActive && !isSpeaking && !isRecording && !loading) {
+      const timer = setTimeout(() => {
+        if (continuousVoiceActive) startListening()
+      }, 500)
+      return () => clearTimeout(timer)
+    }
+  }, [isSpeaking, continuousVoiceActive, voiceMode, isRecording, loading])
 
   // Append AI-suggested cause notes onto the relevant symptom(s) so they show
   // up under "Notes" in the GP report — see [[note:id:text]] in kaapu-chat.
@@ -568,34 +579,51 @@ export default function AI() {
     setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 80)
   }
 
-  function toggleVoiceInput() {
-    if (isRecording) {
-      recognitionRef.current?.stop()
+  function startListening() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Voice input not supported on this device')
+      return
+    }
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.onstart = () => setIsRecording(true)
+    recognition.onresult = (event) => {
+      let transcript = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript
+      }
+      if (transcript) {
+        setInput(transcript)
+        // Auto-send the message
+        setTimeout(() => {
+          setInput('')
+          sendMessage(transcript)
+        }, 100)
+      }
+    }
+    recognition.onerror = () => {
       setIsRecording(false)
-    } else {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-      if (!SpeechRecognition) {
-        alert('Voice input not supported on this device')
-        return
-      }
-      const recognition = new SpeechRecognition()
-      recognition.continuous = false
-      recognition.interimResults = false
-      recognition.onstart = () => setIsRecording(true)
-      recognition.onresult = (event) => {
-        let transcript = ''
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript
-        }
-        if (transcript) setInput(prev => prev + (prev ? ' ' : '') + transcript)
-      }
-      recognition.onerror = () => {
+      alert('Voice input error. Please try again.')
+    }
+    recognition.onend = () => setIsRecording(false)
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  function toggleVoiceInput() {
+    if (continuousVoiceActive) {
+      // Stop continuous voice mode
+      setContinuousVoiceActive(false)
+      if (isRecording) {
+        recognitionRef.current?.stop()
         setIsRecording(false)
-        alert('Voice input error. Please try again.')
       }
-      recognition.onend = () => setIsRecording(false)
-      recognitionRef.current = recognition
-      recognition.start()
+    } else {
+      // Start continuous voice mode
+      setContinuousVoiceActive(true)
+      startListening()
     }
   }
 

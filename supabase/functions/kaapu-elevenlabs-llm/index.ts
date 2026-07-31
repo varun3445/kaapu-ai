@@ -135,7 +135,10 @@ async function fetchHealthContext(userId: string): Promise<string> {
       }
     }
 
-    return `[HEALTH CONTEXT — the caller and everyone they're connected to. Only discuss a connected person's info if the caller clearly asks about them by name or relationship (e.g. "how's dad").]\n${blocks.join('\n\n')}\n[/HEALTH CONTEXT]\n\n`
+    return `[HEALTH CONTEXT — the caller and everyone they're connected to.
+The caller may refer to a connected person by name OR by a relationship term (e.g. "how's dad", "how's my friend"). Relationship labels are broad (e.g. "Parent" covers both mum and dad) and don't always match how the caller talks about someone, so before giving any details about a connected person, confirm who you mean by name in the same reply — e.g. "You mean Srivathsan, right? He's..." — rather than answering silently as if there's no ambiguity. If more than one connected person could match what the caller said, ask which one they mean instead of guessing.]
+${blocks.join('\n\n')}
+[/HEALTH CONTEXT]\n\n`
   } catch (err) {
     console.error('fetchHealthContext error:', err)
     return ''

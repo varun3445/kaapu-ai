@@ -592,46 +592,52 @@ export default function AI() {
     recognition.maxAlternatives = 1
 
     let hasResult = false
+    let messageBeingSent = false
+
     recognition.onstart = () => {
       setIsRecording(true)
       hasResult = false
+      messageBeingSent = false
     }
+
     recognition.onresult = (event) => {
       let transcript = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript + ' '
       }
       transcript = transcript.trim()
+
       if (transcript && event.isFinal) {
         hasResult = true
-        setInput(transcript)
-        // Auto-send the message
-        setTimeout(() => {
-          setInput('')
-          sendMessage(transcript)
-        }, 100)
+        messageBeingSent = true
+        setIsRecording(false)
+        // Send the message
+        sendMessage(transcript)
       } else if (transcript) {
-        // Show interim results
-        setInput(transcript)
+        // Show interim results (don't update input to avoid interruption)
       }
     }
+
     recognition.onerror = (event) => {
       setIsRecording(false)
       console.error('Speech recognition error:', event.error)
-      // Only show error if it's not just permission-related
-      if (event.error !== 'no-speech' && event.error !== 'network') {
-        // Silently retry on network errors
-      }
     }
+
     recognition.onend = () => {
       setIsRecording(false)
-      // Auto-restart if in continuous mode and had no result (user didn't speak)
-      if (continuousVoiceActive && !hasResult) {
+      // Auto-restart if in continuous mode and message was sent
+      if (continuousVoiceActive && hasResult && !messageBeingSent) {
+        setTimeout(() => {
+          if (continuousVoiceActive) startListening()
+        }, 800)
+      } else if (continuousVoiceActive && !hasResult) {
+        // Restart if user didn't speak
         setTimeout(() => {
           if (continuousVoiceActive) startListening()
         }, 300)
       }
     }
+
     recognitionRef.current = recognition
     try {
       recognition.start()

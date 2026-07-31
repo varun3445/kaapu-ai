@@ -961,10 +961,11 @@ export default function AI() {
 
           {/* Text / Voice toggle — centered above the input */}
           <div className="flex justify-center mb-2">
-            <div className="relative flex items-center bg-gray-100 rounded-full p-1 w-44">
+            <div className="relative flex items-center bg-gray-100 rounded-full w-44 h-9">
               <motion.div
-                className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-full bg-white shadow-sm"
-                animate={{ x: voiceMode ? 'calc(100% + 0.5rem)' : '0.25rem' }}
+                className="absolute top-1 bottom-1 rounded-full bg-white shadow-sm"
+                style={{ width: 'calc(50% - 0.5rem)' }}
+                animate={{ left: voiceMode ? '50%' : '0.5rem' }}
                 transition={{ type: 'spring', damping: 30, stiffness: 320 }}
               />
               <button

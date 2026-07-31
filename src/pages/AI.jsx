@@ -587,29 +587,58 @@ export default function AI() {
     }
     const recognition = new SpeechRecognition()
     recognition.continuous = false
-    recognition.interimResults = false
-    recognition.onstart = () => setIsRecording(true)
+    recognition.interimResults = true
+    recognition.language = 'en-GB'
+    recognition.maxAlternatives = 1
+
+    let hasResult = false
+    recognition.onstart = () => {
+      setIsRecording(true)
+      hasResult = false
+    }
     recognition.onresult = (event) => {
       let transcript = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript
+        transcript += event.results[i][0].transcript + ' '
       }
-      if (transcript) {
+      transcript = transcript.trim()
+      if (transcript && event.isFinal) {
+        hasResult = true
         setInput(transcript)
         // Auto-send the message
         setTimeout(() => {
           setInput('')
           sendMessage(transcript)
         }, 100)
+      } else if (transcript) {
+        // Show interim results
+        setInput(transcript)
       }
     }
-    recognition.onerror = () => {
+    recognition.onerror = (event) => {
       setIsRecording(false)
-      alert('Voice input error. Please try again.')
+      console.error('Speech recognition error:', event.error)
+      // Only show error if it's not just permission-related
+      if (event.error !== 'no-speech' && event.error !== 'network') {
+        // Silently retry on network errors
+      }
     }
-    recognition.onend = () => setIsRecording(false)
+    recognition.onend = () => {
+      setIsRecording(false)
+      // Auto-restart if in continuous mode and had no result (user didn't speak)
+      if (continuousVoiceActive && !hasResult) {
+        setTimeout(() => {
+          if (continuousVoiceActive) startListening()
+        }, 300)
+      }
+    }
     recognitionRef.current = recognition
-    recognition.start()
+    try {
+      recognition.start()
+    } catch (err) {
+      console.error('Failed to start recognition:', err)
+      setIsRecording(false)
+    }
   }
 
   function toggleVoiceInput() {
@@ -639,16 +668,47 @@ export default function AI() {
         setIsSpeaking(false)
         return
       }
-      // Convert base64 to blob and play
+      // Convert base64 to blob
       const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { type: 'audio/mpeg' })
-      const audioUrl = URL.createObjectURL(audioBlob)
-      if (audioRef.current) audioRef.current.pause()
-      audioRef.current = new Audio(audioUrl)
-      audioRef.current.onended = () => setIsSpeaking(false)
-      audioRef.current.play().catch(err => {
-        console.error('Audio playback error:', err)
-        setIsSpeaking(false)
-      })
+
+      // Use Web Audio API to avoid iOS call UI
+      try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        const arrayBuffer = await audioBlob.arrayBuffer()
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+
+        const source = audioContext.createBufferSource()
+        source.buffer = audioBuffer
+        source.connect(audioContext.destination)
+
+        source.onended = () => {
+          setIsSpeaking(false)
+        }
+        source.start(0)
+      } catch (audioContextErr) {
+        console.error('Web Audio API error, falling back to Audio element:', audioContextErr)
+        // Fallback to Audio element if Web Audio fails
+        const audioUrl = URL.createObjectURL(audioBlob)
+        if (audioRef.current) {
+          audioRef.current.pause()
+          audioRef.current.src = ''
+        }
+        audioRef.current = new Audio(audioUrl)
+        audioRef.current.onended = () => {
+          setIsSpeaking(false)
+          URL.revokeObjectURL(audioUrl)
+        }
+        audioRef.current.onerror = () => {
+          console.error('Audio playback error')
+          setIsSpeaking(false)
+          URL.revokeObjectURL(audioUrl)
+        }
+        audioRef.current.volume = 1.0
+        await audioRef.current.play().catch(err => {
+          console.error('Audio play error:', err)
+          setIsSpeaking(false)
+        })
+      }
     } catch (err) {
       console.error('speakText error:', err)
       setIsSpeaking(false)

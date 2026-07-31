@@ -716,7 +716,6 @@ export default function AI() {
         setIsSpeaking(false)
         URL.revokeObjectURL(audioUrl)
       }
-      }
     } catch (err) {
       console.error('speakText error:', err)
       setIsSpeaking(false)

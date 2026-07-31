@@ -155,6 +155,174 @@ function sseChunk(id: string, model: string, delta: Record<string, unknown>, fin
   })}\n\n`
 }
 
+// Resolves the caller's own familyId + member record. Kept separate from
+// fetchHealthContext's own lookup — this one is only used for tool execution
+// (writing), not context building (reading).
+async function resolveSelf(userId: string, supabaseUrl: string, serviceKey: string) {
+  const users = await pgrest(`users?id=eq.${userId}&select=familyId`, supabaseUrl, serviceKey)
+  const familyId = users[0]?.familyId
+  if (!familyId) return null
+  const members = await pgrest(`members?familyId=eq.${familyId}&userId=eq.${userId}&select=id,name`, supabaseUrl, serviceKey)
+  const member = members[0]
+  if (!member) return null
+  return { familyId, memberId: member.id, name: member.name }
+}
+
+const TOOLS = [
+  {
+    name: 'add_medication',
+    description: "Add a new medication (and optional day/time reminder schedule) to the caller's OWN medication list. Only call this after the caller has clearly, verbally confirmed every detail you're about to add — never call it speculatively, and never guess a dosage the caller didn't state.",
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Medication name, e.g. Allegra' },
+        dosage: { type: 'string', description: "e.g. '180mg'. Omit entirely if the caller didn't state one." },
+        frequency: { type: 'string', description: "e.g. 'Once daily'. Omit if not stated." },
+        days: { type: 'array', items: { type: 'string' }, description: 'Reminder days, e.g. ["Mon","Wed","Fri"]. Omit entirely if the caller doesn\'t want reminders.' },
+        times: { type: 'array', items: { type: 'string' }, description: 'Reminder times in 24h HH:MM, e.g. ["09:00"]. Omit entirely if the caller doesn\'t want reminders.' },
+      },
+      required: ['name'],
+    },
+  },
+]
+
+async function addMedicationTool(
+  userId: string | null,
+  input: { name?: string; dosage?: string; frequency?: string; days?: string[]; times?: string[] },
+  supabaseUrl: string,
+  serviceKey: string,
+): Promise<string> {
+  if (!userId) return "I couldn't tell who's calling, so I can't add that — please try again."
+  if (!input.name) return "I didn't catch a medication name — please try again."
+
+  const self = await resolveSelf(userId, supabaseUrl, serviceKey)
+  if (!self) return "I couldn't find your account to add that to — please try again in the app."
+
+  const days = input.days || []
+  const times = input.times || []
+  const row = {
+    id: `med-${Date.now()}`,
+    memberId: self.memberId,
+    familyId: self.familyId,
+    name: input.name,
+    dosage: input.dosage || '',
+    frequency: input.frequency || '',
+    days,
+    times,
+    startDate: new Date().toISOString().slice(0, 10),
+    notes: '',
+    conditionId: null,
+  }
+
+  const res = await fetch(`${supabaseUrl}/rest/v1/medications`, {
+    method: 'POST',
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(row),
+  })
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '')
+    console.error('addMedicationTool insert error:', res.status, errText)
+    return 'That failed to save — tell the caller to try again in the app.'
+  }
+
+  return `Added ${input.name} successfully${times.length ? ` with reminders on ${days.join(', ')} at ${times.join(', ')}` : ''}.`
+}
+
+// Runs one Claude turn over the streaming Messages API, forwarding plain text
+// deltas to onTextDelta as they arrive (so the fast, non-tool-use path stays
+// low-latency), while separately accumulating any tool_use block without
+// streaming its raw JSON to the caller. Returns the stop reason and, if the
+// model decided to call a tool, its name/id/parsed input.
+async function runClaudeTurn(
+  apiKey: string,
+  systemText: string,
+  messages: any[],
+  onTextDelta: (text: string) => void,
+): Promise<{ stopReason: string; toolUse: { id: string; name: string; input: any } | null }> {
+  const res = await fetch(ANTHROPIC_MESSAGES_API, {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 400,
+      system: systemText,
+      messages,
+      tools: TOOLS,
+      stream: true,
+    }),
+  })
+
+  if (!res.ok || !res.body) {
+    const errText = await res.text().catch(() => '')
+    console.error('Anthropic error:', res.status, errText)
+    throw new Error('upstream_error')
+  }
+
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buf = ''
+  let stopReason = 'end_turn'
+  const blockTypes = new Map<number, string>()
+  const blockJson = new Map<number, string>()
+  const blockToolMeta = new Map<number, { id: string; name: string }>()
+  let toolUse: { id: string; name: string; input: any } | null = null
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += decoder.decode(value, { stream: true })
+    const lines = buf.split('\n')
+    buf = lines.pop() || ''
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      const payload = line.slice(6)
+      if (payload === '[DONE]') continue
+      let evt: any
+      try { evt = JSON.parse(payload) } catch { continue }
+
+      if (evt.type === 'content_block_start') {
+        blockTypes.set(evt.index, evt.content_block?.type)
+        if (evt.content_block?.type === 'tool_use') {
+          blockToolMeta.set(evt.index, { id: evt.content_block.id, name: evt.content_block.name })
+          blockJson.set(evt.index, '')
+        }
+      } else if (evt.type === 'content_block_delta') {
+        if (evt.delta?.type === 'text_delta' && evt.delta.text) {
+          onTextDelta(evt.delta.text)
+        } else if (evt.delta?.type === 'input_json_delta') {
+          blockJson.set(evt.index, (blockJson.get(evt.index) || '') + (evt.delta.partial_json || ''))
+        }
+      } else if (evt.type === 'content_block_stop') {
+        if (blockTypes.get(evt.index) === 'tool_use') {
+          const meta = blockToolMeta.get(evt.index)
+          const jsonStr = blockJson.get(evt.index) || '{}'
+          if (meta) {
+            try {
+              toolUse = { id: meta.id, name: meta.name, input: JSON.parse(jsonStr || '{}') }
+            } catch (_) {
+              toolUse = { id: meta.id, name: meta.name, input: {} }
+            }
+          }
+        }
+      } else if (evt.type === 'message_delta') {
+        if (evt.delta?.stop_reason) stopReason = evt.delta.stop_reason
+      }
+    }
+  }
+
+  return { stopReason, toolUse }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -204,98 +372,49 @@ Deno.serve(async (req) => {
 
     console.log('kaapu-elevenlabs-llm turn for userId:', userId, 'hasHealthContext:', !!healthContext)
 
-    const anthropicRes = await fetch(ANTHROPIC_MESSAGES_API, {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 400,
-        system: systemText,
-        messages: conversationMessages,
-        stream: true,
-      }),
-    })
-
-    if (!anthropicRes.ok || !anthropicRes.body) {
-      const errText = await anthropicRes.text().catch(() => '')
-      console.error('Anthropic error:', anthropicRes.status, errText)
-      return new Response(JSON.stringify({ error: 'upstream_error' }), {
-        status: 502,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
     const completionId = `chatcmpl-${crypto.randomUUID()}`
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-    if (!wantsStream) {
-      // Non-streaming fallback: buffer the whole Anthropic stream, return one JSON object.
-      let full = ''
-      const reader = anthropicRes.body.getReader()
-      const decoder = new TextDecoder()
-      let buf = ''
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buf += decoder.decode(value, { stream: true })
-        const lines = buf.split('\n')
-        buf = lines.pop() || ''
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          const payload = line.slice(6)
-          if (payload === '[DONE]') continue
-          try {
-            const evt = JSON.parse(payload)
-            if (evt.type === 'content_block_delta' && evt.delta?.text) full += evt.delta.text
-          } catch (_) { /* ignore partial */ }
-        }
-      }
-      return new Response(JSON.stringify({
-        id: completionId,
-        object: 'chat.completion',
-        created: Math.floor(Date.now() / 1000),
-        model: MODEL,
-        choices: [{ index: 0, message: { role: 'assistant', content: full }, finish_reason: 'stop' }],
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-    }
-
-    // Streaming: translate Anthropic's SSE events into OpenAI chat.completion.chunk events.
+    // Streaming path (what ElevenLabs actually sends). Text deltas from the
+    // first Claude call forward straight through as they arrive, so the
+    // common non-tool turn stays exactly as fast as before. Only if Claude
+    // decides to call add_medication do we pause to execute it and make a
+    // second call whose text also streams straight through.
     const stream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder()
-        const reader = anthropicRes.body!.getReader()
-        const decoder = new TextDecoder()
-        let buf = ''
         let sentRole = false
-        try {
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-            buf += decoder.decode(value, { stream: true })
-            const lines = buf.split('\n')
-            buf = lines.pop() || ''
-            for (const line of lines) {
-              if (!line.startsWith('data: ')) continue
-              const payload = line.slice(6)
-              if (payload === '[DONE]') continue
-              let evt: any
-              try { evt = JSON.parse(payload) } catch { continue }
-
-              if (evt.type === 'content_block_delta' && evt.delta?.text) {
-                if (!sentRole) {
-                  controller.enqueue(encoder.encode(sseChunk(completionId, MODEL, { role: 'assistant' }, null)))
-                  sentRole = true
-                }
-                controller.enqueue(encoder.encode(sseChunk(completionId, MODEL, { content: evt.delta.text }, null)))
-              } else if (evt.type === 'message_stop') {
-                controller.enqueue(encoder.encode(sseChunk(completionId, MODEL, {}, 'stop')))
-                controller.enqueue(encoder.encode('data: [DONE]\n\n'))
-              }
-            }
+        const emit = (text: string) => {
+          if (!sentRole) {
+            controller.enqueue(encoder.encode(sseChunk(completionId, MODEL, { role: 'assistant' }, null)))
+            sentRole = true
           }
+          controller.enqueue(encoder.encode(sseChunk(completionId, MODEL, { content: text }, null)))
+        }
+
+        try {
+          let turnMessages = conversationMessages
+          const first = await runClaudeTurn(apiKey, systemText, turnMessages, emit)
+
+          if (first.stopReason === 'tool_use' && first.toolUse) {
+            let toolResultText = 'Tool not available.'
+            if (first.toolUse.name === 'add_medication' && supabaseUrl && serviceKey) {
+              toolResultText = await addMedicationTool(userId, first.toolUse.input, supabaseUrl, serviceKey)
+            }
+
+            turnMessages = [
+              ...turnMessages,
+              { role: 'assistant', content: [{ type: 'tool_use', id: first.toolUse.id, name: first.toolUse.name, input: first.toolUse.input }] },
+              { role: 'user', content: [{ type: 'tool_result', tool_use_id: first.toolUse.id, content: toolResultText }] },
+            ]
+
+            // Follow-up call — its natural-language reply streams through as normal.
+            await runClaudeTurn(apiKey, systemText, turnMessages, emit)
+          }
+
+          controller.enqueue(encoder.encode(sseChunk(completionId, MODEL, {}, 'stop')))
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'))
         } catch (err) {
           console.error('stream bridge error:', err)
         } finally {
@@ -304,14 +423,43 @@ Deno.serve(async (req) => {
       },
     })
 
-    return new Response(stream, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    })
+    if (wantsStream) {
+      return new Response(stream, {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      })
+    }
+
+    // Non-streaming fallback — buffer the same stream into one JSON response.
+    let full = ''
+    const reader = stream.getReader()
+    const decoder = new TextDecoder()
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const chunkText = decoder.decode(value, { stream: true })
+      for (const line of chunkText.split('\n')) {
+        if (!line.startsWith('data: ')) continue
+        const payload = line.slice(6)
+        if (payload === '[DONE]') continue
+        try {
+          const evt = JSON.parse(payload)
+          const c = evt.choices?.[0]?.delta?.content
+          if (c) full += c
+        } catch (_) { /* ignore */ }
+      }
+    }
+    return new Response(JSON.stringify({
+      id: completionId,
+      object: 'chat.completion',
+      created: Math.floor(Date.now() / 1000),
+      model: MODEL,
+      choices: [{ index: 0, message: { role: 'assistant', content: full }, finish_reason: 'stop' }],
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
   } catch (err) {
     console.error('kaapu-elevenlabs-llm error:', err)
     return new Response(JSON.stringify({ error: 'server_error' }), {

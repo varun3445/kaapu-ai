@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, RefreshCw, ChevronDown, History, X, MessageSquare, AlertTriangle, BookmarkCheck, Loader2, CheckCircle, PlusCircle, Trash2, FileText, Mic, MicOff } from 'lucide-react'
+import { Send, Sparkles, RefreshCw, ChevronDown, History, X, MessageSquare, AlertTriangle, BookmarkCheck, Loader2, CheckCircle, PlusCircle, Trash2, FileText, Mic, MicOff, Pill } from 'lucide-react'
 import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
 import { useNavigate } from 'react-router-dom'
@@ -213,6 +213,34 @@ function ActionChip({ action, onResolve, onLog, onGpReport, gpReportLoading, don
   return null
 }
 
+// ── Format a "HH:MM" 24h string as "9:00 AM" for display ────────────────────
+function formatTime12(t) {
+  const [h, m] = t.split(':').map(Number)
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour12 = h % 12 === 0 ? 12 : h % 12
+  return `${hour12}:${String(m).padStart(2, '0')} ${period}`
+}
+
+// ── Medication proposal chip — mirrors ActionChip's confirm-before-write pattern
+function MedicationChip({ proposal, onAdd, done }) {
+  if (!proposal?.name || done) return null
+  const bits = []
+  if (proposal.dosage) bits.push(proposal.dosage)
+  if (proposal.frequency) bits.push(proposal.frequency)
+  if (proposal.days?.length) bits.push(proposal.days.join('/'))
+  if (proposal.times?.length) bits.push(proposal.times.map(formatTime12).join(', '))
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
+      onClick={onAdd}
+      className="flex items-center gap-1.5 ml-9 mt-1 mb-2 px-3 py-1.5 rounded-2xl text-[11px] font-semibold bg-primary-50 border border-primary-200 text-primary-700 shadow-sm text-left"
+    >
+      <Pill size={12} className="shrink-0" />
+      <span>Add {proposal.name}{bits.length ? ` — ${bits.join(', ')}` : ''}?</span>
+    </motion.button>
+  )
+}
+
 // ── History sheet (modal) ────────────────────────────────────────────────────
 function HistorySheet({ onClose, onRestore, userId }) {
   const [sessions,    setSessions]    = useState([])
@@ -374,7 +402,7 @@ function EmptyState({ onSuggest }) {
 
 // ── Main AI page ─────────────────────────────────────────────────────────────
 export default function AI() {
-  const { currentUser, currentMember, conditions, medications, symptoms, updateSymptom, resolveSymptom } = useApp()
+  const { currentUser, currentMember, conditions, medications, symptoms, updateSymptom, resolveSymptom, addMedication } = useApp()
   const userId   = currentUser?.id
   const navigate = useNavigate()
   const [messages,             setMessages]             = useState([])
@@ -476,6 +504,18 @@ export default function AI() {
   function handleLogNew(msgIdx) {
     setActionDoneIdx(prev => new Set([...prev, msgIdx]))
     navigate('/body-map')
+  }
+
+  function handleAddMedication(msgIdx, proposal) {
+    addMedication({
+      name: proposal.name,
+      dosage: proposal.dosage || '',
+      frequency: proposal.frequency || '',
+      days: proposal.days || [],
+      times: proposal.times || [],
+    })
+    setActionDoneIdx(prev => new Set([...prev, msgIdx]))
+    sendMessage(`I've added ${proposal.name} to my medications.`)
   }
 
   // Save session when navigating away or starting a new chat
@@ -679,7 +719,7 @@ export default function AI() {
       if (fnError || !data?.content) throw new Error('empty')
       if (data.agentSessionId) agentSessionIdRef.current = data.agentSessionId
       applyNoteUpdates(data.noteUpdates)
-      const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
+      const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null, medicationProposal: data.medicationProposal || null }
       const nextMessages = [aiMsg]
       setMessages(nextMessages)
       // Auto-save immediately so tapping the notification again restores this
@@ -716,7 +756,7 @@ export default function AI() {
       if (fnError || !data?.content) throw new Error(fnError?.message || 'empty_response')
       if (data.agentSessionId) agentSessionIdRef.current = data.agentSessionId
       applyNoteUpdates(data.noteUpdates)
-      const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
+      const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null, medicationProposal: data.medicationProposal || null }
       const finalMessages = [...newMessages, aiMsg]
       setMessages(finalMessages)
       // Auto-save after every AI reply — upsert keeps it in the same session row
@@ -854,6 +894,13 @@ export default function AI() {
                   onLog={() => handleLogNew(i)}
                   onGpReport={() => handleGpReport(i)}
                   gpReportLoading={gpReportLoading}
+                />
+              )}
+              {msg.role === 'assistant' && msg.medicationProposal && (
+                <MedicationChip
+                  proposal={msg.medicationProposal}
+                  done={actionDoneIdx.has(i)}
+                  onAdd={() => handleAddMedication(i, msg.medicationProposal)}
                 />
               )}
             </div>

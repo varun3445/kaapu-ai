@@ -89,24 +89,39 @@ async function sendEvent(key: string, sessionId: string, text: string): Promise<
   })
 }
 
-async function pollResponse(key: string, sessionId: string, maxMs = 45000): Promise<string> {
+// Snapshot every event id currently in the session BEFORE sending a new
+// message, so pollResponse can tell "already there from a previous turn"
+// apart from "just generated for this turn". Without this, a continuing
+// session's leftover session.status_idle + agent.message from the PREVIOUS
+// turn satisfy pollResponse's success condition on its very first 1.5s poll,
+// returning last turn's stale reply instead of waiting for a new one.
+async function getExistingEventIds(key: string, sessionId: string): Promise<Set<string>> {
+  try {
+    const res = await fetch(`${BASE}/sessions/${sessionId}/events`, { headers: agentHeaders(key) })
+    if (!res.ok) return new Set()
+    const data = await res.json()
+    return new Set((data.data || []).map((e: any) => e.id))
+  } catch (_) {
+    return new Set()
+  }
+}
+
+async function pollResponse(key: string, sessionId: string, baselineIds: Set<string>, maxMs = 45000): Promise<string> {
   const deadline = Date.now() + maxMs
   let lastText = ''
-  let seenEventIds = new Set<string>()
   while (Date.now() < deadline) {
     await new Promise(r => setTimeout(r, 1500))
     const res = await fetch(`${BASE}/sessions/${sessionId}/events`, { headers: agentHeaders(key) })
     if (!res.ok) continue
     const data = await res.json()
     const events: any[] = data.data || []
-    const agentMsgs = events.filter((e: any) => e.type === 'agent.message' && !seenEventIds.has(e.id))
-    if (agentMsgs.length) {
-      // Only update if we have a new unseen message
-      const newMsg = agentMsgs[agentMsgs.length - 1]
-      seenEventIds.add(newMsg.id)
-      lastText = newMsg.content?.[0]?.text || lastText
+    // Only ever look at events that didn't already exist before this turn's message was sent.
+    const newEvents = events.filter((e: any) => !baselineIds.has(e.id))
+    const newAgentMsgs = newEvents.filter((e: any) => e.type === 'agent.message')
+    if (newAgentMsgs.length) {
+      lastText = newAgentMsgs[newAgentMsgs.length - 1].content?.[0]?.text || lastText
     }
-    if (events.some((e: any) => e.type === 'session.status_idle') && lastText) break
+    if (newEvents.some((e: any) => e.type === 'session.status_idle') && lastText) break
   }
   return lastText
 }
@@ -144,6 +159,7 @@ Deno.serve(async (req) => {
 
     let sessionId = incomingSessionId
     let messageText: string = lastUserMsg.content
+    let baselineIds = new Set<string>()
 
     // New conversation — create session and inject health context + response rules
     if (!sessionId) {
@@ -156,11 +172,16 @@ Deno.serve(async (req) => {
 [NOTES: Symptom "note" fields are raw speech-to-text and are sometimes garbled or mistranscribed. Treat them as a rough hint at most — never state as fact something a note merely implies (e.g. a posture, cause, or behavior). If a note is unclear, either ignore it or ask the user to clarify rather than asserting your own interpretation of it.]
 [POSSIBLE CAUSES: If the user mentions something that could plausibly explain one of their ACTIVE symptoms (an activity, exposure, posture, stress, etc.), say in your reply that it could be a contributing factor — don't just deflect to "ask your GP" for this part. Then silently append one [[note:<id>:<short note>]] marker per symptom it plausibly explains, using the exact id shown in [id: ...] in the Active symptoms context above. The note text should be under 12 words, phrased as an observation, e.g. "Possible cause: heavy lifting." Only use ids that appear in the context; never invent one.
 If instead the user is ASKING what might be causing a symptom (rather than volunteering a cause themselves) and nothing in the conversation or context suggests one, do NOT just refuse and defer to the GP. Ask 1-2 short, specific questions about recent changes that commonly explain new symptoms — new exercise/activity, diet changes, new products or medications, stress, sleep, posture/repetitive strain — so you have something concrete to note down before they see their GP. Once they answer, apply the rule above: acknowledge a plausible cause and note it, don't diagnose or name a medical condition.]
-[ACTION MARKERS: Silently append [[suggest:resolve]] if the user says a symptom is gone/better/resolved. Append [[suggest:log]] if they mention a new symptom they haven't logged. Append [[suggest:gp-report]] if you recommend the user contact their GP, doctor, or healthcare provider for any reason — this lets the app offer to generate a GP visit report, so use it whenever that suggestion appears, even alongside a [[note:...]] marker. Only one of resolve/log/gp-report per reply. Append nothing otherwise. Never explain these.]`
+[ACTION MARKERS: Silently append [[suggest:resolve]] if the user says a symptom is gone/better/resolved. Append [[suggest:log]] if they mention a new symptom they haven't logged. Append [[suggest:gp-report]] if you recommend the user contact their GP, doctor, or healthcare provider for any reason — this lets the app offer to generate a GP visit report, so use it whenever that suggestion appears, even alongside a [[note:...]] marker. Only one of resolve/log/gp-report per reply. Append nothing otherwise. Never explain these.]
+[ADD MEDICATION: If the user says they've been prescribed, started, or want to add a new medication, first briefly mention in plain language what it's commonly used for, then ask if they'd like day/time reminders for it. Once you have what's needed (or the user says they don't want reminders) AND the user has clearly confirmed adding it, append exactly one marker of the form [[add-med:{"name":"Allegra","dosage":"180mg","frequency":"Once daily","days":["Mon","Wed","Fri"],"times":["09:00"]}]] — omit dosage/frequency/days/times entirely if the user didn't state them, never guess a dosage. This only proposes the medication for the user to confirm in the app — after appending it, tell the user you've got it ready to add, don't claim it's already added. Never explain this marker.]`
+    } else {
+      // Continuing session — snapshot what's already there so pollResponse
+      // can tell this turn's new reply apart from a leftover previous one.
+      baselineIds = await getExistingEventIds(apiKey, sessionId)
     }
 
     await sendEvent(apiKey, sessionId, messageText)
-    let content = await pollResponse(apiKey, sessionId)
+    let content = await pollResponse(apiKey, sessionId, baselineIds)
 
     if (!content) {
       return new Response(
@@ -174,6 +195,13 @@ If instead the user is ASKING what might be causing a symptom (rather than volun
     const noteUpdates: { symptomId: string; text: string }[] = []
     content = content.replace(/\[\[note:([^:\]]+):([^\]]+)\]\]/gi, (_match, id, text) => {
       noteUpdates.push({ symptomId: String(id).trim(), text: String(text).trim() })
+      return ''
+    }).trim()
+
+    // Parse and strip a proposed medication addition, if present
+    let medicationProposal: any = null
+    content = content.replace(/\[\[add-med:(\{[^}]*\})\]\]/i, (_match, json) => {
+      try { medicationProposal = JSON.parse(json) } catch (_) { /* malformed — drop it */ }
       return ''
     }).trim()
 
@@ -191,7 +219,7 @@ If instead the user is ASKING what might be causing a symptom (rather than volun
     }
 
     return new Response(
-      JSON.stringify({ content, action, noteUpdates, agentSessionId: sessionId }),
+      JSON.stringify({ content, action, noteUpdates, medicationProposal, agentSessionId: sessionId }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (err) {

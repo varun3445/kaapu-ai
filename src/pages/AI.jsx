@@ -651,8 +651,11 @@ export default function AI() {
 
     recognition.onend = () => {
       setIsRecording(false)
-      if (silenceTimer) clearTimeout(silenceTimer)
-      if (continuousVoiceActive && !hasResult && !isProcessing) {
+      // Don't restart immediately if we got speech - let the silence timer fire
+      if (silenceTimer) {
+        // Keep the timer running - don't clear it
+      } else if (continuousVoiceActive && !hasResult && !isProcessing) {
+        // Only restart if we didn't get any speech at all
         setTimeout(() => {
           if (continuousVoiceActive) startListening()
         }, 300)

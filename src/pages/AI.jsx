@@ -635,6 +635,13 @@ export default function AI() {
       setIsRecording(false)
       if (silenceTimer) clearTimeout(silenceTimer)
       console.error('Speech recognition error:', event.error)
+      if (event.error === 'not-allowed') {
+        console.error('Microphone permission denied or blocked')
+      } else if (event.error === 'no-speech') {
+        console.error('No speech detected - try speaking louder')
+      } else if (event.error === 'network') {
+        console.error('Network error in speech recognition')
+      }
     }
 
     recognition.onend = () => {

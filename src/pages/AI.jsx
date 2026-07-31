@@ -689,6 +689,13 @@ export default function AI() {
   async function speakText(text) {
     if (!voiceMode || !supabase) return
     setIsSpeaking(true)
+
+    // Stop listening while audio is playing to prevent feedback loop
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+    }
+    setContinuousVoiceActive(false)
+
     try {
       const { data, error } = await supabase.functions.invoke('kaapu-tts', {
         body: { text },
@@ -722,6 +729,11 @@ export default function AI() {
 
         source.onended = () => {
           setIsSpeaking(false)
+          // Resume listening after audio finishes (only if user had it on)
+          setTimeout(() => {
+            setContinuousVoiceActive(true)
+            startListening()
+          }, 500)
         }
 
         source.start(0)

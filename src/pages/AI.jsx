@@ -692,9 +692,8 @@ export default function AI() {
       }
       // Convert base64 to blob
       const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { type: 'audio/mpeg' })
-
-      // Use Audio element for better Safari compatibility
       const audioUrl = URL.createObjectURL(audioBlob)
+
       if (audioRef.current) {
         audioRef.current.pause()
         audioRef.current.src = ''
@@ -703,6 +702,8 @@ export default function AI() {
       const audio = new Audio()
       audio.src = audioUrl
       audio.volume = 1.0
+      // Safari: must be played via user gesture context
+      audio.muted = false
 
       audio.onended = () => {
         setIsSpeaking(false)
@@ -717,8 +718,15 @@ export default function AI() {
 
       audioRef.current = audio
 
+      // Try to play with error handling for Safari autoplay restrictions
       try {
-        await audio.play()
+        const playPromise = audio.play()
+        if (playPromise !== undefined) {
+          playPromise.catch(playErr => {
+            console.error('Autoplay blocked:', playErr.name)
+            setIsSpeaking(false)
+          })
+        }
       } catch (playErr) {
         console.error('Play error:', playErr)
         setIsSpeaking(false)

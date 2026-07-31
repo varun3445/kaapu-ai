@@ -608,11 +608,12 @@ export default function AI() {
       if (transcript && event.isFinal) {
         hasResult = true
         setIsRecording(false)
-        // Send the message and don't auto-restart listening
-        // The message will complete and user can speak again
+        // Stop recognition immediately so onend fires and completes
+        recognition.stop()
+        // Send the message
         sendMessage(transcript)
       } else if (transcript) {
-        // Show interim results
+        // Show interim results while user is still speaking
         setInput(transcript)
       }
     }

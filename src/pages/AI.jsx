@@ -579,78 +579,79 @@ export default function AI() {
     setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 80)
   }
 
-  async function startListening() {
-    setIsRecording(true)
+  function startListening() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) {
+      alert('Voice input not supported on this device')
+      return
+    }
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.language = 'en-GB'
+    recognition.maxAlternatives = 1
+
     let hasResult = false
-    let audioChunks = []
-    let mediaStream = null
-    let mediaRecorder = null
+    let silenceTimer = null
+    let lastTranscript = ''
 
-    try {
-      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' })
+    recognition.onstart = () => {
+      setIsRecording(true)
+      hasResult = false
+      lastTranscript = ''
+      if (silenceTimer) clearTimeout(silenceTimer)
+    }
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.push(event.data)
-        }
+    recognition.onresult = (event) => {
+      let transcript = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript + ' '
       }
+      transcript = transcript.trim()
 
-      mediaRecorder.onstop = async () => {
-        mediaStream.getTracks().forEach(track => track.stop())
+      if (transcript && event.isFinal) {
+        hasResult = true
         setIsRecording(false)
+        if (silenceTimer) clearTimeout(silenceTimer)
+        recognition.stop()
+        sendMessage(transcript)
+      } else if (transcript) {
+        setInput(transcript)
+        lastTranscript = transcript
 
-        if (audioChunks.length === 0) {
-          if (continuousVoiceActive) {
-            setTimeout(() => startListening(), 300)
-          }
-          return
-        }
-
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
-        const reader = new FileReader()
-        reader.onloadend = async () => {
-          const base64Audio = reader.result.split(',')[1]
-          try {
-            const { data, error } = await supabase.functions.invoke('kaapu-stt', {
-              body: { audio: base64Audio, mimeType: 'audio/webm' }
-            })
-
-            if (error || !data?.transcript) {
-              console.error('STT error:', error)
-              if (continuousVoiceActive) {
-                setTimeout(() => startListening(), 300)
-              }
-              return
-            }
-
+        if (silenceTimer) clearTimeout(silenceTimer)
+        silenceTimer = setTimeout(() => {
+          if (lastTranscript && !hasResult) {
             hasResult = true
-            const transcript = data.transcript.trim()
-            if (transcript) {
-              sendMessage(transcript)
-            } else if (continuousVoiceActive) {
-              setTimeout(() => startListening(), 300)
-            }
-          } catch (err) {
-            console.error('STT invoke error:', err)
-            if (continuousVoiceActive) {
-              setTimeout(() => startListening(), 300)
-            }
+            setIsRecording(false)
+            recognition.stop()
+            sendMessage(lastTranscript)
           }
-        }
-        reader.readAsDataURL(audioBlob)
+        }, 1500)
       }
+    }
 
-      mediaRecorder.start()
+    recognition.onerror = (event) => {
+      setIsRecording(false)
+      if (silenceTimer) clearTimeout(silenceTimer)
+      console.error('Speech recognition error:', event.error)
+    }
 
-      // Stop recording after 10 seconds of speech
-      setTimeout(() => {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop()
-        }
-      }, 10000)
+    recognition.onend = () => {
+      setIsRecording(false)
+      if (silenceTimer) clearTimeout(silenceTimer)
+      if (continuousVoiceActive && !hasResult) {
+        setTimeout(() => {
+          if (continuousVoiceActive) startListening()
+        }, 300)
+      }
+    }
+
+    recognitionRef.current = recognition
+    try {
+      recognition.start()
     } catch (err) {
-      console.error('Microphone access error:', err)
+      console.error('Failed to start recognition:', err)
       setIsRecording(false)
     }
   }

@@ -179,7 +179,11 @@ const TOOLS = [
         dosage: { type: 'string', description: "e.g. '180mg'. Omit entirely if the caller didn't state one." },
         frequency: { type: 'string', description: "e.g. 'Once daily'. Omit if not stated." },
         days: { type: 'array', items: { type: 'string' }, description: 'Reminder days, e.g. ["Mon","Wed","Fri"]. Omit entirely if the caller doesn\'t want reminders.' },
-        times: { type: 'array', items: { type: 'string' }, description: 'Reminder times in 24h HH:MM, e.g. ["09:00"]. Omit entirely if the caller doesn\'t want reminders.' },
+        times: {
+          type: 'array',
+          items: { type: 'string', enum: ['09:30', '13:00', '18:00', '21:30'] },
+          description: 'Reminder slots — the app only supports these 4 fixed times, matching Morning (09:30), Noon (13:00), Evening (18:00), Night (21:30). If the caller gives a specific clock time instead of one of these words, snap it to whichever of the 4 is closest (e.g. "7" in the evening → 18:00 Evening, "8" at night → 21:30 Night) — never pass any other time string. Omit entirely if the caller doesn\'t want reminders.',
+        },
       },
       required: ['name'],
     },

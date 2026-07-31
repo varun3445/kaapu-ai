@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { X, ChevronDown, MapPin } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { SYMPTOM_CATEGORIES } from '../../data/mockData'
@@ -33,7 +34,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
     })
   }
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -251,6 +252,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
           </button>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   )
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Pill, Loader, Clock, Trash2 } from 'lucide-react'
@@ -6,7 +6,22 @@ import { useApp } from '../../context/AppContext'
 import useMedicationInfo from '../../hooks/useMedicationInfo'
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const FREQS = ['Once daily', 'Twice daily', 'Three times daily', 'As needed (PRN)', 'Weekly', 'Other']
+// value = what's actually stored (unchanged, so existing medications' saved
+// frequency still matches); label = what's shown on the button.
+const FREQS = [
+  { value: 'Once daily', label: 'Once' },
+  { value: 'Twice daily', label: 'Twice' },
+  { value: 'Three times daily', label: 'Three times' },
+  { value: 'As needed (PRN)', label: 'As needed (PRN)' },
+  { value: 'Weekly', label: 'Weekly' },
+  { value: 'Other', label: 'Other' },
+]
+// How many reminder times a frequency allows — picking "Once" and then a
+// second time doesn't make sense, so cap the selection to match.
+const FREQ_MAX_TIMES = { 'Once daily': 1, 'Twice daily': 2, 'Three times daily': 3, Weekly: 1 }
+function maxTimesFor(freq) {
+  return FREQ_MAX_TIMES[freq] ?? Infinity
+}
 const TIME_PRESETS = [
   { label: 'Morning', time: '09:30' },
   { label: 'Noon', time: '13:00' },
@@ -43,24 +58,26 @@ export default function EditMedicationModal({ medication, conditions, onClose, o
   const [customTimes, setCustomTimes] = useState(
     existingTimes.filter(t => !TIME_PRESETS.some(p => p.time === t))
   )
-  const [newTime,   setNewTime]   = useState('')
 
   const { info, loading } = useMedicationInfo(name)
+
+  // If frequency changes to something with a lower time cap (e.g. Twice -> Once),
+  // trim any selections that no longer fit rather than leaving them stuck selected.
+  useEffect(() => {
+    const max = maxTimesFor(frequency)
+    setTimePresets(prev => prev.length > max ? prev.slice(0, max) : prev)
+  }, [frequency])
 
   function toggleDay(d) {
     setDays(prev => prev.includes(d) ? prev.filter(x => x !== d) : [...prev, d])
   }
 
   function toggleTimePreset(preset) {
-    setTimePresets(prev =>
-      prev.includes(preset.label) ? prev.filter(p => p !== preset.label) : [...prev, preset.label]
-    )
-  }
-
-  function addCustomTime() {
-    if (!newTime || customTimes.includes(newTime)) return
-    setCustomTimes(prev => [...prev, newTime].sort())
-    setNewTime('')
+    setTimePresets(prev => {
+      if (prev.includes(preset.label)) return prev.filter(p => p !== preset.label)
+      if (prev.length >= maxTimesFor(frequency)) return prev // at cap — ignore until one is deselected
+      return [...prev, preset.label]
+    })
   }
 
   function removeCustomTime(t) {
@@ -159,15 +176,15 @@ export default function EditMedicationModal({ medication, conditions, onClose, o
             <div className="flex flex-wrap gap-2">
               {FREQS.map(f => (
                 <button
-                  key={f} type="button"
-                  onClick={() => setFrequency(f === frequency ? '' : f)}
+                  key={f.value} type="button"
+                  onClick={() => setFrequency(f.value === frequency ? '' : f.value)}
                   className={`text-xs font-semibold px-3 py-1.5 rounded-xl border-2 transition-all ${
-                    frequency === f
+                    frequency === f.value
                       ? 'border-primary-500 bg-primary-50 text-primary-700'
                       : 'border-gray-100 text-gray-400'
                   }`}
                 >
-                  {f}
+                  {f.label}
                 </button>
               ))}
             </div>
@@ -229,9 +246,11 @@ export default function EditMedicationModal({ medication, conditions, onClose, o
                   ))}
                 </div>
 
-                {/* Any time that doesn't match a preset (e.g. set via Kaapu AI) — kept, not dropped */}
+                {/* Legacy times that don't match one of the 4 presets — only possible from
+                    older data; not addable going forward, since the app (and the AI) only
+                    ever pick from Morning/Noon/Evening/Night, same as the Add flow. */}
                 {customTimes.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
+                  <div className="flex flex-wrap gap-2">
                     {customTimes.map(t => (
                       <span
                         key={t}
@@ -246,22 +265,6 @@ export default function EditMedicationModal({ medication, conditions, onClose, o
                     ))}
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <input
-                    type="time"
-                    value={newTime}
-                    onChange={e => setNewTime(e.target.value)}
-                    className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400"
-                  />
-                  <button
-                    type="button"
-                    onClick={addCustomTime}
-                    disabled={!newTime}
-                    className="px-4 py-2 rounded-xl bg-primary-50 border border-primary-200 text-primary-700 text-xs font-bold disabled:opacity-40"
-                  >
-                    Add other
-                  </button>
-                </div>
               </motion.div>
             )}
           </AnimatePresence>

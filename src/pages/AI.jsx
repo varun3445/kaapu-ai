@@ -844,22 +844,6 @@ export default function AI() {
           <AlertTriangle size={14} className="text-white" strokeWidth={2.5} />
           <span className="text-[11px] font-bold text-white">SOS</span>
         </motion.button>
-
-        {/* Voice Mode toggle */}
-        <button
-          onClick={() => {
-            if (voiceMode) stopVoiceCall()
-            setVoiceMode(!voiceMode)
-          }}
-          className={`flex items-center gap-1.5 px-3 h-9 rounded-xl border shadow-sm transition-colors ${
-            voiceMode
-              ? 'bg-primary-50 border-primary-200 text-primary-600'
-              : 'bg-white/70 border-gray-100 text-gray-500'
-          }`}
-        >
-          {voiceMode ? <Mic size={15} /> : <MicOff size={15} />}
-          <span className="text-[11px] font-semibold">{voiceMode ? 'Voice' : 'Text'}</span>
-        </button>
       </div>
 
       {/* ── Content: static empty state OR scrollable messages ── */}
@@ -974,6 +958,36 @@ export default function AI() {
           <p className="text-center text-[10px] text-gray-400 mb-1.5 max-w-lg mx-auto leading-tight">
             AI-generated response — always check with your GP before acting on it.
           </p>
+
+          {/* Text / Voice toggle — centered above the input */}
+          <div className="flex justify-center mb-2">
+            <div className="relative flex items-center bg-gray-100 rounded-full p-1 w-44">
+              <motion.div
+                className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] rounded-full bg-white shadow-sm"
+                animate={{ x: voiceMode ? 'calc(100% + 0.5rem)' : '0.25rem' }}
+                transition={{ type: 'spring', damping: 30, stiffness: 320 }}
+              />
+              <button
+                onClick={() => {
+                  if (voiceMode) { stopVoiceCall(); setVoiceMode(false) }
+                }}
+                className={`relative z-10 flex-1 flex items-center justify-center gap-1 py-1.5 rounded-full text-[11px] font-semibold transition-colors ${
+                  !voiceMode ? 'text-gray-800' : 'text-gray-400'
+                }`}
+              >
+                <MicOff size={13} /> Text
+              </button>
+              <button
+                onClick={() => { if (!voiceMode) setVoiceMode(true) }}
+                className={`relative z-10 flex-1 flex items-center justify-center gap-1 py-1.5 rounded-full text-[11px] font-semibold transition-colors ${
+                  voiceMode ? 'text-primary-600' : 'text-gray-400'
+                }`}
+              >
+                <Mic size={13} /> Voice
+              </button>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2 max-w-lg mx-auto">
             {voiceMode ? (
               /* Voice Mode */

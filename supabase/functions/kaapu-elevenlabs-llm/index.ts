@@ -100,48 +100,51 @@ async function fetchPersonContext(
 // a connection request was already sent and accepted (see Family.jsx), so
 // following it is safe — there's no way to reach anyone the caller hasn't
 // connected with, since we never accept a family/user id as external input.
-async function fetchHealthContext(userId: string): Promise<string> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL')
-  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!supabaseUrl || !serviceKey) return ''
+type SelfInfo = { familyId: string; memberId: string; name: string }
 
+async function fetchHealthContext(
+  userId: string,
+  supabaseUrl: string,
+  serviceKey: string,
+): Promise<{ context: string; self: SelfInfo | null }> {
   try {
     const users = await pgrest(`users?id=eq.${userId}&select=familyId`, supabaseUrl, serviceKey)
     const familyId = users[0]?.familyId
-    if (!familyId) return ''
+    if (!familyId) return { context: '', self: null }
 
     // Every member row visible to this caller — their own record, any local
     // (non-linked) dependents, and one placeholder row per connected account.
     const members = await pgrest(`members?familyId=eq.${familyId}&select=id,name,relationship,userId,linkedFamilyId`, supabaseUrl, serviceKey)
-    if (!members.length) return ''
+    if (!members.length) return { context: '', self: null }
 
-    const self = members.find((m: any) => m.userId === userId) || members.find((m: any) => m.relationship === 'Self')
-    if (!self) return ''
+    const selfMember = members.find((m: any) => m.userId === userId) || members.find((m: any) => m.relationship === 'Self')
+    if (!selfMember) return { context: '', self: null }
+    const self: SelfInfo = { familyId, memberId: selfMember.id, name: selfMember.name }
 
-    const blocks: string[] = []
-    blocks.push(await fetchPersonContext(`${self.name} (you, the caller)`, familyId, self.id, supabaseUrl, serviceKey))
-
-    for (const m of members) {
-      if (m.id === self.id) continue
-      if (m.linkedFamilyId) {
+    // Fetch the caller + every connected person in parallel — this was a
+    // sequential loop before, adding ~1 round trip's worth of latency per
+    // connected account on every single turn.
+    const others = members.filter((m: any) => m.id !== selfMember.id)
+    const blocks = await Promise.all([
+      fetchPersonContext(`${self.name} (you, the caller)`, familyId, self.memberId, supabaseUrl, serviceKey),
+      ...others.map((m: any) => m.linkedFamilyId
         // Connected external account — their own data lives under their own
         // family, keyed by their deterministic self-member id (see AppContext:
         // every account's own member record is created as `mem-${userId}`).
-        const theirMemberId = `mem-${m.userId}`
-        blocks.push(await fetchPersonContext(`${m.name} (${m.relationship})`, m.linkedFamilyId, theirMemberId, supabaseUrl, serviceKey))
-      } else {
+        ? fetchPersonContext(`${m.name} (${m.relationship})`, m.linkedFamilyId, `mem-${m.userId}`, supabaseUrl, serviceKey)
         // Local dependent living directly in the caller's own family.
-        blocks.push(await fetchPersonContext(`${m.name} (${m.relationship})`, familyId, m.id, supabaseUrl, serviceKey))
-      }
-    }
+        : fetchPersonContext(`${m.name} (${m.relationship})`, familyId, m.id, supabaseUrl, serviceKey)),
+    ])
 
-    return `[HEALTH CONTEXT — the caller and everyone they're connected to.
+    const context = `[HEALTH CONTEXT — the caller and everyone they're connected to.
 The caller may refer to a connected person by name OR by a relationship term (e.g. "how's dad", "how's my friend"). Relationship labels are broad (e.g. "Parent" covers both mum and dad) and don't always match how the caller talks about someone, so before giving any details about a connected person, confirm who you mean by name in the same reply — e.g. "You mean Srivathsan, right? He's..." — rather than answering silently as if there's no ambiguity. If more than one connected person could match what the caller said, ask which one they mean instead of guessing.]
 ${blocks.join('\n\n')}
 [/HEALTH CONTEXT]\n\n`
+
+    return { context, self }
   } catch (err) {
     console.error('fetchHealthContext error:', err)
-    return ''
+    return { context: '', self: null }
   }
 }
 
@@ -153,19 +156,6 @@ function sseChunk(id: string, model: string, delta: Record<string, unknown>, fin
     model,
     choices: [{ index: 0, delta, finish_reason: finishReason }],
   })}\n\n`
-}
-
-// Resolves the caller's own familyId + member record. Kept separate from
-// fetchHealthContext's own lookup — this one is only used for tool execution
-// (writing), not context building (reading).
-async function resolveSelf(userId: string, supabaseUrl: string, serviceKey: string) {
-  const users = await pgrest(`users?id=eq.${userId}&select=familyId`, supabaseUrl, serviceKey)
-  const familyId = users[0]?.familyId
-  if (!familyId) return null
-  const members = await pgrest(`members?familyId=eq.${familyId}&userId=eq.${userId}&select=id,name`, supabaseUrl, serviceKey)
-  const member = members[0]
-  if (!member) return null
-  return { familyId, memberId: member.id, name: member.name }
 }
 
 const TOOLS = [
@@ -191,16 +181,13 @@ const TOOLS = [
 ]
 
 async function addMedicationTool(
-  userId: string | null,
+  self: SelfInfo | null,
   input: { name?: string; dosage?: string; frequency?: string; days?: string[]; times?: string[] },
   supabaseUrl: string,
   serviceKey: string,
 ): Promise<string> {
-  if (!userId) return "I couldn't tell who's calling, so I can't add that — please try again."
-  if (!input.name) return "I didn't catch a medication name — please try again."
-
-  const self = await resolveSelf(userId, supabaseUrl, serviceKey)
   if (!self) return "I couldn't find your account to add that to — please try again in the app."
+  if (!input.name) return "I didn't catch a medication name — please try again."
 
   // Idempotency guard: ElevenLabs can invoke the same tool call more than
   // once for what the caller experiences as a single confirmation (this
@@ -376,10 +363,15 @@ Deno.serve(async (req) => {
     const incomingMessages: { role: string; content: string }[] = body.messages || []
     const wantsStream = body.stream !== false
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
     const systemMsg = incomingMessages.find(m => m.role === 'system')
     const userId = systemMsg ? extractUserId(systemMsg.content) : null
     const baseSystemText = systemMsg ? stripMarkers(systemMsg.content) : ''
-    const healthContext = userId ? await fetchHealthContext(userId) : ''
+    const { context: healthContext, self } = (userId && supabaseUrl && serviceKey)
+      ? await fetchHealthContext(userId, supabaseUrl, serviceKey)
+      : { context: '', self: null }
     const systemText = `${healthContext}${baseSystemText}`
 
     const conversationMessages = incomingMessages
@@ -396,8 +388,6 @@ Deno.serve(async (req) => {
     console.log('kaapu-elevenlabs-llm turn for userId:', userId, 'hasHealthContext:', !!healthContext)
 
     const completionId = `chatcmpl-${crypto.randomUUID()}`
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
     // Streaming path (what ElevenLabs actually sends). Text deltas from the
     // first Claude call forward straight through as they arrive, so the
@@ -423,7 +413,7 @@ Deno.serve(async (req) => {
           if (first.stopReason === 'tool_use' && first.toolUse) {
             let toolResultText = 'Tool not available.'
             if (first.toolUse.name === 'add_medication' && supabaseUrl && serviceKey) {
-              toolResultText = await addMedicationTool(userId, first.toolUse.input, supabaseUrl, serviceKey)
+              toolResultText = await addMedicationTool(self, first.toolUse.input, supabaseUrl, serviceKey)
             }
 
             turnMessages = [

@@ -7,6 +7,7 @@ import { useApp } from '../context/AppContext'
 import { supabase, supabaseReady } from '../supabase'
 import { useNavigate } from 'react-router-dom'
 import { generateGPReport } from '../utils/gpReport'
+import { Conversation } from '@elevenlabs/client'
 
 const MAX_HISTORY = 20
 
@@ -389,21 +390,18 @@ export default function AI() {
   const [notesSaved,           setNotesSaved]           = useState(false)
   const [actionDoneIdx,        setActionDoneIdx]        = useState(new Set()) // message indices whose action chip is done
   const [gpReportLoading,      setGpReportLoading]      = useState(false)
-  const [isRecording,          setIsRecording]          = useState(false)
+  const [isRecording,          setIsRecording]          = useState(false) // true while ElevenLabs mode === 'listening'
   const [voiceMode,            setVoiceMode]            = useState(false)
-  const [isSpeaking,           setIsSpeaking]           = useState(false)
-  const [continuousVoiceActive, setContinuousVoiceActive] = useState(false)
+  const [isSpeaking,           setIsSpeaking]           = useState(false) // true while ElevenLabs mode === 'speaking'
+  const [continuousVoiceActive, setContinuousVoiceActive] = useState(false) // true while a live ElevenLabs call is connected
   const currentSessionId  = useRef(null) // stable ID for the Supabase chat history row
-  const agentSessionIdRef = useRef(null) // stable ID for the Managed Agent session
+  const agentSessionIdRef = useRef(null) // stable ID for the Managed Agent session (text mode only)
   const bottomRef  = useRef(null)
   const scrollRef  = useRef(null)
   const inputRef   = useRef(null)
-  const recognitionRef = useRef(null)
-  const audioRef = useRef(null)
-  const isSpeakingRef = useRef(false)
+  const elevenlabsConversationRef = useRef(null) // active ElevenLabs Conversation instance, if a voice call is live
   const messagesRef = useRef(messages)
 
-  useEffect(() => { isSpeakingRef.current = isSpeaking }, [isSpeaking])
   useEffect(() => { messagesRef.current = messages }, [messages])
 
   const hasMessages = messages.length > 0
@@ -430,15 +428,11 @@ export default function AI() {
     } catch (_) {}
   }, [])
 
-  // Auto-start listening after AI finishes speaking (Siri-like behavior)
+  // Voice call teardown on unmount — don't leave a live ElevenLabs session
+  // running if the user navigates away from the AI page mid-call.
   useEffect(() => {
-    if (voiceMode && continuousVoiceActive && !isSpeaking && !isRecording && !loading) {
-      const timer = setTimeout(() => {
-        if (continuousVoiceActive) startListening()
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [isSpeaking, continuousVoiceActive, voiceMode, isRecording, loading])
+    return () => { elevenlabsConversationRef.current?.endSession() }
+  }, [])
 
   // Append AI-suggested cause notes onto the relevant symptom(s) so they show
   // up under "Notes" in the GP report — see [[note:id:text]] in kaapu-chat.
@@ -584,184 +578,72 @@ export default function AI() {
     setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 80)
   }
 
-  function startListening() {
-    // Guard: never start a second recognition session while one is already live.
-    // Overlapping sessions were the cause of the "Recording... / Speaking..."
-    // UI showing at the same time and messages getting sent twice.
-    if (recognitionRef.current || isSpeakingRef.current) return
-
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) {
-      alert('Voice input not supported on this device')
-      return
-    }
-    const recognition = new SpeechRecognition()
-    recognition.continuous = false
-    recognition.interimResults = true
-    recognition.language = 'en-GB'
-    recognition.maxAlternatives = 1
-
-    let hasResult = false
-    let silenceTimer = null
-    let lastTranscript = ''
-
-    const clearSilenceTimer = () => {
-      if (silenceTimer) {
-        clearTimeout(silenceTimer)
-        silenceTimer = null
-      }
-    }
-
-    // Only act on callbacks if this recognition instance is still the active one
-    const isCurrent = () => recognitionRef.current === recognition
-
-    recognition.onstart = () => {
-      if (!isCurrent()) return
-      setIsRecording(true)
-      hasResult = false
-      lastTranscript = ''
-      clearSilenceTimer()
-    }
-
-    recognition.onresult = (event) => {
-      if (!isCurrent() || hasResult) return
-      let transcript = ''
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript + ' '
-      }
-      transcript = transcript.trim()
-      if (!transcript) return
-
-      setInput(transcript)
-      lastTranscript = transcript
-
-      if (event.isFinal) {
-        hasResult = true
-        clearSilenceTimer()
-        setIsRecording(false)
-        recognitionRef.current = null
-        recognition.stop()
-        sendMessage(transcript)
+  // Voice is now a live call handled entirely by ElevenLabs' Conversational AI
+  // (WebSocket session: their ASR, our Claude-backed custom LLM, their TTS).
+  // There's exactly one Conversation instance per call — no more hand-rolled
+  // SpeechRecognition/TTS state machine, silence timers, or restart races.
+  async function startVoiceCall() {
+    if (elevenlabsConversationRef.current || !supabase) return
+    try {
+      const { data, error } = await supabase.functions.invoke('kaapu-elevenlabs-signed-url')
+      if (error || !data?.signed_url) {
+        console.error('Failed to get ElevenLabs signed URL:', error)
         return
       }
 
-      // Interim result — reset the silence timer; if speech doesn't
-      // continue for 2.5s, treat it as finished and send.
-      clearSilenceTimer()
-      silenceTimer = setTimeout(() => {
-        if (!isCurrent() || hasResult) return
-        hasResult = true
-        setIsRecording(false)
-        recognitionRef.current = null
-        recognition.stop()
-        sendMessage(lastTranscript)
-      }, 2500)
-    }
+      const conversation = await Conversation.startSession({
+        signedUrl: data.signed_url,
+        connectionType: 'websocket',
+        dynamicVariables: { user_id: userId || '' },
+        onConnect: () => {
+          setContinuousVoiceActive(true)
+        },
+        onDisconnect: () => {
+          setContinuousVoiceActive(false)
+          setIsRecording(false)
+          setIsSpeaking(false)
+          elevenlabsConversationRef.current = null
+        },
+        onModeChange: ({ mode }) => {
+          setIsSpeaking(mode === 'speaking')
+          setIsRecording(mode === 'listening')
+        },
+        onMessage: ({ message, role }) => {
+          if (!message) return
+          const msg = { role: role === 'user' ? 'user' : 'assistant', content: message, timestamp: Date.now() }
+          setMessages(prev => {
+            const next = [...prev, msg]
+            if (!currentSessionId.current) currentSessionId.current = `chat-${userId}-${Date.now()}`
+            upsertSession(currentSessionId.current, next, userId)
+            return next
+          })
+          setAtBottom(true)
+        },
+        onError: (message) => {
+          console.error('ElevenLabs conversation error:', message)
+        },
+      })
 
-    recognition.onerror = (event) => {
-      if (!isCurrent()) return
-      setIsRecording(false)
-      clearSilenceTimer()
-      recognitionRef.current = null
-      console.error('Speech recognition error:', event.error)
-    }
-
-    recognition.onend = () => {
-      if (!isCurrent()) return
-      setIsRecording(false)
-      clearSilenceTimer()
-      recognitionRef.current = null
-      // If recognition ended with no speech captured at all, give the
-      // user a fresh listening window (Siri-style continuous mode).
-      if (continuousVoiceActive && !hasResult) {
-        setTimeout(() => {
-          if (continuousVoiceActive) startListening()
-        }, 300)
-      }
-    }
-
-    recognitionRef.current = recognition
-    try {
-      recognition.start()
+      elevenlabsConversationRef.current = conversation
     } catch (err) {
-      console.error('Failed to start recognition:', err)
-      recognitionRef.current = null
-      setIsRecording(false)
+      console.error('Failed to start voice call:', err)
+      setContinuousVoiceActive(false)
     }
+  }
+
+  function stopVoiceCall() {
+    elevenlabsConversationRef.current?.endSession()
+    elevenlabsConversationRef.current = null
+    setContinuousVoiceActive(false)
+    setIsRecording(false)
+    setIsSpeaking(false)
   }
 
   function toggleVoiceInput() {
     if (continuousVoiceActive) {
-      // Stop continuous voice mode
-      setContinuousVoiceActive(false)
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
-        recognitionRef.current = null
-      }
-      setIsRecording(false)
+      stopVoiceCall()
     } else {
-      // Start continuous voice mode
-      setContinuousVoiceActive(true)
-      startListening()
-    }
-  }
-
-  async function speakText(text) {
-    if (!voiceMode || !supabase) return
-    setIsSpeaking(true)
-
-    // Stop listening while audio is playing to prevent feedback loop.
-    // Don't touch continuousVoiceActive here — the auto-restart useEffect
-    // (keyed on isSpeaking) is the single source of truth for resuming
-    // listening once playback ends. Flipping it here too caused two
-    // overlapping recognition sessions and doubled TTS playback.
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
-    }
-
-    try {
-      const { data, error } = await supabase.functions.invoke('kaapu-tts', {
-        body: { text },
-      })
-      if (error || !data?.audioContent) {
-        console.error('TTS error:', error)
-        setIsSpeaking(false)
-        return
-      }
-
-      // Convert base64 to audio buffer
-      const binaryString = atob(data.audioContent)
-      const bytes = new Uint8Array(binaryString.length)
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i)
-      }
-
-      // Use Web Audio API for reliable playback
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-
-      // Resume context if suspended (required for some browsers)
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume()
-      }
-
-      try {
-        const audioBuffer = await audioContext.decodeAudioData(bytes.buffer)
-        const source = audioContext.createBufferSource()
-        source.buffer = audioBuffer
-        source.connect(audioContext.destination)
-
-        source.onended = () => {
-          setIsSpeaking(false)
-        }
-
-        source.start(0)
-      } catch (decodeErr) {
-        console.error('Audio decode error:', decodeErr)
-        setIsSpeaking(false)
-      }
-    } catch (err) {
-      console.error('speakText error:', err)
-      setIsSpeaking(false)
+      startVoiceCall()
     }
   }
 
@@ -818,10 +700,6 @@ export default function AI() {
       const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
       const finalMessages = [...newMessages, aiMsg]
       setMessages(finalMessages)
-      // Speak response if in voice mode
-      if (voiceMode) {
-        setTimeout(() => speakText(data.content), 100)
-      }
       // Auto-save after every AI reply — upsert keeps it in the same session row
       if (!currentSessionId.current) currentSessionId.current = `chat-${userId}-${Date.now()}`
       upsertSession(currentSessionId.current, finalMessages, userId)
@@ -910,7 +788,10 @@ export default function AI() {
 
         {/* Voice Mode toggle */}
         <button
-          onClick={() => setVoiceMode(!voiceMode)}
+          onClick={() => {
+            if (voiceMode) stopVoiceCall()
+            setVoiceMode(!voiceMode)
+          }}
           className={`flex items-center gap-1.5 px-3 h-9 rounded-xl border shadow-sm transition-colors ${
             voiceMode
               ? 'bg-primary-50 border-primary-200 text-primary-600'
@@ -1034,26 +915,33 @@ export default function AI() {
                 <div className="flex-1 flex flex-col items-center justify-center">
                   <button
                     onClick={toggleVoiceInput}
-                    disabled={loading || isSpeaking}
                     className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
-                      isRecording
-                        ? 'bg-red-500 scale-110 shadow-lg'
-                        : isSpeaking
-                        ? 'bg-primary-400 animate-pulse'
+                      continuousVoiceActive
+                        ? isRecording
+                          ? 'bg-red-500 scale-110 shadow-lg'
+                          : isSpeaking
+                          ? 'bg-primary-400 animate-pulse'
+                          : 'bg-primary-500'
                         : 'bg-primary-600 hover:bg-primary-700'
-                    } disabled:opacity-60`}
+                    }`}
                   >
-                    {isRecording ? (
+                    {continuousVoiceActive ? (
                       <MicOff size={24} className="text-white" />
                     ) : (
                       <Mic size={24} className="text-white" />
                     )}
                   </button>
-                  {isRecording && (
-                    <p className="text-[10px] text-red-500 font-semibold mt-2 animate-pulse">Recording...</p>
+                  {!continuousVoiceActive && (
+                    <p className="text-[10px] text-gray-400 font-semibold mt-2">Tap to start talking</p>
                   )}
-                  {isSpeaking && (
+                  {continuousVoiceActive && isRecording && (
+                    <p className="text-[10px] text-red-500 font-semibold mt-2 animate-pulse">Listening...</p>
+                  )}
+                  {continuousVoiceActive && isSpeaking && (
                     <p className="text-[10px] text-primary-500 font-semibold mt-2">Speaking...</p>
+                  )}
+                  {continuousVoiceActive && !isRecording && !isSpeaking && (
+                    <p className="text-[10px] text-gray-400 font-semibold mt-2">Connected — tap to hang up</p>
                   )}
                 </div>
               </>

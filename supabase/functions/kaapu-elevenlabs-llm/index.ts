@@ -49,10 +49,57 @@ async function pgrest(path: string, url: string, serviceKey: string) {
   return res.json()
 }
 
-// Looks up the caller's own health data directly from Supabase (service role)
-// since, unlike kaapu-chat, this webhook is called by ElevenLabs — there's no
-// frontend request to attach context to. Mirrors kaapu-chat's
-// buildHealthContext() shape so the voice agent and text chat stay consistent.
+// Builds one person's context block (name/relationship + conditions,
+// medications, active symptoms, recent history) from a given familyId +
+// memberId. Used for both the caller and each connected account below.
+async function fetchPersonContext(
+  label: string,
+  familyId: string,
+  memberId: string,
+  supabaseUrl: string,
+  serviceKey: string,
+): Promise<string> {
+  const [conditions, medications, symptoms] = await Promise.all([
+    pgrest(`conditions?familyId=eq.${familyId}&memberId=eq.${memberId}&select=name`, supabaseUrl, serviceKey),
+    pgrest(`medications?familyId=eq.${familyId}&memberId=eq.${memberId}&select=name`, supabaseUrl, serviceKey),
+    pgrest(`symptoms?familyId=eq.${familyId}&memberId=eq.${memberId}&select=*`, supabaseUrl, serviceKey),
+  ])
+
+  const parts: string[] = []
+  if (conditions.length) parts.push(`Conditions: ${conditions.map((c: any) => c.name).join(', ')}`)
+  if (medications.length) parts.push(`Medications: ${medications.map((m: any) => m.name).join(', ')}`)
+
+  const active = symptoms.filter((s: any) => !s.resolved)
+  if (active.length) {
+    const list = active
+      .slice(0, 10)
+      .map((s: any) => `${s.category} at ${s.bodyRegion || s.bodyLabel} (severity: ${severityLabel(s.severity)}${s.duration ? ', ' + s.duration : ''})`)
+      .join('; ')
+    parts.push(`Active symptoms: ${list}`)
+  }
+
+  const ninetyDaysAgo = Date.now() - 90 * 24 * 3600000
+  const history = symptoms
+    .filter((s: any) => new Date(s.timestamp).getTime() > ninetyDaysAgo)
+    .slice(0, 40)
+    .map((s: any) => {
+      const status = s.resolved ? `[resolved]` : '[active]'
+      return `${s.timestamp?.slice(0, 10)}: ${s.category} — severity: ${severityLabel(s.severity)} ${status}`
+    })
+    .join('\n')
+  if (history) parts.push(`Symptom history:\n${history}`)
+
+  if (!parts.length) return `${label}: no health data logged.`
+  return `${label}:\n${parts.join('\n')}`
+}
+
+// Looks up the caller's own health data PLUS every account they've actually
+// connected to (family members, linked friends, etc.) — never any other
+// account. The only source of "who am I connected to" is the caller's own
+// `members` rows; a `linkedFamilyId` on one of those rows only exists because
+// a connection request was already sent and accepted (see Family.jsx), so
+// following it is safe — there's no way to reach anyone the caller hasn't
+// connected with, since we never accept a family/user id as external input.
 async function fetchHealthContext(userId: string): Promise<string> {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -63,42 +110,32 @@ async function fetchHealthContext(userId: string): Promise<string> {
     const familyId = users[0]?.familyId
     if (!familyId) return ''
 
-    const members = await pgrest(`members?familyId=eq.${familyId}&userId=eq.${userId}&select=id,name`, supabaseUrl, serviceKey)
-    const member = members[0]
-    if (!member) return ''
+    // Every member row visible to this caller — their own record, any local
+    // (non-linked) dependents, and one placeholder row per connected account.
+    const members = await pgrest(`members?familyId=eq.${familyId}&select=id,name,relationship,userId,linkedFamilyId`, supabaseUrl, serviceKey)
+    if (!members.length) return ''
 
-    const [conditions, medications, symptoms] = await Promise.all([
-      pgrest(`conditions?familyId=eq.${familyId}&memberId=eq.${member.id}&select=name`, supabaseUrl, serviceKey),
-      pgrest(`medications?familyId=eq.${familyId}&memberId=eq.${member.id}&select=name`, supabaseUrl, serviceKey),
-      pgrest(`symptoms?familyId=eq.${familyId}&memberId=eq.${member.id}&select=*`, supabaseUrl, serviceKey),
-    ])
+    const self = members.find((m: any) => m.userId === userId) || members.find((m: any) => m.relationship === 'Self')
+    if (!self) return ''
 
-    const parts: string[] = [`User: ${member.name}`]
-    if (conditions.length) parts.push(`Conditions: ${conditions.map((c: any) => c.name).join(', ')}`)
-    if (medications.length) parts.push(`Medications: ${medications.map((m: any) => m.name).join(', ')}`)
+    const blocks: string[] = []
+    blocks.push(await fetchPersonContext(`${self.name} (you, the caller)`, familyId, self.id, supabaseUrl, serviceKey))
 
-    const active = symptoms.filter((s: any) => !s.resolved)
-    if (active.length) {
-      const list = active
-        .slice(0, 10)
-        .map((s: any) => `${s.category} at ${s.bodyRegion || s.bodyLabel} (severity: ${severityLabel(s.severity)}${s.duration ? ', ' + s.duration : ''})`)
-        .join('; ')
-      parts.push(`Active symptoms: ${list}`)
+    for (const m of members) {
+      if (m.id === self.id) continue
+      if (m.linkedFamilyId) {
+        // Connected external account — their own data lives under their own
+        // family, keyed by their deterministic self-member id (see AppContext:
+        // every account's own member record is created as `mem-${userId}`).
+        const theirMemberId = `mem-${m.userId}`
+        blocks.push(await fetchPersonContext(`${m.name} (${m.relationship})`, m.linkedFamilyId, theirMemberId, supabaseUrl, serviceKey))
+      } else {
+        // Local dependent living directly in the caller's own family.
+        blocks.push(await fetchPersonContext(`${m.name} (${m.relationship})`, familyId, m.id, supabaseUrl, serviceKey))
+      }
     }
 
-    const ninetyDaysAgo = Date.now() - 90 * 24 * 3600000
-    const history = symptoms
-      .filter((s: any) => new Date(s.timestamp).getTime() > ninetyDaysAgo)
-      .slice(0, 40)
-      .map((s: any) => {
-        const status = s.resolved ? `[resolved]` : '[active]'
-        return `${s.timestamp?.slice(0, 10)}: ${s.category} — severity: ${severityLabel(s.severity)} ${status}`
-      })
-      .join('\n')
-    if (history) parts.push(`Symptom history:\n${history}`)
-
-    if (parts.length <= 1) return ''
-    return `[HEALTH CONTEXT]\n${parts.join('\n')}\n[/HEALTH CONTEXT]\n\n`
+    return `[HEALTH CONTEXT — the caller and everyone they're connected to. Only discuss a connected person's info if the caller clearly asks about them by name or relationship (e.g. "how's dad").]\n${blocks.join('\n\n')}\n[/HEALTH CONTEXT]\n\n`
   } catch (err) {
     console.error('fetchHealthContext error:', err)
     return ''

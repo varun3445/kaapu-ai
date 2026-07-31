@@ -591,10 +591,16 @@ export default function AI() {
         return
       }
 
+      const firstName = (currentUser?.name || '').trim().split(/\s+/)[0]
       const conversation = await Conversation.startSession({
         signedUrl: data.signed_url,
         connectionType: 'websocket',
         dynamicVariables: { user_id: userId || '' },
+        overrides: {
+          agent: {
+            firstMessage: firstName ? `Hey ${firstName}, how can I help?` : undefined,
+          },
+        },
         onConnect: () => {
           setContinuousVoiceActive(true)
         },

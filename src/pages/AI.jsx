@@ -613,19 +613,13 @@ export default function AI() {
         hasResult = true
         setIsRecording(false)
         if (silenceTimer) clearTimeout(silenceTimer)
-        // Stop recognition immediately so onend fires and completes
         recognition.stop()
-        // Send the message
         sendMessage(transcript)
       } else if (transcript) {
-        // Show interim results while user is still speaking
         setInput(transcript)
         lastTranscript = transcript
 
-        // Clear existing silence timer
         if (silenceTimer) clearTimeout(silenceTimer)
-
-        // Set a new silence timer - if no new results for 1.5s, assume speech ended and send
         silenceTimer = setTimeout(() => {
           if (lastTranscript && !hasResult) {
             hasResult = true
@@ -646,8 +640,6 @@ export default function AI() {
     recognition.onend = () => {
       setIsRecording(false)
       if (silenceTimer) clearTimeout(silenceTimer)
-      // Auto-restart if in continuous mode and user didn't speak
-      // If user spoke, let the message send without interruption
       if (continuousVoiceActive && !hasResult) {
         setTimeout(() => {
           if (continuousVoiceActive) startListening()

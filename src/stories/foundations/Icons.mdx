@@ -1,0 +1,45 @@
+import { Meta } from '@storybook/blocks'
+import { Home, BookOpen, Sparkles, Users, Bell, X, Plus, Trash2, Search, Download, ExternalLink, AlertTriangle, CheckCircle, ShieldCheck, ShieldAlert, Loader, Clock, Heart, Pill, Activity, TrendingUp, TrendingDown, Phone, MapPin, User, UserCheck, UserX, Settings, FileText, ChevronDown, ChevronUp, Filter, MoreHorizontal } from 'lucide-react'
+
+<Meta title="Foundations/Icons" />
+
+export const sets = [
+  { label:'Navigation',  icons:[{n:'Home',Home},{n:'BookOpen',BookOpen},{n:'Sparkles',Sparkles},{n:'Users',Users}] },
+  { label:'Actions',     icons:[{n:'Bell',Bell},{n:'X',X},{n:'Plus',Plus},{n:'Trash2',Trash2},{n:'Search',Search},{n:'Download',Download},{n:'ExternalLink',ExternalLink},{n:'Filter',Filter},{n:'MoreHorizontal',MoreHorizontal}] },
+  { label:'Status',      icons:[{n:'AlertTriangle',AlertTriangle},{n:'CheckCircle',CheckCircle},{n:'ShieldCheck',ShieldCheck},{n:'ShieldAlert',ShieldAlert},{n:'Loader',Loader},{n:'Clock',Clock}] },
+  { label:'Health',      icons:[{n:'Heart',Heart},{n:'Pill',Pill},{n:'Activity',Activity},{n:'TrendingUp',TrendingUp},{n:'TrendingDown',TrendingDown}] },
+  { label:'People',      icons:[{n:'User',User},{n:'UserCheck',UserCheck},{n:'UserX',UserX},{n:'Phone',Phone},{n:'MapPin',MapPin}] },
+  { label:'Misc',        icons:[{n:'Settings',Settings},{n:'FileText',FileText},{n:'ChevronDown',ChevronDown},{n:'ChevronUp',ChevronUp}] },
+]
+
+export function Label({ children }) {
+  return <p style={{ fontSize:11, fontWeight:800, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.1em', margin:'28px 0 10px' }}>{children}</p>
+}
+
+# Icons
+
+Lucide React — all icons imported across the app. Active stroke: **2.5** · Inactive stroke: **1.8**
+
+| State | Size | Stroke |
+|---|---|---|
+| Active (selected tab) | 19px | 2.5 |
+| Inactive nav | 19px | 1.8 |
+| Action buttons | 16–18px | 2.0 |
+| In-card icons | 12–14px | 2.0 |
+
+{sets.map(({ label, icons }) => (
+  <div key={label}>
+    <Label>{label}</Label>
+    <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+      {icons.map(({ n, ...rest }) => {
+        const Icon = Object.values(rest)[0]
+        return (
+          <div key={n} style={{ background:'rgba(255,255,255,0.68)', border:'0.75px solid rgba(0,0,0,0.09)', borderRadius:12, padding:'12px 14px', display:'flex', flexDirection:'column', alignItems:'center', gap:6, minWidth:72 }}>
+            <Icon size={20} strokeWidth={1.8} color="#1f2937" />
+            <p style={{ fontSize:9, color:'#9ca3af', margin:0, textAlign:'center' }}>{n}</p>
+          </div>
+        )
+      })}
+    </div>
+  </div>
+))}

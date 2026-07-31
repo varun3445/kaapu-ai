@@ -1,0 +1,70 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Foundations/Glassmorphism" />
+
+export const tokens = [
+  {
+    cls: 'glass',
+    usage: 'Header, nav panels',
+    bg: 'rgba(238, 234, 230, 0.88)',
+    blur: 'blur(16px) saturate(1.6)',
+    border: '0.75px solid rgba(0,0,0,0.07)',
+  },
+  {
+    cls: 'glass-card',
+    usage: 'Main content cards',
+    bg: 'rgba(255, 255, 255, 0.68)',
+    blur: 'blur(12px) saturate(1.4)',
+    border: '0.75px solid rgba(0,0,0,0.09)',
+  },
+  {
+    cls: 'glass-elevated',
+    usage: 'Modals, bottom sheets',
+    bg: 'rgba(255, 255, 255, 0.92)',
+    blur: 'blur(20px) saturate(1.6)',
+    border: '0.75px solid rgba(0,0,0,0.09)',
+  },
+  {
+    cls: 'bottom-nav',
+    usage: 'Bottom navigation bar',
+    bg: 'rgba(238, 234, 230, 0.92)',
+    blur: 'blur(16px) saturate(1.6)',
+    border: '0.75px solid rgba(0,0,0,0.07) (top)',
+  },
+]
+
+export function Card({ cls, usage, bg, blur, border }) {
+  return (
+    <div style={{ borderRadius:16, overflow:'hidden', border:'0.75px solid rgba(0,0,0,0.09)' }}>
+      <div className={cls} style={{ padding:'28px 24px', display:'flex', alignItems:'center', justifyContent:'center', minHeight:90 }}>
+        <p style={{ fontFamily:'Figtree, system-ui', fontSize:13, fontWeight:700, color:'#1f2937', margin:0 }}>.{cls}</p>
+      </div>
+      <div style={{ background:'white', padding:'14px 18px' }}>
+        <p style={{ fontSize:11, fontWeight:700, color:'#4f46e5', margin:'0 0 6px' }}>.{cls}</p>
+        <p style={{ fontSize:10, color:'#6b7280', margin:'0 0 4px' }}>{usage}</p>
+        <code style={{ fontSize:9, color:'#6366f1', display:'block', lineHeight:1.7 }}>
+          background: {bg}<br/>
+          backdrop-filter: {blur}<br/>
+          border: {border}
+        </code>
+      </div>
+    </div>
+  )
+}
+
+# Glassmorphism
+
+Exact CSS from `src/index.css` — live rendered with real `backdrop-filter`. Stack glass layers on top of the `#eeeae6` surface background for the effect to work.
+
+<div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(280px,1fr))', gap:16, margin:'24px 0' }}>
+  {tokens.map(t => <Card key={t.cls} {...t} />)}
+</div>
+
+## Rules
+
+| ✅ Do | ❌ Don't |
+|---|---|
+| Stack glass on the `#eeeae6` surface | Use glass on solid white (no effect) |
+| Use `.glass-card` for content panels | Nest `.glass-elevated` inside `.glass-card` |
+| Use `.glass-elevated` for modals only | Use light text on `.glass` (low contrast) |
+| Keep text `#1f2937` for contrast | Add extra box-shadow on top of `.glass-card` |

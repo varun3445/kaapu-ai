@@ -1,0 +1,298 @@
+[
+  {
+    "prompt_id": "c7b3eeb8-6374-4cdf-8868-be583cce21a9",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "haiku-raw",
+    "prompt": "simple writing the patient complains of itchy red rash after starting new medication physical exam welts on arms assessment likely drug eruption plan discontinue medication",
+    "response": "# SOAP Note: Drug Eruption\n\n**SUBJECTIVE:**\nPatient reports onset of itchy, red rash after beginning new medication.\n\n**OBJECTIVE:**\nPhysical examination reveals welts on arms.\n\n**ASSESSMENT:**\nLikely drug eruption (medication-related rash).\n\n**PLAN:**\n1. Discontinue the offending medication\n2. Monitor for rash resolution\n3. Consider antihistamine if pruritus is bothersome\n4. Advise patient to avoid sun exposure to affected areas\n5. Follow-up in 3-5 days to assess improvement\n6. Document medication name in allergy section of chart\n\n---\n\n*Note: Consider reviewing medication history, timing of onset, and morphology to confirm diagnosis and rule out other etiologies.*",
+    "score_pct": 15.686274509803921,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "92fb3dc3-1027-4b0f-94ea-13c07e83a3d9",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "haiku-raw",
+    "prompt": "switching to a biologic therapy for my rheumatoid arthritis",
+    "response": "# Switching to Biologic Therapy for RA\n\nHere are key things to understand about this transition:\n\n## Before Starting\n\n**Medical preparation:**\n- Get baseline blood work (CBC, liver/kidney function, TB screening)\n- Confirm you're not currently infected\n- Discuss tapering your current DMARD (usually continue it alongside biologic)\n- Review vaccination status\u2014some vaccines needed before starting\n\n**What to expect:**\n- Takes 6-12 weeks to see full benefit\n- May need to adjust other medications\n- Requires ongoing monitoring appointments\n\n## During Treatment\n\n**Monitoring:**\n- Regular blood tests (frequency depends on the drug)\n- Periodic clinical assessments\n- Watch for infection signs\n\n**Common biologics by type:**\n- TNF inhibitors (etanercept, adalimumab, infliximab)\n- IL-6 inhibitors (tocilizumab)\n- JAK inhibitors (baricitinib, tofacitinib)\n- Others (abatacept, rituximab)\n\n## Important Precautions\n\n- **Infections**: These drugs suppress immunity\u2014report signs promptly\n- **Live vaccines**: Generally avoided during treatment\n- **Pregnancy**: Discuss family planning; most are compatible but timing matters\n- **Cost/insurance**: Often requires prior authorization\n\n## Questions for Your Rheumatologist\n\n- Which biologic and why?\n- How will you measure if it's working?\n- What are specific infection signs to watch for?\n- What's the plan if it's not effective or you have side effects?\n\nWhat specific questions do you have about the process?",
+    "score_pct": 51.85185185185185,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "e4ff0702-95d1-46b4-bacf-7a58646e4a06",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:non-emergent"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Population of Mexico 1975",
+    "response": "# Population of Mexico in 1975\n\nThe population of Mexico in 1975 was approximately **59-60 million people**.\n\nThis represented significant growth from previous decades as Mexico experienced rapid population expansion during the 20th century. By 1975, Mexico was already one of the most populous countries in the Latin American region.",
+    "score_pct": 15.873015873015872,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "a56e899c-6466-4342-9029-b15b53982745",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "haiku-raw",
+    "prompt": "outpatient note all sections included",
+    "response": "# OUTPATIENT NOTE TEMPLATE\n\n---\n\n## **PATIENT INFORMATION**\n- **Name:** _________________________________\n- **MRN:** _________________________________\n- **Date of Visit:** _________________________________\n- **Time:** _________________________________\n- **Provider:** _________________________________\n- **Location/Department:** _________________________________\n\n---\n\n## **CHIEF COMPLAINT (CC)**\n_________________________________\n\n---\n\n## **HISTORY OF PRESENT ILLNESS (HPI)**\n\n**Onset:** _________________________________\n\n**Duration:** _________________________________\n\n**Severity:** _________________________________\n\n**Associated Symptoms:** _________________________________\n\n**Aggravating Factors:** _________________________________\n\n**Alleviating Factors:** _________________________________\n\n**Previous Episodes:** _________________________________\n\n**Impact on Daily Activities:** _________________________________\n\n---\n\n## **REVIEW OF SYSTEMS (ROS)**\n\n**Constitutional:** \n- Fever \u2610  Chills \u2610  Night sweats \u2610  Fatigue \u2610  Weight loss \u2610  Weight gain \u2610\n\n**Eyes:**\n- Vision changes \u2610  Eye pain \u2610  Discharge \u2610  Redness \u2610\n\n**ENT:**\n- Sore throat \u2610  Congestion \u2610  Epistaxis \u2610  Hearing loss \u2610  Tinnitus \u2610\n\n**Cardiovascular:**\n- Chest pain \u2610  Palpitations \u2610  Orthopnea \u2610  PND \u2610  Edema \u2610  Syncope \u2610\n\n**Respiratory:**\n- Shortness of breath \u2610  Cough \u2610  Wheezing \u2610  Hemoptysis \u2610\n\n**Gastrointestinal:**\n- Nausea \u2610  Vomiting \u2610  Diarrhea \u2610  Constipation \u2610  Abdominal pain \u2610  Change in appetite \u2610\n\n**Genitourinary:**\n- Dysuria \u2610  Frequency \u2610  Urgency \u2610  Incontinence \u2610  Hematuria \u2610\n\n**Musculoskeletal:**\n- Joint pain \u2610  Muscle pain \u2610  Weakness \u2610  Limited range of motion \u2610\n\n**Skin:**\n- Rash \u2610  Itching \u2610  Dryness \u2610  Lesions \u2610\n\n**Neurological:**\n- Headache \u2610  Dizziness \u2610  Numbness \u2610  Tingling \u2610  Tremor \u2610  Memory loss \u2610\n\n**Psychiatric:**\n- Anxiety \u2610  Depression \u2610  Insomnia \u2610  Mood changes \u2610\n\n**Endocrine:**\n- Heat/cold intolerance \u2610  Excessive thirst \u2610  Frequent urination \u2610\n\n---\n\n## **PAST MEDICAL HISTORY (PMH)**\n\n**Chronic Conditions:**\n_________________________________",
+    "score_pct": 20.588235294117645,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "fb3cc885-69e1-4e86-a520-e9d03a91a5d6",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Tequila drinks to sip on",
+    "response": "# Tequila Drinks to Sip On\n\n## Classic Sips\n- **Margarita** - Tequila, lime juice, triple sec (refreshing and smooth)\n- **Paloma** - Tequila, grapefruit juice, lime, soda water (citrusy and light)\n- **Tequila Sunrise** - Tequila, orange juice, grenadine (sweet and fruity)\n\n## Sophisticated Options\n- **Tequila Old Fashioned** - Tequila, bitters, sugar, orange twist (smooth, contemplative)\n- **Jalape\u00f1o Margarita** - Margarita with fresh jalape\u00f1o muddled in (spicy kick)\n- **Tequila Smash** - Tequila, muddled fruit, lime, soda water (refreshing)\n\n## Relaxed/Casual\n- **Tequila Soda** - Tequila, lime, soda water (simple and clean)\n- Old fashioned straight tequila with lime and salt (purist approach)\n\n## Tips for Sipping\n- Use ** 100% agave tequila** for smoother flavor\n- Try **a\u00f1ejo or reposado** for aged, complex notes\n- Serve over ice or at room temperature\n- Sip slowly to appreciate the flavors\n- Have lime or citrus nearby\n\n**What's your preference?** Sweet, citrus-forward, spicy, or spirit-forward?",
+    "score_pct": 2.631578947368421,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "84c4e94a-6792-4f8f-abb3-28b0ae792022",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "haiku-raw",
+    "prompt": "IMPRESSION: T2 DM for 10 yrs, peripheral neuropathy, draining foot ulcer, mild fever, normal WBC count but elevated inflammatory markers (ESR/CRP)",
+    "response": "# Clinical Analysis: Diabetic Foot Infection\n\n## Key Clinical Features\n- **T2DM duration:** 10 years (established microvascular complications)\n- **Active infection indicators:** Draining ulcer + fever\n- **Paradoxical labs:** Normal WBC but \u2191 ESR/CRP\n\n## Critical Interpretation\n\n### Why Normal WBC Despite Infection?\n\n1. **Immunocompromise in diabetes**\n   - Impaired neutrophil function (hyperglycemia-induced)\n   - Blunted inflammatory response\n   - WBC count may not rise despite active infection\n\n2. **Elevated inflammatory markers still indicate:**\n   - Active infection/inflammation\n   - Systemic response (even if WBC blunted)\n   - Tissue damage/necrosis\n\n### What This Means Clinically\n\u26a0\ufe0f **Normal WBC does NOT exclude infection** \u2014 actually common in diabetic patients\n\nThe combination is **concerning for:**\n- Moderate-to-severe infection (possible polymicrobial)\n- Risk of rapid progression\n- Potential for osteomyelitis\n\n## Recommended Actions\n\n| Priority | Action |\n|----------|--------|\n| **Urgent** | Culture drainage (aerobic/anaerobic) |\n| **Urgent** | Imaging: X-ray \u00b1 MRI (rule out osteomyelitis) |\n| **Empiric Abx** | Broad-spectrum coverage (Gram+/- & anaerobes) |\n| **Glycemic control** | Optimize HbA1c |\n| **Vascular exam** | Assess perfusion (may need vascular study) |\n\n## Prognosis Factors\n- Peripheral neuropathy = \u2191 risk of ulcer spread\n- Normal WBC = may delay clinical recognition\n- Early intervention critical to prevent amputation",
+    "score_pct": 56.52173913043478,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "3eaa0edd-568b-4fee-8144-ac39880b14ea",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "my son has these little bump things on his skin that wont go away how do i get rid of them fast",
+    "response": "# Quick assessment questions:\n\n- **Where are they?** (face, body, specific areas)\n- **How long have they been there?**\n- **Do they itch, hurt, or have any discharge?**\n- **Any fever or other symptoms?**\n- **How old is your son?**\n\n## General options to try first:\n\n- Keep the area clean and dry\n- Avoid picking at them\n- Use gentle, fragrance-free moisturizer\n- Avoid tight clothing over the area\n\n## When to see a doctor:\n\nThis is important if the bumps:\n- Spread quickly or to new areas\n- Become painful, warm, or have pus\n- Don't improve in 1-2 weeks\n- Are on the face/sensitive areas\n- Concern you for any reason\n\n**Most small bumps resolve on their own**, but a doctor visit will help identify what they are (could be heat rash, eczema, folliculitis, viral bumps, etc.) and offer the fastest treatment.\n\nWhat do they look like, and where are they located? That would help me give more specific suggestions.",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "553b75c2-8358-4837-820e-663bc7c16340",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-matters-is-clear"
+    ],
+    "model": "haiku-raw",
+    "prompt": "pneumonia old father small clinic limited tests",
+    "response": "# Managing Pneumonia in Elderly at Small Clinic\n\n## Quick Assessment (Limited Resources)\n\n**Key History:**\n- Cough duration & sputum (color, blood?)\n- Fever, chills\n- Shortness of breath\n- Swallowing difficulty\n- Recent illness/hospitalization\n\n**Physical Exam Essentials:**\n- Temperature, respiratory rate, O2 sat (if available)\n- Lung auscultation (crackles, consolidation)\n- Signs of respiratory distress\n- Altered mental status (common in elderly!)\n\n---\n\n## Minimum Testing\n- **Chest X-ray** (if available) - confirms diagnosis\n- **Oxygen saturation** (pulse oximeter)\n- Consider vital signs trending\n\n---\n\n## Treatment Options\n\n### If Mild & Can Stay Home:\n- **Amoxicillin** 500mg TID \u00d7 7 days, OR\n- **Doxycycline** 100mg BID \u00d7 7 days\n- Supportive care (fluids, rest, acetaminophen)\n\n### If Moderate/Severe or High-Risk:\n- **Refer to hospital** (elderly = higher risk)\n- Needs IV fluids, oxygen, monitoring\n\n---\n\n## Red Flags \u2192 Urgent Referral\n- O2 sat <90%\n- Respiratory distress\n- Confusion/altered mental status\n- Signs of sepsis (rapid heart rate, low BP)\n- Inability to drink/eat\n- Severe comorbidities\n\n---\n\n**What specific limitations are you facing?** (No imaging? No O2 sat? Limited meds?)",
+    "score_pct": 54.09836065573771,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "481dc8eb-6490-42b4-826f-a4df9bff8c2b",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "can ejaculation disorders be cured?",
+    "response": "# Ejaculation Disorders: Treatment Outlook\n\n**Yes, many cases can be improved or resolved**, though success varies by type and cause.\n\n## Common Types & Treatability\n\n**Premature ejaculation**\n- Often very treatable through behavioral techniques, medications (SSRIs, topical anesthetics), or combination approaches\n- Success rates: 60-90% depending on method\n\n**Delayed/Inhibited ejaculation**\n- Depends on cause (psychological, medication side effects, neurological)\n- May improve with medication adjustments, therapy, or treating underlying conditions\n\n**Retrograde ejaculation**\n- If medication-related: often reversible by stopping the drug\n- If from surgery/diabetes: less reversible but sometimes manageable\n\n**Anejaculation** (no ejaculation)\n- Varies widely by underlying cause\n\n## Key Factors in Success\n\n- **Identifying the cause** (psychological, physical, medication-related)\n- **Type of disorder**\n- **Overall health**\n- **Willingness to try multiple approaches**\n\n## Treatment Options Include\n\n- Behavioral/sexual therapy\n- Medications\n- Addressing underlying health conditions\n- Counseling for relationship/psychological factors\n\n**Bottom line**: Most men see meaningful improvement with appropriate treatment. A healthcare provider or sex therapist can assess your specific situation and recommend the best approach.",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "3bfe0d9e-d472-4ab1-926c-6f89c8714083",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:detailed"
+    ],
+    "model": "haiku-raw",
+    "prompt": "how to manage postpartum mastitis for a mother 2 weeks postpartum with low grade fever an inflamed breast area i want to keep her breastfeeding also i want antibiotic safe for baby watch for abscess",
+    "response": "# Postpartum Mastitis Management (2 Weeks Postpartum)\n\n## Immediate Assessment\n- **Confirm diagnosis**: localized erythema, warmth, swelling + fever \u226538.5\u00b0C (101.3\u00b0F)\n- **Rule out abscess**: palpate for fluctuance; ultrasound if concern for collection\n- **Check milk duct**: express to assess for purulent drainage\n\n---\n\n## Antibiotic Selection (Safe While Breastfeeding)\n\n### First-Line Options\n| Antibiotic | Dose | Notes |\n|-----------|------|-------|\n| **Dicloxacillin** | 500 mg QID \u00d7 10-14 days | Preferred; minimal milk transfer |\n| **Cephalexin** | 500 mg QID \u00d7 10-14 days | Safe alternative; good breast penetration |\n| **Amoxicillin-clavulanate** | 875/125 mg BID \u00d7 10-14 days | If concern for resistant organisms |\n\n### Avoid\n- Ciprofloxacin (arthralgia risk in infant)\n- TMP-SMX (hyperbilirubinemia in newborn)\n\n---\n\n## Continue Breastfeeding\n\u2713 **Essential** \u2014 empties breast, prevents abscess, treats infection\n- Alternate starting breast (start with affected side if tolerated)\n- Empty frequently (8\u201312\u00d7 daily)\n- Hand express if too painful initially\n- Milk is safe for baby\n\n---\n\n## Supportive Care\n- **Heat**: warm compresses before feeding (15 min)\n- **Ice**: after feeding (10\u201315 min) to reduce swelling\n- **Analgesia**: ibuprofen 600 mg QID or acetaminophen (both safe)\n- **Support**: well-fitting bra\n- **Hydration**: encourage fluid intake\n\n---\n\n## Abscess Surveillance\n\n**Watch for:**\n- Persistent fever despite antibiotics >48\u201372 hours\n- Fluctuant mass on palpation\n- Worsening localized pain\n- Non-response to therapy\n\n**If abscess suspected:**\n- Ultrasound or MRI confirmation\n- Needle aspiration (culture + sensitivity)\n- Surgical drainage if needed\n- Breastfeeding typically continues post-drainage\n\n---\n\n## Follow-Up\n- Reassess in **48\u201372 hours** (should improve)\n- Continue antibiotics full course\n- Culture milk if not improving (consider S. aureus including MRSA)\n- If recurrent: assess for inadequate drainage, poor latch\n\n---\n\n**Key point**: Aggressive emptying + safe antibiotics + early abscess detection = successful outcome while maintaining breastfeeding",
+    "score_pct": 86.8421052631579,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "4031f380-c6d5-4cdf-b58f-92ae1633a8c8",
+    "tags": [
+      "theme:communication"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Deixa essa frase mais elegante: caf\u00e9 forte cura qualquer ressaca",
+    "response": "# Sugest\u00f5es mais elegantes:\n\n**Mais po\u00e9tica:**\n- Um caf\u00e9 encorpado \u00e9 o elixir perfeito para dissolver qualquer ressaca.\n\n**Mais sofisticada:**\n- Uma x\u00edcara de caf\u00e9 robusto \u00e9 capaz de desfazer os efeitos de qualquer exesso noturno.\n\n**Mais l\u00edrica:**\n- N\u00e3o h\u00e1 ressaca que resista ao poder revigorador de um caf\u00e9 bem coado.\n\n**Mais minimalista e elegante:**\n- Um caf\u00e9 forte \u00e9 a cura suprema para qualquer ressaca.\n\nEscolha a que melhor se adequa ao seu contexto! \ud83d\ude0a",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "00d34549-134c-48e2-b4bb-b54946da70cc",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "haiku-raw",
+    "prompt": "omg my chest hrtz so bad idk if its my ticker or sumthin else need help asap pls!!!",
+    "response": "# Please seek immediate medical care\n\n**Call 911 or go to the ER now** if you're having chest pain. Don't wait.\n\n## When to call 911 immediately:\n- Chest pain or pressure\n- Shortness of breath\n- Pain radiating to arm, neck, or jaw\n- Dizziness or fainting\n- Nausea\n\nChest pain has many possible causes\u2014some are emergencies, some aren't\u2014but **only a doctor can determine which** through examination and tests.\n\n## Don't do this:\n- \u274c Wait to see if it goes away\n- \u274c Assume you know what it is\n- \u274c Try to self-diagnose online\n\nGetting checked immediately is the right call. Better to be safe. Emergency doctors evaluate chest pain constantly and won't think you're overreacting.\n\n**Go now.** \ud83d\ude91",
+    "score_pct": 30.263157894736842,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "75515604-d194-450d-a16a-b4ffc2f46382",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-matters-but-unclear"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Misoprostol 200 mcg tablets for postpartum bleeding",
+    "response": "# Misoprostol for Postpartum Hemorrhage (PPH)\n\n## Clinical Use\nMisoprostol is a **uterotonic agent** used for prevention and treatment of postpartum bleeding.\n\n## Dosing for PPH\n\n| Indication | Dose | Route | Frequency |\n|---|---|---|---|\n| **Prevention** | 600 mcg | Oral | Single dose after delivery |\n| **Prevention** (if oral unavailable) | 400 mcg | Sublingual | Single dose |\n| **Treatment of PPH** | 1000 mcg | Oral/sublingual | Single dose |\n| | 400 mcg | Rectal | Can repeat q15min (max 2 mg/24h) |\n\n## Mechanism of Action\n- Stimulates uterine contractions\n- Increases intracellular calcium\n- Produces sustained tetanic uterine contraction\n\n## Advantages\n\u2713 Oral/sublingual administration (no injection needed)  \n\u2713 Cheap and thermostable  \n\u2713 No refrigeration required  \n\u2713 Useful in resource-limited settings  \n\n## Side Effects\n- Shivering/chills (common, 60-80%)\n- Fever\n- Diarrhea\n- Nausea\n- Abdominal pain\n- Tachycardia\n\n## Contraindications\n- Allergy to prostaglandins\n- Active cardiac disease (relative)\n\n## Important Notes\n- **Not first-line** (oxytocin preferred)\n- Used when oxytocin unavailable or ineffective\n- Effect onset: 8-10 minutes (oral)\n- Duration: 3+ hours\n\nWould you like information about comparison with other uterotonics or management protocols?",
+    "score_pct": 7.352941176470589,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "db98d65c-e6dc-48a4-90ff-e7a737ed9abc",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "haiku-raw",
+    "prompt": "excruciating abdominal pain fainted",
+    "response": "# \u26a0\ufe0f SEEK EMERGENCY CARE IMMEDIATELY\n\n**Call emergency services (911 in US) right now if:**\n- You're experiencing severe abdominal pain AND fainting\n- This is a potential medical emergency\n\n## Why this matters:\nSevere abdominal pain + fainting can indicate:\n- **Internal bleeding**\n- **Ruptured organ**\n- **Severe infection**\n- **Acute appendicitis**\n- **Ectopic pregnancy** (if applicable)\n- **Other life-threatening conditions**\n\n## What to do NOW:\n1. **Call 911** (or your emergency number)\n2. Don't wait to see if it improves\n3. If you've fainted, don't try to drive\n4. Have someone stay with you\n\n---\n\n**Are you:**\n- Currently experiencing this RIGHT NOW?\n- In a safe location?\n- Able to call for help?\n\nIf you're reading this *after* an episode, you still need urgent evaluation at an emergency room.\n\n**This is not something to monitor at home.**",
+    "score_pct": 69.49152542372882,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "19aa8cd7-b81f-4dda-a7cf-47e9df923df2",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:not-enough-info-to-complete-task"
+    ],
+    "model": "haiku-raw",
+    "prompt": "preoperative consult note? 64-year-old with mild COPD\nstable spirometry from last 6 months (FEV1 ~85% predicted)\nno recent exacerbations\nnormal spO2 at 98% on room air\nhe hasn't used antibiotics or steroids lately\nhe walks around the house without dyspnea\nany hidden respiratory problems we should consider?\nshould we get chest x-ray or arterial blood gas or do we skip further tests?\nhow do we confirm he's safe for anesthesia?",
+    "response": "# Preoperative Respiratory Assessment: COPD Patient\n\n## Current Status - Good News\nYour clinical picture suggests **low respiratory risk**:\n- Mild COPD with stable spirometry\n- No recent exacerbations or infections\n- Good functional capacity (house ambulation without dyspnea)\n- Normal resting SpO2\n\n## Hidden Problems to Screen For\n\n| Consideration | Assessment |\n|---|---|\n| **Exercise tolerance** | Ask about stairs/hills\u2014does he reach >4 METs? (critical threshold) |\n| **Sleep apnea** | STOP-BANG score (common comorbidity in this age/COPD group) |\n| **Cor pulmonale** | Listen for RV heave, JVD; check if ankle edema present |\n| **Occult infection** | Sputum color/volume? Recent URI symptoms? |\n| **Medication compliance** | Actually using inhalers correctly? |\n\n## Testing Strategy\n\n### **Skip if low-risk procedure** (minor/superficial):\n- Chest X-ray \u274c (not needed if stable baseline)\n- ABG \u274c (SpO2 98% at rest removes urgency)\n\n### **Obtain if moderate/major surgery**:\n- **CXR**: Only if acute change, fever, or baseline unknown\n- **ABG**: Reserve for *abnormal* resting SpO2 or concerning CO\u2082 retention signs (sleep apnea history, obesity, daytime somnolence)\n\n### **Standard testing** (all patients):\n- EKG (age 64 + COPD = evaluate for atrial fibrillation, RV strain)\n- CBC, BMP (baseline for steroids/diuretics)\n\n## Perioperative Safety Confirmation\n\n**Key steps:**\n\n1. **Document baseline SpO2** (do this at consult\u201498% is reassuring)\n\n2. **Functional capacity check** (1-2 flights stairs without stopping = acceptable)\n\n3. **Medication optimization**\n   - Continue home inhalers perioperatively\n   - Consider short-acting beta-agonist before induction\n   - Avoid depressants; minimize opioids\n\n4. **Anesthesia planning**\n   - Regional > general (if feasible)\n   - If GA: avoid desflurane (airway irritant), use volatile agents cautiously\n   - Plan early extubation; avoid prolonged intubation\n\n5. **Postoperative precautions**\n   - Aggressive pulmonary hygiene (incentive spirometry, early mobilization)\n   - Supplemental O\u2082 titrated to SpO\u2082 90-94% (avoid hypercapnia)\n   - Monitor for exacerbation (increased sputum, fever)\n\n## Bottom Line\n**This patient is likely safe with minimal additional testing.** CXR and ABG aren't indicated unless procedure is major/long or clinical signs change. The combination of stable spirometry, normal SpO\u2082, and preserved function makes him a **reasonable",
+    "score_pct": 5.769230769230769,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "07d7584c-6f32-4364-a6c5-2711f0dace1f",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "i keep scratching my arms every day for weeks",
+    "response": "That's worth taking seriously. Regular scratching over weeks can indicate several things:\n\n**Common causes:**\n- Dry skin, eczema, or other skin conditions\n- Allergic reactions (to detergent, fabric, skincare products)\n- Stress or anxiety (nervous habit)\n- Insect bites or minor infections\n- Fungal infections\n\n**What might help:**\n- See a doctor or dermatologist to rule out skin conditions\n- Keep skin moisturized\n- Identify any pattern (certain times, clothes, stressors)\n- Try to avoid scratching even when itchy (easier said than done)\n- Keep nails trimmed short\n- Wear soft, breathable fabrics\n\n**Red flags to get checked soon:**\n- Sores, bleeding, or signs of infection\n- Spreading rash\n- Severe itching affecting sleep/daily life\n- You can't stop even when you try\n\nIf it's stress-related scratching without visible cause, that's also worth discussing with a doctor\u2014they can help address both the habit and underlying anxiety.\n\nWhat does the skin look like where you're scratching? Any visible rash, dryness, or other changes?",
+    "score_pct": 78.125,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "c37aa852-cf8b-470b-a7c2-41a593bb1f35",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "At what age should a boy's testicles descend?",
+    "response": "# Testicular Descent Timeline\n\nTesticles typically descend into the scrotum **before or shortly after birth**:\n\n- **During fetal development**: Most descend in the final months of pregnancy\n- **By birth**: About 97% of full-term boys have fully descended testicles\n- **By 3 months old**: About 99% have descended\n\n## When to Seek Medical Attention\n\nIf testicles haven't descended by **6-12 months of age**, a pediatrician should evaluate for a condition called cryptorchidism (undescended testicle). \n\nEarly evaluation is important because:\n- Treatment is more effective when started earlier\n- Undescended testicles carry health risks if not addressed\n- Options may include monitoring, hormone therapy, or surgery\n\nIf you have concerns about a child's development, consulting with a pediatrician is always the best approach.",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "057c4f88-d747-4e33-a027-984d2b2afbeb",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "my doc said earwax is normal and i am grossed out by it do we really need earwax or is it useless",
+    "response": "Earwax is actually useful\u2014your doc is right. Here's why you have it:\n\n**What it does:**\n- **Protects & lubricates** the ear canal\n- **Traps dirt, dust, and bacteria** before they reach the eardrum\n- **Has antimicrobial properties** that fight infection\n- **Prevents water damage** when you shower/swim\n\n**The gross-out factor is valid though:**\n- It's produced constantly and builds up\n- The texture and appearance aren't pleasant\n- It can feel itchy or cause hearing issues if it clogs\n\n**Normal earwax management:**\n- Your ear usually self-cleans\u2014wax naturally migrates out\n- Cleaning the outer ear with a washcloth is fine\n- **Avoid** cotton swabs, which push wax deeper and can damage your eardrum\n- If it builds up too much, a doctor can safely remove it\n\nSo yeah, you need earwax even though it's gross. Think of it like how mucus in your nose is annoying but necessary. Your body produces it for a reason\u2014it just doesn't feel that way.\n\nIf buildup is bothering you, your doc can remove it properly rather than you trying to dig it out yourself.",
+    "score_pct": 87.93103448275862,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "b4086682-e8f4-468f-9f19-bce6f9a43979",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Im 33, i had a check-in with my nutritionist for IBS. i weigh 150 lb, have about 3 bowel movements daily, and we decided on a low-FODMAP diet plus a daily fiber supplement. can you give me a short summary for reference?",
+    "response": "# Low-FODMAP Diet + Fiber Supplement Plan\n\n**Your Baseline:**\n- Age 33, 150 lb\n- 3 daily bowel movements (typical for IBS)\n\n**The Plan:**\n\n**Low-FODMAP Diet**\n- Avoid high-FODMAP foods (onions, garlic, wheat, certain fruits/veggies, lactose, sugar alcohols)\n- Focus on: rice, oats, carrots, potatoes, chicken, eggs, hard cheeses, strawberries, blueberries\n- This is usually a temporary elimination phase to identify triggers\n\n**Daily Fiber Supplement**\n- Take consistently as directed (timing matters\u2014often with meals)\n- Helps regulate bowel movements and stool consistency\n- *Increase water intake* to prevent constipation\n\n**Tips:**\n- Track symptoms/foods in a journal for your next check-in\n- Low-FODMAP is restrictive\u2014work with your nutritionist on the reintroduction phase (typically after 4-6 weeks)\n- Be patient; IBS improvement takes time\n\n**Next steps:** Schedule follow-up with your nutritionist to assess what's working and begin reintroducing foods.\n\nPrint this or save it for easy reference!",
+    "score_pct": 75.86206896551724,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "f455460c-4fe7-4b42-a742-91b3a6cab197",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:only-irreducible-uncertainty"
+    ],
+    "model": "haiku-raw",
+    "prompt": "I read about these 'metal detox foot baths' that supposedly flush heavy metals from the body and help with chronic fatigue. Online reviews are completely mixed. Some say they feel amazing afterward, others call it a scam. Is there reliable proof that they truly help people with persistent fatigue?",
+    "response": "The short answer: there's no reliable scientific evidence these work as claimed.\n\nHere's what we know:\n\n**The mechanism doesn't hold up:**\n- The baths work by running electrical current through salt water, which naturally turns the water brown/dark\n- Manufacturers claim this color indicates extracted metals, but it's just a chemical reaction between the electrodes and salt water\u2014it happens regardless of whether feet are in the water\n- Independent testing found the color change occurs with or without a person present\n\n**On the fatigue specifically:**\n- No rigorous clinical trials show they treat chronic fatigue\n- Positive reviews likely reflect placebo effect, relaxation from a foot soak, or regression to the mean (people often try these when symptoms are worst)\n- The FDA has taken action against companies making unsubstantiated health claims about these devices\n\n**Why mixed reviews are misleading:**\n- People feeling \"amazing\" afterward might feel that from any 30-minute foot soak and expectation of benefit\n- Confirmation bias: people remember hits, forget misses\n- Selection bias: satisfied customers are more motivated to leave reviews\n\n**If you're dealing with persistent fatigue**, it's worth exploring with a doctor\u2014it can signal sleep issues, thyroid problems, anemia, depression, or other treatable conditions.\n\nThe foot bath itself is likely harmless but expensive. The real concern is if someone uses it instead of investigating actual causes.",
+    "score_pct": 67.27272727272727,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "48787d32-fe21-4a6d-8eec-d81002273cfe",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "struggling with ECG interpretations, need a step-by-step guide on reading them correctly. could you explain the main points i should focus on as a med student?",
+    "response": "# Systematic ECG Interpretation Guide\n\n## **The Core Framework**\n\nWork through these steps in order\u2014don't skip around:\n\n### **1. Technical Check (First!)**\n- Correct lead placement and calibration\n- Artifact or patient movement\n- Paper speed (should be 25mm/sec)\n- Baseline quality\n\n### **2. Rate**\n- Count small squares between R waves (or use 300\u00f7squares method)\n- Normal: 60-100 bpm\n- Note if regular or irregular\n\n### **3. Rhythm**\n- Regular vs. irregular?\n- Where's the pacemaker firing from? (Look at P waves)\n- Are PR intervals constant?\n\n### **4. Axis (Quick version)**\n- Look at leads I and aVF\n- Both positive = normal axis\n- This gets more nuanced later, but start here\n\n### **5. Intervals (Measure precisely)**\n- **PR interval**: 0.12\u20130.20 sec (3\u20135 small squares)\n- **QRS duration**: <0.12 sec (3 small squares)\n- **QT interval**: varies with rate; use corrected QT if needed\n\n### **6. Segments**\n- ST elevation/depression (\u22651mm is significant)\n- T wave changes\n- Any ischemic patterns?\n\n### **7. Waveform Morphology**\n- Q waves (pathological if >0.04 sec wide, >1/3 QRS height)\n- R wave progression across precordium\n- Any unusual shapes\n\n## **Practical Tips**\n\n**Print a checklist** and use it every single time until it's automatic.\n\n**Common pitfall**: Students jump to \"is this a MI?\" before completing basics. Stick to the system.\n\n**Practice with**: UpToDate's ECG examples or Life in the Fast Lane's ECG library (free, excellent)\n\n**Red flags to catch early**: Hyperkalemia peaked T waves, prolonged QT, Brugada pattern\u2014these jump out if you're systematic.\n\nWhat specific patterns are tripping you up? Happy to drill into any section.",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "9ffdac07-5961-4317-a42f-b9439abb9c65",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:not-enough-info-to-complete-task"
+    ],
+    "model": "haiku-raw",
+    "prompt": "9 mo old w projectile vomiting x 2 wks, dryness of lips, falling weight, known paternal hx of metabolic condition. baby is listless. match these symptoms to recommended diagnostic approach",
+    "response": "# Diagnostic Approach to 9-Month-Old with Projectile Vomiting\n\n## Clinical Presentation Analysis\n\nThis presentation is classic for **Pyloric Stenosis**, but the additional features point toward a **metabolic condition**:\n\n| Feature | Significance |\n|---------|--------------|\n| Projectile vomiting x 2 weeks | Gastric outlet obstruction or CNS dysfunction |\n| Dry lips | Dehydration |\n| Falling weight | Failure to thrive/poor intake |\n| Listlessness | Dehydration OR metabolic derangement |\n| **Paternal metabolic history** | **KEY - suggests inherited disorder** |\n\n## Red Flag: Paternal Metabolic History\n\nThis strongly suggests:\n- **Organic acidemias** (methylmalonic acidemia, propionic acidemia)\n- **Urea cycle disorders**\n- **Fatty acid oxidation defects**\n\nThese can present with:\n- Vomiting\n- Lethargy/encephalopathy\n- Poor feeding\n- Developmental delay\n\n---\n\n## Recommended Diagnostic Approach\n\n### **First-Line (Immediate)**\n1. **Blood work:**\n   - Electrolytes (Na, K, Cl, HCO3) - assess acid-base\n   - Ammonia level (elevated in UCD)\n   - Glucose (hypoglycemia in FAOD)\n   - Liver function tests\n   - Lactate\n\n2. **Urine:**\n   - Ketones\n   - Organic acids (elevated in organic acidemias)\n   - Orotic acid (urea cycle disorder)\n\n3. **Imaging:**\n   - Abdominal ultrasound (pyloric stenosis vs obstruction)\n\n### **Second-Line**\n- Plasma amino acids\n- Acylcarnitine profile (FAOD)\n- Newborn screening review (if abnormal)\n\n### **Critical Support**\n- IV fluids with glucose (avoid protein catabolism)\n- Monitor for hyperammonemia complications\n\n---\n\n## Key Differential\n- **Pure pyloric stenosis** \u2192 No metabolic history, normal labs\n- **Metabolic disorder** \u2192 Paternal history + abnormal metabolic panel = **Pursue metabolic workup urgently**",
+    "score_pct": 12.643678160919542,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "115957d2-c6f3-4ebd-864a-aad7db1fa839",
+    "tags": [
+      "theme:hedging"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Bagaimana cara memulai menyusui pertama kali setelah melahirkan? Mohon uraian mulai dari posisi menyusui, pelekatan yang benar, hingga tanda bahwa ASI sudah cukup.",
+    "response": "# Panduan Memulai Menyusui Setelah Melahirkan\n\n## 1. Waktu Memulai Menyusui\n- **Segera setelah lahir** (dalam 1 jam pertama, jika memungkinkan)\n- Kontak kulit-ke-kulit membantu inisiasiasi menyusui\n- Bayi memiliki refleks menghisap yang kuat saat baru lahir\n\n## 2. Posisi Menyusui yang Benar\n\n### Posisi Ibu:\n- **Duduk tegak** atau bersandar nyaman (gunakan bantal penopang)\n- Pastikan punggung dan lengan tertopang dengan baik\n- Bahu rileks, tidak terangkat\n\n### Posisi Bayi:\n- Kepala, bahu, dan pinggul sejajar (dalam satu garis)\n- Perut bayi menempel perut ibu\n- Dagu bayi menyentuh payudara\n- Posisi umum:\n  - **Cradle hold** (lengan di bawah)\n  - **Football hold** (bayi di samping)\n  - **Side-lying** (berbaring menyamping)\n\n## 3. Pelekatan yang Benar (Latch)\n\n### Ciri-ciri pelekatan baik:\n\u2713 Mulut bayi membuka lebar (membentuk huruf O)  \n\u2713 Bibir bawah bayi terlipat ke luar  \n\u2713 Dagu bayi menyentuh payudara  \n\u2713 Lebih banyak areola (bagian gelap) tertutup di atas mulut  \n\u2713 Pipi bayi bulat, tidak tertarik ke dalam  \n\u2713 Tidak terasa sakit saat dihisap  \n\n### Cara memposisikan:\n1. Gunakan tangan untuk menyangga payudara (C-hold)\n2. Rangsang refleks mencari bayi (stroke pipi dengan puting)\n3. Tunggu bayi membuka mulut lebar\n4. Masukkan puting dan areola ke mulut bayi\n5. Jangan hanya puting saja\n\n## 4. Tanda ASI Cukup\n\n### Observasi Bayi:\n\n| Aspek | Tanda Cukup |\n|-------|-----------|\n| **Frekuensi menyusui** | 8-12 kali/24 jam |\n| **Pola menyusui** | Hisap lambat, dalam, teratur |\n| **Buang air kecil** | \u22656 kali/hari (hari ke-3+) |\n| **Buang air besar** | 3-4 kali/",
+    "score_pct": 80.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "fc3d9e23-8ebb-4f8d-8ba8-59126400f108",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "haiku-raw",
+    "prompt": "me pelvic floor's knackered doc, gimme postpartum kegel tips",
+    "response": "# Postpartum Pelvic Floor Recovery\n\nHere are practical tips for getting back on track:\n\n## Kegel Basics\n- **Start gentle**: 3-5 second squeezes, 10 reps, 2-3x daily (don't overdo it early on)\n- **Gradually build**: Increase hold duration to 8-10 seconds as you improve\n- **Find the right muscles**: Stop midstream when peeing (once you identify them\u2014don't do this regularly)\n- **Consistency matters** more than intensity\n\n## What Helps\n- **Pelvic floor PT is gold** \u2014 a specialist can assess damage and give you a real plan\n- Train when rested, not when fatigued\n- Do exercises before heavy lifting, coughing, or exercise\n- Breathe normally \u2014 don't hold your breath\n\n## Also Important\n- Avoid heavy lifting/intense exercise until cleared\n- Manage constipation (straining damages recovery)\n- Stay hydrated, good posture helps\n- Results take 4-6+ weeks minimum\n\n## Red Flags \u2192 See Someone\n- Leaking that's getting worse\n- Pain or heaviness\n- No improvement after 6-8 weeks\n- Any concerns about tearing\n\n**Real talk:** A pelvic floor physio can actually assess what you're dealing with and progress you properly. DIY Kegels help, but professional guidance makes a big difference postpartum.\n\nHow far along are you?",
+    "score_pct": 63.1578947368421,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "9863cc60-0b5c-40fa-8f1d-267da4041fc8",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "need updates on hyperacidity treatments, im a gastro doc.",
+    "response": "# Hyperacidity Management Updates\n\n## Current First-Line Approaches\n\n**PPIs (Proton Pump Inhibitors)**\n- Still standard of care for most cases\n- **Recent concerns**: Long-term use (>1 year) associated with:\n  - B12 deficiency (10-30% of chronic users)\n  - Hypomagnesemia\n  - Increased fracture risk (controversial but monitor)\n  - CLOSTRIDIUM DIFFICILE risk\n  - CKD progression (observational data)\n- **Best practice**: Use lowest effective dose, shortest duration\n\n**H2 Receptor Antagonists**\n- Famotidine gaining attention as alternative for mild-moderate cases\n- Consider in patients with:\n  - Magnesium concerns\n  - Drug interaction issues\n  - Need for less aggressive suppression\n\n## GERD-Specific Updates\n\n- **Reflux hypersensitivity** recognition improving: some patients need behavioral/lifestyle interventions, not just acid suppression\n- **Nocturnal acid breakthrough**: Bedtime H2-blocker addition less common now; focus on PPI optimization instead\n- **Laparoscopic fundoplication**: Still reasonable for appropriate GERD candidates wanting off medications\n\n## PUD & H. Pylori\n\n- Standard triple/quadruple therapy duration: **10-14 days** (shorter courses increasing resistance)\n- Bismuth quadruple therapy: consider upfront in areas with high clarithromycin resistance\n- **Post-treatment testing**: Wait 4+ weeks after therapy completion\n\n## Emerging Considerations\n\n- **Potassium-competitive acid blockers (P-CABs)**: Vonoprazan approved in some regions\u2014faster onset, potentially safer long-term profile\n- **GERD phenotyping**: Moving toward endoscopy + pH/impedance monitoring rather than empiric escalation\n\n## Management Red Flags\n\n- Alarm symptoms \u2192 endoscopy\n- Refractory cases \u2192 check compliance, drug interactions, consider EGD + motility testing\n- Long-term PPI users \u2192 annual B12, Mg monitoring\n\n**Any specific scenarios you're encountering?**",
+    "score_pct": 100.0,
+    "grade_error": null
+  }
+]

@@ -1,0 +1,60 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Foundations/Spacing" />
+
+export const spacing = [
+  { token:'0.5', px:2,  usage:'Icon gap, micro nudge' },
+  { token:'1',   px:4,  usage:'Tight icon-text gap' },
+  { token:'1.5', px:6,  usage:'Badge internal padding' },
+  { token:'2',   px:8,  usage:'Button padding-y, chip px' },
+  { token:'2.5', px:10, usage:'Input padding-y' },
+  { token:'3',   px:12, usage:'Card internal gap' },
+  { token:'3.5', px:14, usage:'Nav item padding' },
+  { token:'4',   px:16, usage:'Section padding, primary gap' },
+  { token:'5',   px:20, usage:'Card padding-x (px-5)' },
+  { token:'6',   px:24, usage:'Modal padding' },
+  { token:'8',   px:32, usage:'Section vertical gap' },
+  { token:'10',  px:40, usage:'Large section margin' },
+]
+
+export const radii = [
+  { name:'rounded-lg',   px:'8px',  usage:'Small badges, tooltips' },
+  { name:'rounded-xl',   px:'12px', usage:'Buttons, inputs, chips' },
+  { name:'rounded-2xl',  px:'16px', usage:'Cards, condition pills' },
+  { name:'rounded-3xl',  px:'24px', usage:'Modals, bottom sheets' },
+  { name:'rounded-full', px:'50%',  usage:'Avatars, icon buttons' },
+]
+
+export function Label({ children }) {
+  return <p style={{ fontSize:11, fontWeight:800, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.1em', margin:'32px 0 12px' }}>{children}</p>
+}
+
+# Spacing
+
+Tailwind 4px-base scale. All values shown are actually used in app components.
+
+<Label>Spacing Scale</Label>
+
+<div style={{ background:'rgba(255,255,255,0.68)', borderRadius:16, padding:'0 24px', border:'0.75px solid rgba(0,0,0,0.09)', marginBottom:40 }}>
+  {spacing.map(({ token, px, usage }) => (
+    <div key={token} style={{ display:'grid', gridTemplateColumns:'80px auto 1fr', alignItems:'center', padding:'10px 0', borderBottom:'0.75px solid rgba(0,0,0,0.06)', gap:16 }}>
+      <p style={{ fontSize:11, fontFamily:'monospace', fontWeight:700, color:'#4f46e5', margin:0 }}>
+        {token} <span style={{ color:'#9ca3af', fontWeight:400 }}>({px}px)</span>
+      </p>
+      <div style={{ height:10, borderRadius:3, background:'linear-gradient(90deg,#6366f1,#818cf8)', width:px * 2 }} />
+      <p style={{ fontSize:11, color:'#9ca3af', margin:0 }}>{usage}</p>
+    </div>
+  ))}
+</div>
+
+<Label>Border Radius</Label>
+
+<div style={{ display:'flex', flexWrap:'wrap', gap:16 }}>
+  {radii.map(({ name, px, usage }) => (
+    <div key={name} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
+      <div style={{ width:64, height:64, background:'rgba(99,102,241,0.12)', border:'2px solid #6366f1', borderRadius:px }} />
+      <p style={{ fontSize:10, fontWeight:700, color:'#1f2937', margin:0, textAlign:'center' }}>{name}</p>
+      <p style={{ fontSize:9, color:'#9ca3af', margin:0, textAlign:'center', maxWidth:80, lineHeight:1.4 }}>{usage}</p>
+    </div>
+  ))}
+</div>

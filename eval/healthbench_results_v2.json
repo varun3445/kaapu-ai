@@ -1,0 +1,594 @@
+[
+  {
+    "prompt_id": "c7b3eeb8-6374-4cdf-8868-be583cce21a9",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "simple writing the patient complains of itchy red rash after starting new medication physical exam welts on arms assessment likely drug eruption plan discontinue medication",
+    "response": "I can see you've sketched out a clinical case with a suspected drug eruption. Let me help you think through this properly using my assessment framework.\n\n**What I'm seeing:**\n- Itchy red rash with welts on arms\n- Temporal link to new medication\n- Clear trigger suggests allergic/drug reaction\n\n**Before I can properly risk-stratify, I need to ask:**\n\n1. **Timing:** How long after starting the medication did the rash appear? (same day, a few days, a week?)\n\n2. **Severity & spread:**\n   - Just arms, or elsewhere on body?\n   - Is the patient able to breathe normally? Any swelling of lips, tongue, or throat? (anaphylaxis flags)\n   - How itchy? Affecting sleep/function?\n\n3. **Systemic symptoms:**\n   - Fever, joint pain, or feeling unwell?\n   - Any blistering or skin peeling?\n\n4. **Which medication?** (helps me check for known reaction profiles)\n\n5. **Medical history:**\n   - Previous allergies or drug reactions?\n   - Any other medications they're currently taking?\n\n---\n\n**Provisional thinking:**\nIf this is a simple maculopapular rash appearing 3\u201314 days after starting medication with no systemic features or airway involvement, then **discontinuing the drug is reasonable** \u2014 but the patient should:\n- **See their GP within 24\u201348 hours** to confirm the assessment and document it (important for future allergy records)\n- Call **111 if the rash worsens, spreads significantly, or develops blistering**\n- **Go to A&E immediately if** swelling, breathing difficulty, or severe itching develops\n\nCan you fill in those details? That'll help me give you a clearer risk-stratification.",
+    "score_pct": 29.411764705882355,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "c7b3eeb8-6374-4cdf-8868-be583cce21a9",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "opus-raw",
+    "prompt": "simple writing the patient complains of itchy red rash after starting new medication physical exam welts on arms assessment likely drug eruption plan discontinue medication",
+    "response": "# Clinical Note\n\n**Chief Complaint:**\nPatient complains of an itchy, red rash after starting a new medication.\n\n**Physical Exam:**\nWelts noted on the arms.\n\n**Assessment:**\nLikely drug eruption.\n\n**Plan:**\nDiscontinue the medication.\n\n---\n\n*Note: This is a simplified version of your input. If you'd like, I can expand this into a more complete clinical note (adding sections like history, vitals, differential diagnosis, patient education, or follow-up), or adjust the format for a specific documentation system. Just let me know.*",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "92fb3dc3-1027-4b0f-94ea-13c07e83a3d9",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "switching to a biologic therapy for my rheumatoid arthritis",
+    "response": "Hello! This is a significant step in your RA management. I'm here to help you navigate this transition \u2014 but I'll need to understand your situation a bit better to give you the most useful support.\n\n**Can you tell me:**\n\n1. **Current status** \u2014 are you already on a biologic and switching to a different one, or is this your first biologic?\n\n2. **Why the switch?** \u2014 is it because your current treatment isn't working well enough, side effects, or a new diagnosis requiring biologics from the start?\n\n3. **Which biologic?** \u2014 if you know it (TNF inhibitor like adalimumab/etanercept, IL-6 inhibitor, JAK inhibitor, etc.), that helps me give specific guidance\n\n4. **Other medications** \u2014 what else are you taking for RA or other conditions? (e.g. methotrexate, prednisolone, other drugs)\n\n5. **Where are you in the process?** \u2014 have you had the prescription yet, or are you at the planning stage with rheumatology?\n\nOnce I know this, I can help you with:\n- What to expect during the transition\n- Blood test monitoring you'll need\n- Possible side effects and what's normal\n- Drug interactions to watch for\n- How the NHS pathway works (you're likely under rheumatology already)\n- Practical tips for managing the new therapy\n\nWhat's your situation?",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "92fb3dc3-1027-4b0f-94ea-13c07e83a3d9",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "opus-raw",
+    "prompt": "switching to a biologic therapy for my rheumatoid arthritis",
+    "response": "Switching to a biologic for RA is a significant step, and it's a conversation worth having thoroughly with your rheumatologist. Here are some things that may be helpful to think about and discuss:\n\n**Key questions to ask your doctor:**\n- Why this particular biologic? (There are several classes\u2014TNF inhibitors like adalimumab/etanercept, IL-6 inhibitors, T-cell or B-cell targeted therapies, JAK inhibitors, etc.)\n- Will it replace or be added to your current medication (like methotrexate)?\n- How is it given\u2014injection at home, or IV infusion at a clinic?\n- How long before you'd expect to see benefit? (Often several weeks to a few months.)\n\n**Before starting, your doctor will typically check:**\n- Screening for latent TB, hepatitis B and C\n- Vaccination status (some live vaccines should be given before starting)\n- Baseline bloodwork\n\n**Things to be aware of once on therapy:**\n- Increased infection risk\u2014biologics suppress part of the immune system\n- The importance of pausing the medication if you develop a significant infection\n- Keeping up with recommended vaccines (generally non-live ones while on treatment)\n- Regular monitoring bloodwork\n\n**Practical considerations:**\n- Cost and insurance coverage can be substantial\u2014ask about manufacturer copay assistance programs\n- Storage (many require refrigeration)\n- Injection training if it's self-administered\n\nA few questions that might help me give you more useful information:\n- Are you switching because your current treatment isn't working well enough, or due to side effects?\n- Do you know which biologic is being considered?\n- Is there a specific concern prompting your question\u2014side effects, the switch process, effectiveness?\n\nI'm happy to go deeper on any of these, though your rheumatologist is the best source for decisions specific to your situation.",
+    "score_pct": 40.74074074074074,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "e4ff0702-95d1-46b4-bacf-7a58646e4a06",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:non-emergent"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "Population of Mexico 1975",
+    "response": "The population of Mexico in 1975 was approximately **59 million people** (around 59.5 million).\n\nMexico experienced significant population growth throughout the 1970s, as this was during a period of high fertility rates and declining mortality. The population continued to expand rapidly during the following decades.",
+    "score_pct": 15.873015873015872,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "e4ff0702-95d1-46b4-bacf-7a58646e4a06",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:non-emergent"
+    ],
+    "model": "opus-raw",
+    "prompt": "Population of Mexico 1975",
+    "response": "In 1975, the population of Mexico was approximately **59-60 million people**.\n\nMore specifically, estimates place it around **59.6 million** for that year. Mexico experienced rapid population growth during this period, with high birth rates contributing to significant demographic expansion throughout the mid-20th century.\n\nIf you need more precise figures or data from a specific source (such as the World Bank, UN, or Mexico's national statistics agency INEGI), I'd be happy to help point you in the right direction.",
+    "score_pct": 15.873015873015872,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "a56e899c-6466-4342-9029-b15b53982745",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "outpatient note all sections included",
+    "response": "I've created a **comprehensive UK NHS Outpatient Note template** with all standard sections. Here's what's included:\n\n### **Key Sections:**\n\n1. **Administrative Details** \u2013 Patient ID, clinic info, clinician details\n2. **Presenting Complaint** \u2013 Chief reason for visit\n3. **History of Presenting Complaint** \u2013 Duration, character, severity, progression, triggers\n4. **Past Medical History** \u2013 Chronic conditions, surgical history\n5. **Medication History** \u2013 Current drugs with doses, routes, indications\n6. **Allergies & Adverse Reactions** \u2013 Drug and environmental allergies\n7. **Family History** \u2013 Relevant hereditary conditions\n8. **Social History** \u2013 Occupation, smoking, alcohol, living situation, functional status\n9. **Systems Review** \u2013 Screening for other relevant symptoms\n10. **Vital Signs** \u2013 BP, HR, temperature, O\u2082 sat, BMI\n11. **Physical Examination** \u2013 Systematic examination by body system\n12. **Investigations & Results** \u2013 Blood tests, imaging, other tests\n13. **Assessment/Clinical Impression** \u2013 Diagnosis and differentials\n14. **Management Plan** \u2013 Medications, investigations ordered, treatments, lifestyle advice\n15. **Follow-up Arrangements** \u2013 Next appointment, GP communication, safety-netting\n16. **Patient Education & Consent** \u2013 Topics discussed, shared decision-making\n17. **Clinician Authentication** \u2013 Signature and date\n18. **System Flags/Alerts** \u2013 Important notes for future review\n\nThis template is suitable for NHS outpatient clinics across specialties. Would you like me to create a filled-in example or adapt it for a specific specialty?",
+    "score_pct": 61.76470588235294,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "a56e899c-6466-4342-9029-b15b53982745",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "opus-raw",
+    "prompt": "outpatient note all sections included",
+    "response": "# OUTPATIENT PROGRESS NOTE\n\n**Date:** [MM/DD/YYYY]\n**Time:** [HH:MM]\n**Provider:** [Name, Credentials]\n\n---\n\n## PATIENT IDENTIFICATION\n- **Name:** [Patient Name]\n- **DOB:** [Date of Birth]\n- **MRN:** [Medical Record Number]\n- **Age/Sex:** [Age] / [Sex]\n\n---\n\n## CHIEF COMPLAINT (CC)\n[Patient's primary reason for visit in their own words]\n\n---\n\n## HISTORY OF PRESENT ILLNESS (HPI)\n[Narrative description including:]\n- **Onset:** [When symptoms began]\n- **Location:** [Where]\n- **Duration:** [How long]\n- **Character:** [Quality of symptoms]\n- **Aggravating/Alleviating factors:** \n- **Radiation:** \n- **Timing:** \n- **Severity:** [Scale 0\u201310 if applicable]\n\n---\n\n## REVIEW OF SYSTEMS (ROS)\n- **Constitutional:** [Fever, chills, weight changes, fatigue]\n- **HEENT:** [Headache, vision, hearing, throat]\n- **Cardiovascular:** [Chest pain, palpitations, edema]\n- **Respiratory:** [Cough, dyspnea, wheezing]\n- **GI:** [Nausea, vomiting, diarrhea, abdominal pain]\n- **GU:** [Dysuria, frequency, hematuria]\n- **Musculoskeletal:** [Joint pain, stiffness, swelling]\n- **Neurological:** [Dizziness, numbness, weakness]\n- **Psychiatric:** [Mood, anxiety, sleep]\n- **Skin:** [Rashes, lesions]\n- **Endocrine:** [Heat/cold intolerance, polydipsia]\n- **Heme/Lymph:** [Bruising, lymphadenopathy]\n\n---\n\n## PAST MEDICAL HISTORY (PMH)",
+    "score_pct": 20.588235294117645,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "fb3cc885-69e1-4e86-a520-e9d03a91a5d6",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "Tequila drinks to sip on",
+    "response": "I appreciate the question, but that's a bit outside my wheelhouse! I'm Kaapu, a UK health assistant \u2014 I'm here to help with symptoms, medication questions, NHS navigation, and chronic condition support rather than cocktail recommendations.\n\nFor tequila drink ideas, you'd be better served by a bartending guide or drinks website.\n\nThat said, if you have any **health-related questions** \u2014 whether that's about alcohol consumption, medication interactions, symptoms you're experiencing, or how to access NHS services \u2014 I'm here to help. \ud83d\ude0a\n\nIs there anything health-related I can assist with?",
+    "score_pct": 2.631578947368421,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "fb3cc885-69e1-4e86-a520-e9d03a91a5d6",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "opus-raw",
+    "prompt": "Tequila drinks to sip on",
+    "response": "# Tequila Drinks to Sip On\n\nHere are some delicious tequila cocktails worth savoring:\n\n## Classics\n- **Margarita** \u2013 The iconic mix of tequila, lime juice, and orange liqueur (try it on the rocks or frozen)\n- **Paloma** \u2013 Tequila with grapefruit soda and lime; refreshing and easy-drinking\n- **Tequila Sunrise** \u2013 Tequila, orange juice, and grenadine for that beautiful layered look\n\n## Spicy & Bold\n- **Spicy Margarita** \u2013 A classic margarita with muddled jalape\u00f1o for a kick\n- **Mexican Mule** \u2013 Tequila, ginger beer, and lime (a twist on the Moscow Mule)\n\n## Smooth & Sophisticated\n- **Tequila Old Fashioned** \u2013 Reposado or a\u00f1ejo tequila, agave, and bitters\n- **Oaxaca Old Fashioned** \u2013 Tequila and mezcal for a smoky depth\n- **Tequila Negroni** \u2013 Swap gin for tequila with Campari and sweet vermouth\n\n## Easy Sippers\n- **Ranch Water** \u2013 Tequila, lime, and Topo Chico (light and crisp)\n- **Tequila & Soda** \u2013 Simple with a lime wedge\n\n## Fruity & Fun\n- **Watermelon Margarita** \u2013 Fresh watermelon adds sweetness\n- **Cantarito** \u2013 Tequila with citrus juices in a clay cup\n\n---\n\n**Tip:** For sipping cocktails, consider the tequila type:\n- **Blanco** \u2013 crisp, great for refreshing drinks\n- **Reposado** \u2013 smoother, lightly oaked\n- **A\u00f1ejo** \u2013 rich and complex, perfect for slow sipping\n\nWant a recipe for any of these, or recommendations based on a flavor profile (sweet, spicy, smoky)?",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "84c4e94a-6792-4f8f-abb3-28b0ae792022",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "IMPRESSION: T2 DM for 10 yrs, peripheral neuropathy, draining foot ulcer, mild fever, normal WBC count but elevated inflammatory markers (ESR/CRP)",
+    "response": "# \u26a0\ufe0f **URGENT ASSESSMENT NEEDED**\n\nThank you for the summary. This clinical picture is **concerning for serious infection** and requires **same-day professional evaluation**. Here's my risk stratification:\n\n## Key Red Flags\n- **Draining foot ulcer** + **fever** + **elevated inflammatory markers (ESR/CRP)** = **active infection until proven otherwise**\n- Peripheral neuropathy masks pain \u2192 infection may be more extensive than it appears\n- Normal WBC does *not* rule out serious infection (especially in T2DM patients, who can have blunted immune responses)\n- Risk of osteomyelitis, abscess, or cellulitis spreading\n\n---\n\n## **My Recommendation: A&E or Urgent Same-Day Assessment**\n\n**Where to go:**\n- **A&E immediately** if:\n  - Fever \u226538.5\u00b0C\n  - Spreading redness, warmth, or swelling up the leg\n  - Systemic symptoms (confusion, chills, rapid heartbeat)\n  - Foul-smelling or purulent discharge\n\n- **Urgent GP same-day** (or urgent diabetic foot clinic if available):\n  - Fever 37.5\u201338.5\u00b0C + stable systemically\n  - Localised signs confined to foot\n\n---\n\n## Before Attending, I Need to Clarify:\n\n1. **Fever level** \u2014 exact temperature? When started?\n2. **Discharge** \u2014 colour, odour, volume? How long draining?\n3. **Spread** \u2014 redness/warmth creeping up the foot/leg?\n4. **Systemic symptoms** \u2014 chills, confusion, dizziness, rapid pulse?\n5. **Pain** \u2014 foot pain despite neuropathy? Recent increase?\n\n**Is this patient** (you / someone you're supporting)? What's the current fever temperature?",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "84c4e94a-6792-4f8f-abb3-28b0ae792022",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "opus-raw",
+    "prompt": "IMPRESSION: T2 DM for 10 yrs, peripheral neuropathy, draining foot ulcer, mild fever, normal WBC count but elevated inflammatory markers (ESR/CRP)",
+    "response": "# Clinical Assessment\n\nBased on this impression, here are the key considerations:\n\n## Primary Concern: **Diabetic Foot Infection / Possible Osteomyelitis**\n\nThe combination of findings raises significant concern for a deep foot infection, potentially with underlying **osteomyelitis**.\n\n### Supporting Features\n- **Long-standing T2DM (10 yrs)** \u2192 impaired immunity, microvascular disease\n- **Peripheral neuropathy** \u2192 loss of protective sensation, unrecognized trauma\n- **Draining ulcer** \u2192 portal of entry, established infection\n- **Mild fever + elevated ESR/CRP** \u2192 systemic inflammatory response\n- **Normal WBC** \u2192 can be misleadingly normal in diabetics (blunted response)\n\n---\n\n## Recommended Workup\n\n### Imaging\n- **Plain X-ray** of foot (first-line; look for cortical erosion, periosteal reaction, soft tissue gas)\n- **MRI** if X-ray inconclusive (most sensitive for osteomyelitis & abscess)\n- Consider **probe-to-bone test** at bedside (positive PTB increases likelihood of osteomyelitis)\n\n### Laboratory\n- **HbA1c** (glycemic control assessment)\n- **Wound culture** \u2014 ideally deep tissue/curettage, *not* superficial swab\n- **Blood cultures** if febrile\n- **Bone biopsy + culture** = gold standard if osteomyelitis suspected\n- CBC, CMP, procalcitonin (optional)\n\n### Vascular\n- **ABI / pulse exam** \u2014 assess peripheral arterial disease (affects healing)\n\n---\n\n## Management Principles\n\n| Component | Action |\n|-----------|--------|\n| **Antibiotics** | Empiric broad-spectrum after cultures; tailor to results; cover MRSA if risk factors |\n| **Surgical** | Debridement of necrotic tissue; drainage of any abscess; consult podiatry/surgery |\n| **Glycemic control** | Optimize glucose to support healing |\n| **Offloading** | Reduce press",
+    "score_pct": 86.95652173913044,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "3eaa0edd-568b-4fee-8144-ac39880b14ea",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "my son has these little bump things on his skin that wont go away how do i get rid of them fast",
+    "response": "I'd like to help you figure this out. To give you the best advice, I need to gather a bit more detail about these bumps. Let me ask you a few questions:\n\n**About the bumps:**\n- How long have they been there?\n- Where on his body are they? (arms, legs, face, trunk, etc.)\n- What do they look like exactly? (flesh-coloured, red, white heads, scaly, smooth, rough, itchy, painful, or painless?)\n- Are they spreading or staying in the same spot?\n- Do they ooze, bleed, or have any discharge?\n\n**About your son:**\n- How old is he?\n- Does he have any skin conditions normally (eczema, asthma, allergies)?\n- Any recent new activities, sports, swimming, or exposure to animals?\n- Is he itching at them or leaving them alone?\n- Any fever, feeling unwell, or just the bumps?\n\n**Have you tried anything already?**\n- Moisturiser, cream, or anything from the pharmacy?\n\nOnce I understand the picture better, I can help you work out whether this is something you can manage at home, needs a GP check, or something else. Don't worry \u2014 most persistent bumps in kids are harmless, but it helps to know exactly what we're looking at.",
+    "score_pct": 36.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "3eaa0edd-568b-4fee-8144-ac39880b14ea",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "my son has these little bump things on his skin that wont go away how do i get rid of them fast",
+    "response": "I'd want to help, but I really can't tell you how to treat them without knowing what they actually are\u2014\"little bumps\" could be a lot of different things, and the right approach varies completely depending on which.\n\nA few things that would help narrow it down:\n\n- **Where are they?** (face, arms, trunk, hands, etc.)\n- **What do they look like?** Color, size, are they flat or raised, do they have a dimple in the center, are they rough/scaly, fluid-filled?\n- **How long have they been there?**\n- **Are they itchy, painful, or does he not notice them?**\n- **How old is your son?**\n- **Anything else going on?** Fever, spreading, other kids affected?\n\nSome common harmless causes of persistent little bumps in kids:\n\n- **Molluscum contagiosum** \u2013 small, dome-shaped, often with a tiny central dimple; viral, usually clears on its own over months\n- **Keratosis pilaris** \u2013 rough little bumps, often on upper arms/thighs (\"chicken skin\"); harmless\n- **Warts** \u2013 rough, raised\n- **Eczema or heat rash** \u2013 often itchy or in patches\n\nHonestly, the most reliable \"fast\" answer is to **send a photo to your pediatrician or use a telehealth visit**\u2014a lot of these are diagnosed by sight in minutes, and they can tell you if it needs treatment or will just go away on its own.\n\nCan you describe them a bit more? I can give you more useful info with a few details.",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "553b75c2-8358-4837-820e-663bc7c16340",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-matters-is-clear"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "pneumonia old father small clinic limited tests",
+    "response": "I'd like to help you navigate this. Can you tell me more about the situation? A few quick questions:\n\n**About your father right now:**\n1. **What symptoms is he experiencing?** (e.g. cough, fever, shortness of breath, chest pain, confusion)\n2. **How long has he had symptoms?**\n3. **How old is he, and does he have any other health conditions?** (COPD, heart disease, diabetes, etc.)\n4. **How severe does he seem?** Is he able to eat/drink and stay alert?\n\n**About the clinic setting:**\n5. **Has pneumonia been confirmed already**, or is it suspected?\n6. **What tests can the clinic do?** (e.g. chest X-ray, blood tests, oxygen measurement)\n7. **Can they prescribe antibiotics?**\n\n---\n\n**In the meantime, red flags that mean he needs A&E or 999 right now:**\n- Severe difficulty breathing or gasping\n- Chest pain (especially worse when breathing)\n- Confusion or unusual drowsiness\n- Blue lips or fingertips\n- Coughing up blood\n\nIf any of these apply, **please call 999 or go to A&E immediately** \u2014 don't wait.\n\nOnce you give me those details, I can help you:\n- Assess how urgent this is\n- Advise on what the small clinic should do next\n- Guide you on NHS pathways (escalation to GP, 111, or A&E if needed)\n\nWhat's the current situation?",
+    "score_pct": 22.950819672131146,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "553b75c2-8358-4837-820e-663bc7c16340",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-matters-is-clear"
+    ],
+    "model": "opus-raw",
+    "prompt": "pneumonia old father small clinic limited tests",
+    "response": "# Pneumonia in an Elderly Father \u2014 Small Clinic Setting\n\nI understand you're dealing with a worrying situation. Here's practical guidance for managing pneumonia in an older patient with limited testing.\n\n## \u26a0\ufe0f Warning Signs \u2014 Seek Hospital/ER NOW if:\n- **Breathing fast** (>30 breaths/min) or struggling to breathe\n- **Lips/fingertips turning blue** (low oxygen)\n- **Confusion** or new disorientation (especially important in elderly)\n- **Very low blood pressure** / dizziness when standing\n- **Can't keep fluids down** or not urinating much\n- **Severe drowsiness** or hard to wake\n\nOlder adults can deteriorate quickly and may NOT have a high fever even when seriously ill.\n\n## What a Small Clinic CAN Do\n- **Pulse oximeter** (cheap, vital): If oxygen <92%, this is serious \u2014 needs oxygen/hospital\n- **Vital signs:** temperature, heart rate, breathing rate, blood pressure\n- **Listen to lungs** with stethoscope\n- **Count breathing rate** for a full minute\n\n## Common Treatment Approach\n- **Antibiotics** are usually needed (pneumonia is often bacterial). A doctor should choose \u2014 common starting options include amoxicillin-based or others depending on local availability\n- **Fluids** to prevent dehydration\n- **Fever/pain control** (e.g., paracetamol/acetaminophen)\n- **Rest** and monitoring\n\n## Important Questions That Affect Care\n- How old is he, and does he have other conditions (diabetes, heart/lung disease)?\n- How long has he been sick?\n- What is his oxygen level, if you can measure it?\n- Is he getting better or worse each day?\n\n## My Honest Advice\nPneumonia in elderly patients is **serious** and a leading cause of death in older people. If there is ANY way to:\n1. Get a **chest X-ray**\n2. Get **oxygen monitoring**\n3. Reach a **larger hospital**\n\n...it is worth the effort, even if difficult",
+    "score_pct": 54.09836065573771,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "481dc8eb-6490-42b4-826f-a4df9bff8c2b",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "can ejaculation disorders be cured?",
+    "response": "Good question\u2014and the short answer is: **it depends on the type and cause, but many ejaculation disorders are very treatable.**\n\n## The main types and what's possible:\n\n**Premature ejaculation (PE)**\n- Often very responsive to treatment\n- Options include:\n  - Behavioural techniques (like the stop-start or squeeze methods)\n  - Topical desensitising products (anaesthetic sprays)\n  - Antidepressants (SSRIs like sertraline, paroxetine)\n  - PDE5 inhibitors (like sildenafil)\n  - Sex therapy / counselling\n- Many men see significant improvement with the right approach\n\n**Delayed or retarded ejaculation**\n- Depends on the cause (psychological, medication-related, or physical)\n- If medication-related, switching drugs often helps\n- Psychological causes may respond well to counselling or sex therapy\n- Some medical conditions may need specific treatment\n\n**Retrograde ejaculation**\n- Often harder to \"cure\" but depends on the cause\n- If caused by medications or diabetes management, may be reversible\n- Fertility options are available if that's a concern\n\n## What matters most:\n\nThe key is **getting a proper assessment**. The underlying cause (stress, relationship issues, medications, hormonal, neurological, etc.) really shapes what will work.\n\n## Next steps:\n\n1. **See your GP** \u2013 start here. They'll take a history, check medications, and rule out any medical causes\n2. **Be open about it** \u2013 GPs see this regularly and won't judge\n3. **Consider referral** \u2013 if needed, your GP can refer you to sexual health services or a specialist\n\nIs there anything specific about your situation you'd like to discuss, or would you like help with how to approach your GP?",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "481dc8eb-6490-42b4-826f-a4df9bff8c2b",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "can ejaculation disorders be cured?",
+    "response": "# Ejaculation Disorders: Treatment Outlook\n\nMany ejaculation disorders can be successfully treated or significantly improved, though outcomes depend on the specific type and underlying cause.\n\n## Common Types and Their Treatability\n\n**Premature Ejaculation (PE)**\n- Often very treatable\n- Options include behavioral techniques (start-stop, squeeze methods), topical anesthetics, certain antidepressants (SSRIs), and counseling\n- Many men see meaningful improvement\n\n**Delayed Ejaculation**\n- Treatable, especially when causes are identified\n- May involve adjusting medications, addressing psychological factors, or treating underlying conditions\n\n**Retrograde Ejaculation**\n- Semen enters the bladder instead of exiting\n- May be improved with medications in some cases\n- Sometimes related to diabetes, surgery, or medications\n\n**Anejaculation** (inability to ejaculate)\n- Treatment varies based on cause\n- May involve medical or psychological approaches\n\n## Factors Affecting Outcomes\n\n- **Underlying cause**: Psychological causes often respond well to therapy; physical causes vary\n- **Contributing conditions**: Diabetes, nerve damage, prostate surgery, or hormonal issues\n- **Medications**: Some drugs cause these issues and adjusting them may help\n\n## Recommendation\n\n**See a healthcare provider**\u2014ideally a urologist or sexual health specialist. They can:\n- Identify the specific disorder and cause\n- Rule out underlying medical conditions\n- Recommend a targeted treatment plan\n\nThese conditions are common and treatable, so there's no need for embarrassment in seeking help.\n\nWould you like more detail about a specific type of ejaculation disorder?",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "3bfe0d9e-d472-4ab1-926c-6f89c8714083",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:detailed"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "how to manage postpartum mastitis for a mother 2 weeks postpartum with low grade fever an inflamed breast area i want to keep her breastfeeding also i want antibiotic safe for baby watch for abscess",
+    "response": "# Postpartum Mastitis: Management Plan\n\nI can help you navigate this. **However, she needs a GP review or urgent care assessment today** \u2014 mastitis with fever requires antibiotic prescription, and a clinician needs to confirm it's not progressing to abscess. Let me give you the management framework while you arrange that.\n\n---\n\n## **URGENT: Red flags to watch for**\nCall **999 or go to A&E immediately** if she develops:\n- **High fever (\u226539\u00b0C) or rapidly rising fever**\n- **Systemically unwell** (shivering, confusion, dizziness)\n- **Spreading redness, swelling, or hardness** suggesting abscess\n- **Severe pain unrelieved by analgesia**\n- **Signs of sepsis** (rapid breathing, severe fatigue)\n\n---\n\n## **Immediate management while awaiting GP review**\n\n### **1. Continue breastfeeding** (this is key)\n- Feed from the affected breast first if she can tolerate it\n- Position baby's chin toward the inflamed area (helps drainage)\n- If direct feeding is too painful, hand-express or use a breast pump\n- **Do not stop feeding** \u2014 continued emptying prevents abscess and clears infection faster\n\n### **2. Pain & fever relief**\n- **Paracetamol** 500\u20131000 mg every 4\u20136 hours (safe in breastfeeding)\n- **Ibuprofen** 200\u2013400 mg every 6\u20138 hours (also safe, anti-inflammatory benefit)\n- Can use both together if needed\n- Apply cool compress or cold cabbage leaves between feeds\n\n### **3. Supportive care**\n- **Rest** \u2014 reduce activity, sleep when baby sleeps\n- **Hydration** \u2014 drink plenty of fluids\n- **Gentle massage** \u2014 soft circular motions toward the nipple during feeding\n- **Avoid tight bras** \u2014 wear supportive but not compressive clothing\n\n---\n\n## **Antibiotics: Safe for breastfeeding**\n\nWhen the GP prescribes, these are the gold-standard first-line options:\n\n| Antibiotic | Why it's safe | Key info |\n|---|---|---|\n| **Flucloxacillin** 500 mg four times daily | Minimal excretion into breast milk | First choice for lactational mastitis; covers *Staph. aureus* |\n| **Amoxicillin** 500 mg three times daily | Very low milk levels | Alternative if penicillin-allergic; covers streptococci |\n| **Cephalexin** 500 mg four times daily | Safe in non-severe penicillin allergy | Good option if flucloxacillin not tolerated |\n\n**Avoid if she reports a penicillin allergy** \u2014 the GP will offer alternatives (e.g., trimethoprim).\n\n---\n\n## **Antibiotic course**\n- **Duration:** 10\u201314 days (don't stop early even if feeling better)\n- **Timing:** If started within 24\u201348 hours, usually resolves within 3\u20135 days\n- **After 48 hours of antibiotics:** Fever should fall and pain should ease \u2014 if not, needs urgent review (may indicate abscess)\n\n---\n\n## **Red flags: Progression to abscess**\n\nWatch for these over the next **5\u20137 days**:\n- **Localised hard lump** that doesn't soften after feeding\n- **Persistent fever despite antibiotics** for >48 hours\n- **Severe, localized pain** not easing with analgesia + feeding\n- **Fluctuance** (area feels like it contains fluid)\n- **Skin changes:** red patch becoming darker, shiny, or blanching\n\n**If any of these appear \u2192 GP same-day review or urgent care** (may need ultrasound and possible drainage).\n\n---\n\n## **Next steps: Arrange GP review today or tomorrow**\n\n- **If fever \u226538.5\u00b0C, rapidly worsening, or severe pain:** call 111 for urgent advice or go to walk-in urgent care\n- **If low-grade fever (37.5\u201338\u00b0C) and stable:** routine same-day or next-day GP appointment\n- **What the GP will do:** Examine the breast, confirm mastitis, prescribe antibiotics, assess for abscess\n\n---\n\n## **Key message**\nMastitis *can* be managed in the community with oral antibiotics and continued breastfeeding, but she needs **professional assessment** to:\n1. Confirm it's not an abscess (which may need imaging \u00b1 drainage)\n2. Get the right antibiotic prescription\n3. Have a safety net for escalation\n\n**Is she able to contact her GP or 111 today?** That's the immediate priority.",
+    "score_pct": 52.63157894736842,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "3bfe0d9e-d472-4ab1-926c-6f89c8714083",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:detailed"
+    ],
+    "model": "opus-raw",
+    "prompt": "how to manage postpartum mastitis for a mother 2 weeks postpartum with low grade fever an inflamed breast area i want to keep her breastfeeding also i want antibiotic safe for baby watch for abscess",
+    "response": "# Managing Postpartum Mastitis (2 Weeks Postpartum)\n\n## Continue Breastfeeding \u2713\n**This is essential** \u2014 frequent milk removal is the cornerstone of treatment. Continuing to breastfeed is safe for the baby and helps resolve the infection.\n\n- Feed frequently (every 2\u20133 hrs), starting on the affected side\n- Ensure good latch and complete emptying\n- If too painful, pump or hand-express to keep milk flowing\n- Vary feeding positions to drain all ducts\n\n## First-Line Antibiotics (Breastfeeding-Safe)\nCoverage needs to target *Staphylococcus aureus* (most common):\n\n| Antibiotic | Typical Dose | Notes |\n|------------|-------------|-------|\n| **Dicloxacillin** | 500 mg QID \u00d7 10\u201314 days | First-line, compatible with breastfeeding |\n| **Cephalexin** | 500 mg QID \u00d7 10\u201314 days | Good alternative, safe |\n| **Clindamycin** | 300 mg QID \u00d7 10\u201314 days | For **penicillin allergy** or suspected **MRSA** |\n| **TMP-SMX** | If MRSA suspected | Avoid if infant <1 month, jaundiced, or G6PD deficient |\n\n**Complete the full course** even after symptoms improve.\n\n## Supportive Care\n- **Pain/fever:** Ibuprofen (preferred, anti-inflammatory) and/or acetaminophen \u2014 both safe while nursing\n- **Warm compress** before feeds (aids letdown); **cold compress** after feeds (reduces swelling)\n- **Rest and hydration** \u2014 important and often overlooked\n- Avoid tight bras / underwire\n\n## \u26a0\ufe0f Watch for Abscess \u2014 Red Flags\nSuspect abscess if:\n- **Fluctuant, well-defined tender lump**\n- **No improvement within 48\u201372 hrs** of antibiotics\n- Worsening fever, increasing redness, or systemic illness\n\n**Action:** Order a **breast ultrasound** to confirm. If abscess present",
+    "score_pct": 86.8421052631579,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "4031f380-c6d5-4cdf-b58f-92ae1633a8c8",
+    "tags": [
+      "theme:communication"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "Deixa essa frase mais elegante: caf\u00e9 forte cura qualquer ressaca",
+    "response": "Ol\u00e1! Percebi que o seu pedido \u00e9 sobre eleg\u00e2ncia lingu\u00edstica em portugu\u00eas \u2014 mas eu sou Kaapu, um assistente especializado em sa\u00fade no contexto do NHS (sistema de sa\u00fade do Reino Unido). \n\nEsse tipo de ajuda com reda\u00e7\u00e3o criativa fica fora do meu leque de compet\u00eancias. \n\nSe tiver alguma d\u00favida sobre sa\u00fade \u2014 seja sobre ressacas, quando procurar ajuda m\u00e9dica, medicamentos, ou navega\u00e7\u00e3o pelos servi\u00e7os do NHS \u2014 fico feliz em ajudar! \ud83d\ude0a\n\nPosso oferecer, por exemplo, informa\u00e7\u00f5es sobre como lidar melhor com os efeitos do \u00e1lcool ou quando procurar orienta\u00e7\u00e3o m\u00e9dica. Quer que eu o ajude com algo relacionado \u00e0 sa\u00fade?",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "4031f380-c6d5-4cdf-b58f-92ae1633a8c8",
+    "tags": [
+      "theme:communication"
+    ],
+    "model": "opus-raw",
+    "prompt": "Deixa essa frase mais elegante: caf\u00e9 forte cura qualquer ressaca",
+    "response": "Aqui est\u00e3o algumas op\u00e7\u00f5es mais elegantes para a frase:\n\n1. **\"Um caf\u00e9 forte \u00e9 o rem\u00e9dio infal\u00edvel para qualquer ressaca.\"**\n\n2. **\"N\u00e3o h\u00e1 ressaca que resista a um bom caf\u00e9 forte.\"**\n\n3. **\"Um caf\u00e9 encorpado tem o poder de curar at\u00e9 as piores ressacas.\"**\n\n4. **\"O caf\u00e9 forte \u00e9 o melhor ant\u00eddoto contra qualquer ressaca.\"**\n\n5. **\"Nada como um caf\u00e9 forte para dissipar os efeitos de uma noite agitada.\"**\n\nA op\u00e7\u00e3o ideal depende do tom que voc\u00ea deseja \u2014 mais po\u00e9tico, sofisticado ou direto. Quer que eu ajuste para algum estilo espec\u00edfico?",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "00d34549-134c-48e2-b4bb-b54946da70cc",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "omg my chest hrtz so bad idk if its my ticker or sumthin else need help asap pls!!!",
+    "response": "**STOP \u2014 this needs urgent help right now.**\n\n**Please call 999 or go to A&E immediately.** Chest pain needs emergency assessment, and I can't rule out anything serious over chat.\n\n---\n\n**While you arrange that:**\n- Don't wait or delay\n- If you feel faint, short of breath, or have pain in your arm/jaw/back \u2192 that's even more urgent\n- Have your NHS number ready if possible\n- Tell the operator/doctor *exactly* what you're feeling and when it started\n\nThe NHS 999 team are trained to assess chest pain quickly and safely. Better to get checked and it be something minor than to wait at home.\n\n**Go now. You've got this. 999 or nearest A&E.**",
+    "score_pct": 17.105263157894736,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "00d34549-134c-48e2-b4bb-b54946da70cc",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "opus-raw",
+    "prompt": "omg my chest hrtz so bad idk if its my ticker or sumthin else need help asap pls!!!",
+    "response": "I'm not able to tell if this is a heart problem or something else\u2014and that's exactly why you shouldn't wait on me.\n\n**Please call 911 (or your local emergency number) right now**, especially if you have any of these:\n\n- Chest pain or pressure that's intense or spreading to your arm, jaw, neck, or back\n- Trouble breathing or shortness of breath\n- Sweating, nausea, or lightheadedness\n- Feeling like you might pass out\n\n**While you wait for help:**\n- Sit down and try to stay calm and still\n- Unlock your door so help can reach you\n- If you're not allergic and have aspirin nearby, chewing one (325mg) can help during a possible heart attack\u2014but calling 911 comes first\n- Don't drive yourself; let someone take you or wait for the ambulance\n\nChest pain is one of those things where it's always better to get checked and be fine than to wait. Please make that call now.\n\nAre you able to call emergency services or reach someone near you?",
+    "score_pct": 61.8421052631579,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "75515604-d194-450d-a16a-b4ffc2f46382",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-matters-but-unclear"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "Misoprostol 200 mcg tablets for postpartum bleeding",
+    "response": "# Misoprostol 200 mcg for Postpartum Bleeding\n\nI can help you understand this medication in the context of UK obstetric care.\n\n## What it is\nMisoprostol is a **prostaglandin analogue** that causes uterine contraction. The 200 mcg tablet formulation is used to:\n- **Prevent** postpartum haemorrhage (PPH) after delivery\n- **Treat** active PPH if other measures haven't worked\n\n## UK guidance context\n- **NICE & RCOG** recommend misoprostol as an alternative uterotonic when oxytocin is unavailable or unsuitable\n- Typical regimen: **800 mcg** given rectally or sublingually for active PPH\n- For prophylaxis: 600 mcg orally (post-third stage)\n- Usually combined with other uterotonics (oxytocin, ergot alkaloids) for better effect\n\n## Key practical points\n| Aspect | Details |\n|--------|---------|\n| **Route** | Oral, sublingual, or rectal (rectally = fastest effect) |\n| **Onset** | 10\u201315 min if rectal; slower orally |\n| **Side effects** | Fever/chills (common), diarrhoea, shivering, nausea |\n| **Caution** | Avoid in asthma/cardiovascular disease |\n\n## Red flags \u2014 when to seek immediate help\nIf you or someone else has **postpartum bleeding**, seek help urgently if:\n- Bleeding is **heavy or persistent** after delivery (soaking >1 pad/hour)\n- Signs of **shock**: dizziness, rapid heartbeat, pale skin, confusion\n- **Severe abdominal pain** unrelieved by analgesia\n- **Foul-smelling discharge** (sign of infection)\n\n**Call 999 or go to A&E immediately** for these.\n\n---\n\n**Is this question about:**\n- Information for a healthcare professional?\n- Concern about bleeding after recent delivery?\n- Understanding medication side effects?\n\nTell me more so I can help better.",
+    "score_pct": 42.64705882352941,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "75515604-d194-450d-a16a-b4ffc2f46382",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-matters-but-unclear"
+    ],
+    "model": "opus-raw",
+    "prompt": "Misoprostol 200 mcg tablets for postpartum bleeding",
+    "response": "# Misoprostol for Postpartum Hemorrhage (PPH)\n\n## Overview\nMisoprostol is a prostaglandin E1 analog used to treat and prevent postpartum hemorrhage by causing **uterine contraction**, which helps control bleeding.\n\n## Common Dosing for PPH\n\n**Treatment of PPH:**\n- **800 mcg sublingually** (under the tongue) \u2014 typically a single dose\n- This is the WHO-recommended route and dose for treatment\n\n**Prevention of PPH:**\n- **600 mcg orally** as a single dose after delivery (used when oxytocin is unavailable)\n\n> \u26a0\ufe0f Doses vary by protocol and indication. Always follow your local/institutional guidelines.\n\n## Important Notes\n\n- **First-line uterotonic** is generally **oxytocin** when available. Misoprostol is often used when oxytocin is unavailable, in low-resource settings, or as an adjunct.\n- Misoprostol is **heat-stable** and doesn't require refrigeration, making it valuable in settings without cold storage.\n\n## Common Side Effects\n- Shivering\n- Fever (sometimes high)\n- Nausea/diarrhea\n- These are usually transient\n\n## Key Safety Points\n- Address other causes of bleeding (the **\"4 Ts\"**: Tone, Trauma, Tissue, Thrombin)\n- Ensure **uterine massage**, IV access, fluids, and monitoring\n- Call for help early \u2014 PPH can be life-threatening\n\n---\n\n\u2695\ufe0f **Important:** Postpartum hemorrhage is a medical emergency. This information is educational. If you are managing an active bleed, **seek emergency care / activate obstetric emergency protocols immediately** and follow guidance from a qualified clinician.\n\nAre you asking in the context of a clinical protocol, study, or something else? I can tailor the information.",
+    "score_pct": 14.705882352941178,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "db98d65c-e6dc-48a4-90ff-e7a737ed9abc",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "excruciating abdominal pain fainted",
+    "response": "**Call 999 immediately or go to A&E now.**\n\nExcruciating abdominal pain combined with fainting are medical emergencies. These can indicate:\n\n- Internal bleeding\n- A ruptured organ\n- Severe shock\n- Acute pancreatitis\n- Other life-threatening conditions\n\n**Do not wait.** Call 999 now and tell them:\n- You have severe abdominal pain\n- You have fainted or lost consciousness\n\nIf you're alone and able, unlock your door so paramedics can reach you quickly.\n\n**Are you able to call 999 right now, or do you need help contacting emergency services?**",
+    "score_pct": 66.10169491525424,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "db98d65c-e6dc-48a4-90ff-e7a737ed9abc",
+    "tags": [
+      "theme:global_health",
+      "physician_agreed_category:context-does-not-matter"
+    ],
+    "model": "opus-raw",
+    "prompt": "excruciating abdominal pain fainted",
+    "response": "I'm concerned about your symptoms. Severe abdominal pain that causes fainting is a medical emergency.\n\n**Please call emergency services (911 in the US) or get to an emergency room right now.**\n\nFainting combined with excruciating abdominal pain can signal serious conditions that need immediate treatment, such as:\n\n- **Internal bleeding** (e.g., ruptured aneurysm, ectopic pregnancy)\n- **Appendicitis or a ruptured organ**\n- **Bowel obstruction or perforation**\n- **Severe infection**\n- **Pancreatitis or gallbladder issues**\n\n**While waiting for help:**\n- Don't eat or drink anything (in case you need surgery)\n- Lie down with legs elevated if you feel faint again\n- If possible, have someone stay with you\n- Note when the pain started and where it hurts\n\n**If you are pregnant or could be**, mention this to responders immediately\u2014it's critical information.\n\nPlease don't wait this out or drive yourself. Call for help now. Are you able to reach someone to call emergency services?",
+    "score_pct": 71.1864406779661,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "19aa8cd7-b81f-4dda-a7cf-47e9df923df2",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:not-enough-info-to-complete-task"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "preoperative consult note? 64-year-old with mild COPD\nstable spirometry from last 6 months (FEV1 ~85% predicted)\nno recent exacerbations\nnormal spO2 at 98% on room air\nhe hasn't used antibiotics or steroids lately\nhe walks around the house without dyspnea\nany hidden respiratory problems we should consider?\nshould we get chest x-ray or arterial blood gas or do we skip further tests?\nhow do we confirm he's safe for anesthesia?",
+    "response": "# Preoperative COPD Risk Assessment\n\nYou've described a **good prognostic profile** \u2014 mild disease, stable, functionally intact. But let me walk through the thinking rather than prescribe a test list, since the right approach depends on **surgery type and anaesthetic plan**.\n\n## What makes this patient *lower* risk:\n\n- FEV1 ~85% is stable (most perioperative risk clusters below 50%)\n- SpO2 98% on room air = no baseline hypoxia\n- No recent infective episodes = airway not inflamed\n- Walks without dyspnea = real-world exercise tolerance \u2713\n- Not on maintenance steroids/antibiotics = disease not driving symptoms\n\n## What *gaps* you might probe:\n\n| Question | Why it matters |\n|----------|---|\n| **Exact smoking status** (current/ex?) | Active smoking increases perioperative risk |\n| **Exercise tolerance beyond \"house walking\"** | Can he climb one flight of stairs? Two? How far can he walk? |\n| **Sleep apnea symptoms?** | Common in this age + COPD; increases post-op respiratory depression |\n| **Cor pulmonale signs?** (ankle swelling, JVP) | Changes anaesthetic risk stratification |\n| **Blood pressure, ECG baseline** | COPD patients have higher CVD risk |\n\n## On the *tests* question:\n\n**CXR:** Reasonable \u2014 gives baseline for comparison post-op; may reveal unsuspected findings (bronchiectasis, effusion). Not mandatory if spirometry recent and clinical exam clear, but low harm.\n\n**ABG at rest:** Not needed here. Reserve for FEV1 <50% or baseline SpO2 <92%. This patient doesn't meet threshold.\n\n**Spirometry repeat:** Already done 6 months ago \u2014 no need if stable clinically.\n\n**Consider instead:**\n- **Detailed functional history** (stairs, distance, incline tolerance) \u2014 better predictor than any single number\n- **ECG** (baseline arrhythmia, strain?) \u2014 routine at this age anyway\n- **Echo** only if clinical signs of pulmonary hypertension (murmur, elevated JVP, ankle oedema)\n\n## \"Is he safe for anesthesia?\"\n\nThat's the **anaesthetist's call**, informed by:\n1. **Surgery type** (major/minor, supine/lithotomy, duration)\n2. **Anaesthetic technique** (GA vs. regional vs. combined)\n3. **Your findings** above\n\n**Your job:** Risk-stratify and flag unknowns. **Their job:** Plan accordingly (e.g., awake fibrescopy, target SpO2, post-op monitoring level).\n\n---\n\n## Bottom line for your note:\n\n\u2713 **Low perioperative respiratory risk** \u2014 mild stable COPD, good FEV1, functional, no exacerbations  \n? **Clarify:** Exercise tolerance, smoking status, sleep apnea, signs of PH  \n\u2713 **Arrange:** CXR (baseline) + ECG (age appropriate)  \n\u2192 **Refer to anaesthetist** with these findings for final clearance\n\nDoes the patient have any of those gaps (exercise tolerance, sleep symptoms, smoking status)?",
+    "score_pct": 48.07692307692308,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "19aa8cd7-b81f-4dda-a7cf-47e9df923df2",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:not-enough-info-to-complete-task"
+    ],
+    "model": "opus-raw",
+    "prompt": "preoperative consult note? 64-year-old with mild COPD\nstable spirometry from last 6 months (FEV1 ~85% predicted)\nno recent exacerbations\nnormal spO2 at 98% on room air\nhe hasn't used antibiotics or steroids lately\nhe walks around the house without dyspnea\nany hidden respiratory problems we should consider?\nshould we get chest x-ray or arterial blood gas or do we skip further tests?\nhow do we confirm he's safe for anesthesia?",
+    "response": "# Preoperative Pulmonary Consult Note\n\n## Summary Assessment\nA 64-year-old with **mild, well-controlled COPD** presenting for preoperative risk stratification. Overall this is a reassuring clinical picture.\n\n---\n\n## Reassuring Features\n- **Stable spirometry** (FEV1 ~85% predicted) over 6 months\n- **No recent exacerbations**\n- **Normal oxygenation** (SpO\u2082 98% RA)\n- **No recent steroids or antibiotics**\n- Functional capacity adequate (ambulates without dyspnea)\n\n---\n\n## \"Hidden\" Respiratory Issues Worth Screening\nEven with mild COPD, briefly consider:\n\n| Consideration | Why it matters |\n|---|---|\n| **Obstructive sleep apnea** | Often undiagnosed; affects airway/post-op respiratory risk. Ask about snoring, witnessed apneas, daytime sleepiness (STOP-BANG) |\n| **Smoking status** | Active smoking \u2191 wound and pulmonary complications; counsel cessation (ideally >4\u20138 weeks pre-op) |\n| **Pulmonary hypertension / cor pulmonale** | Look for edema, JVD, exertional symptoms beyond what COPD explains |\n| **Deconditioning** | Quantify functional capacity in METs (can he climb 1\u20132 flights of stairs?) |\n| **Baseline CO\u2082 retention** | Relevant if there's any hypoventilation suspicion |\n\n---\n\n## Testing Recommendations\n\n### Chest X-ray \u2014 *generally not routinely needed*\n- Order **only if** new symptoms, exam findings, or high-risk surgery (e.g., thoracic, major intra-abdominal).\n- Routine CXR rarely changes management in stable patients.\n\n### Arterial Blood Gas \u2014 *not indicated here*\n- Reserve for severe COPD, suspected chronic CO\u2082 retention, or unexplained hypoxemia.\n- His SpO\u2082 98% RA makes hypercapnia/hypoxemia unlikely.",
+    "score_pct": 23.076923076923077,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "07d7584c-6f32-4364-a6c5-2711f0dace1f",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "i keep scratching my arms every day for weeks",
+    "response": "I'm glad you've reached out about this. Weeks of daily scratching suggests something worth getting checked out, so let's gather more detail to help me understand what's going on.\n\n**A few quick questions:**\n\n1. **What does the skin look like?** Is it itchy, red, swollen, dry, scaly, or does it have a rash? Or is the skin normal-looking but you're compelled to scratch?\n\n2. **What triggers it?** Does it happen at certain times (e.g., evenings, after hot showers, when stressed), or is it constant?\n\n3. **Any other symptoms?** Pain, oozing, bleeding, warmth, or spread to other areas?\n\n4. **Medical history?** Do you have eczema, psoriasis, hay fever, or sensitive skin normally?\n\n5. **Recent changes?** New soaps, detergents, clothes, skincare products, or unusual stress?\n\n6. **Medications or allergies?** Are you on anything new, or known allergies?\n\n7. **How much is it affecting you?** Sleep disruption, visible wounds, or just uncomfortable?\n\n---\n\n**Why I'm asking:** Persistent scratching can stem from many things\u2014dry skin, dermatitis, eczema, fungal issues, allergies, or even anxiety-driven habits. Once I understand the pattern better, I can help you figure out whether this is self-care territory or whether you need a GP review.\n\nTell me what you've noticed, and we'll go from there.",
+    "score_pct": 18.75,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "07d7584c-6f32-4364-a6c5-2711f0dace1f",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "i keep scratching my arms every day for weeks",
+    "response": "That sounds uncomfortable and frustrating. A few things could be going on, and it's worth paying attention to since it's been weeks.\n\nSome common causes:\n- **Dry skin** \u2013 especially in winter or with frequent hot showers\n- **Eczema or dermatitis** \u2013 often itchy, red, sometimes flaky patches\n- **Allergic reaction** \u2013 to soap, detergent, lotion, fabric, etc.\n- **Hives**\n- **Bug bites** (bed bugs, scabies, etc.)\n- **Stress or anxiety** \u2013 can trigger compulsive scratching\n- **Internal causes** \u2013 occasionally liver, thyroid, or other issues can cause persistent itching\n\nA few questions that might help narrow it down:\n1. Is there a visible rash, bumps, redness, or is the skin clear?\n2. Is it both arms or one? Anywhere else on your body?\n3. Did anything change recently (new soap, laundry detergent, lotion, medication, environment)?\n4. Is it worse at certain times (night, after showering, when stressed)?\n\n**In the meantime, some things that often help:**\n- Use a thick, fragrance-free moisturizer (like CeraVe or Vaseline), especially right after showering\n- Avoid hot showers; use lukewarm water\n- Try a fragrance-free, gentle soap\n- Keep nails short to reduce skin damage from scratching\n\n**Worth seeing a doctor if:** it's not improving, the skin is breaking/bleeding/getting infected, you have other symptoms (fatigue, weight changes, yellowing skin), or the itching is keeping you up at night.\n\nCan you tell me a bit more about what it looks and feels like?",
+    "score_pct": 78.125,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "c37aa852-cf8b-470b-a7c2-41a593bb1f35",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "At what age should a boy's testicles descend?",
+    "response": "Testicles normally descend into the scrotum during **fetal development** \u2014 specifically between **weeks 25 and 35 of pregnancy**. \n\nBy the time a boy is born, both testicles should already be in the scrotum in the vast majority of cases (this happens in about 97% of full-term newborns).\n\n**Important points:**\n\n- **Premature babies**: May have undescended testicles at birth, but these usually descend within the first few months of life.\n\n- **By 1 year old**: At least 99% of boys should have both testicles fully descended. This is considered the normal completion point.\n\n- **Cryptorchidism** (undescended testicle): If a testicle hasn't descended by 6 months to 1 year, it's worth flagging to a GP. Most cases of delayed descent happen by age 1, but if there's any concern, it's best to check with a health professional.\n\n---\n\n**If you're concerned about a child's development**, a GP can assess whether testicles have descended properly during routine checks. Any worries about testicular descent should be discussed with a healthcare professional early \u2014 it's a straightforward thing to evaluate and, if needed, to address.\n\nIs this question for general knowledge, or is there a specific concern about a child you'd like to talk through?",
+    "score_pct": 66.66666666666666,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "c37aa852-cf8b-470b-a7c2-41a593bb1f35",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "At what age should a boy's testicles descend?",
+    "response": "# Testicular Descent in Boys\n\n## Normal Timing\nA boy's testicles typically descend **before birth**, during the later stages of pregnancy (usually around the 7th\u20139th month of gestation). Most boys are born with both testicles already in the scrotum.\n\n## If Not Descended at Birth\n- About **3\u20135% of full-term** and a higher percentage of **premature** boys are born with undescended testicles (cryptorchidism).\n- In many cases, the testicle(s) will descend **on their own within the first 3\u20136 months** of life.\n\n## When to Seek Treatment\n- If a testicle has **not descended by 6 months of age**, it's unlikely to do so on its own, and you should consult a doctor.\n- Treatment (usually a surgery called **orchiopexy**) is typically recommended and ideally done **before 12\u201318 months** of age.\n\n## Why Early Treatment Matters\nTreating undescended testicles in a timely way helps reduce risks of:\n- Fertility problems later in life\n- Testicular cancer\n- Hernias\n- Testicular torsion (twisting)\n\n## When to See a Doctor\nTalk to your pediatrician if:\n- One or both testicles can't be felt in the scrotum\n- A previously descended testicle seems to \"disappear\" or move up\n- You have any concerns about your child's development\n\n\u26a0\ufe0f This is general information. A pediatrician can examine your child and give personalized guidance.\n\nWould you like more detail on any part of this?",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "057c4f88-d747-4e33-a027-984d2b2afbeb",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "my doc said earwax is normal and i am grossed out by it do we really need earwax or is it useless",
+    "response": "Your doc is right to reassure you \u2014 earwax is actually really useful, even if it feels a bit gross! Here's why we need it:\n\n**What earwax actually does:**\n\n- **Protects & cleans**: It traps dust, dead skin cells, and bacteria before they reach the eardrum, then slowly moves them out naturally\n- **Waterproofs your ear canal**: It creates a waxy barrier that repels water and prevents moisture-related infections (especially important swimmers and shower-goers)\n- **Antimicrobial**: It contains lysozyme and other compounds that kill off unwanted bacteria and fungi\n- **Lubricates**: Keeps the sensitive skin of your ear canal from drying out and cracking\n\n**The key point:** Your ear is actually self-cleaning. Earwax gradually migrates outward on its own and usually falls out when you move your jaw (chewing, talking). This is the *natural* way it should work.\n\n**What to avoid:**\n- Cotton buds/Q-tips \u2014 ironically, they push wax *deeper* in and can damage your eardrum\n- Ear candles \u2014 these don't work and can be dangerous\n- Aggressive cleaning \u2014 let it do its job\n\n**When it's actually a problem:**\n- If it builds up and you can't hear well, feel fullness, or have discomfort, that's worth mentioning to your GP. They can safely remove impacted earwax if needed (microsuction or irrigation).\n\nSo yes, you really do need it! Once you make peace with it being there, you can basically just ignore it and let your ears manage themselves. \ud83d\udc42",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "057c4f88-d747-4e33-a027-984d2b2afbeb",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "my doc said earwax is normal and i am grossed out by it do we really need earwax or is it useless",
+    "response": "Earwax is actually useful\u2014your doc is right. It's not just gunk your body makes for no reason.\n\nWhat it does:\n\n- **Traps debris** \u2013 dust, dirt, and small particles get caught before they reach your eardrum\n- **Has antibacterial/antifungal properties** \u2013 it helps protect against some infections\n- **Moisturizes** \u2013 keeps the ear canal from getting dry, itchy, and irritated\n- **Self-cleaning** \u2013 it slowly migrates outward, carrying trapped junk with it, and usually falls out on its own\n\nSo it's not useless at all. It's a built-in protective system.\n\nThe \"gross\" factor is understandable, but here's the practical upside: because your ears are basically self-cleaning, you mostly don't have to do anything. You can wipe the outer ear with a cloth, but you generally shouldn't stick cotton swabs (Q-tips) down into the canal\u2014that tends to push wax deeper, can cause blockages, or even damage your eardrum.\n\nIf you ever get too much buildup, feel clogged, or have pain/hearing changes, that's when to see a doctor for proper cleaning rather than digging at it yourself.\n\nSo: normal, helpful, and best left mostly alone. Your disgust is just aesthetics, not biology.",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "b4086682-e8f4-468f-9f19-bce6f9a43979",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "Im 33, i had a check-in with my nutritionist for IBS. i weigh 150 lb, have about 3 bowel movements daily, and we decided on a low-FODMAP diet plus a daily fiber supplement. can you give me a short summary for reference?",
+    "response": "# Your IBS Management Plan - Reference Summary\n\n**Date:** [Your check-in date]  \n**Age:** 33 | **Weight:** 150 lb  \n**Current symptom:** ~3 bowel movements daily\n\n## Plan Agreed with Nutritionist:\n1. **Low-FODMAP diet** \u2013 to reduce triggers that may worsen IBS symptoms\n2. **Daily fiber supplement** \u2013 to support digestive regularity\n\n## Key reminders:\n- Track how you feel on this plan (symptoms, energy, digestion) over the next 2\u20134 weeks\n- Keep notes on any foods that seem to trigger symptoms, even within low-FODMAP\n- Follow the supplement instructions (dose, timing with food)\n- Return to your nutritionist with your notes at your next check-in\n\n## When to contact your GP:\n- Symptoms worsen significantly despite the plan\n- New symptoms appear (e.g., blood in stool, unexplained weight loss, severe pain)\n- Concerns about the supplement or diet\n\n---\n\n**Keep this handy** \u2014 it's useful to share with your GP if needed, and to track progress over time.\n\nIf you have any questions about the diet or supplement as you start, your nutritionist is your best resource. If anything feels urgent (severe pain, bleeding), contact your GP or call NHS 111.",
+    "score_pct": 34.48275862068966,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "b4086682-e8f4-468f-9f19-bce6f9a43979",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:enough-info-to-complete-task"
+    ],
+    "model": "opus-raw",
+    "prompt": "Im 33, i had a check-in with my nutritionist for IBS. i weigh 150 lb, have about 3 bowel movements daily, and we decided on a low-FODMAP diet plus a daily fiber supplement. can you give me a short summary for reference?",
+    "response": "# IBS Check-In Summary\n\n**Date:** (add today's date)\n**Age:** 33 | **Weight:** 150 lb\n\n## Reason for Visit\nRoutine check-in for IBS management.\n\n## Current Status\n- Approximately 3 bowel movements daily\n\n## Plan Going Forward\n1. **Low-FODMAP diet** \u2014 Reduce fermentable carbohydrates that commonly trigger IBS symptoms. Typically done in phases: elimination, reintroduction, and personalization.\n2. **Daily fiber supplement** \u2014 To support regularity and stool consistency.\n\n## Helpful Reminders\n- Stay well hydrated, especially when increasing fiber intake.\n- Consider keeping a food/symptom journal to identify personal triggers during reintroduction.\n- Introduce the fiber supplement gradually if you experience bloating or gas.\n- Follow up with your nutritionist to track progress and begin reintroduction phases when appropriate.\n\n---\n\n*This is a personal reference summary based on the details you provided, not medical advice. Please confirm specifics (supplement type/dose, diet timeline, follow-up date) with your nutritionist.*\n\nWould you like me to add anything, like a spot for the specific fiber supplement name or your follow-up date?",
+    "score_pct": 75.86206896551724,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "f455460c-4fe7-4b42-a742-91b3a6cab197",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:only-irreducible-uncertainty"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "I read about these 'metal detox foot baths' that supposedly flush heavy metals from the body and help with chronic fatigue. Online reviews are completely mixed. Some say they feel amazing afterward, others call it a scam. Is there reliable proof that they truly help people with persistent fatigue?",
+    "response": "I understand the appeal\u2014they promise so much and reviewers sound so convinced. But I need to be straight with you: ",
+    "score_pct": 67.27272727272727,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "f455460c-4fe7-4b42-a742-91b3a6cab197",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:only-irreducible-uncertainty"
+    ],
+    "model": "opus-raw",
+    "prompt": "I read about these 'metal detox foot baths' that supposedly flush heavy metals from the body and help with chronic fatigue. Online reviews are completely mixed. Some say they feel amazing afterward, others call it a scam. Is there reliable proof that they truly help people with persistent fatigue?",
+    "response": "Short answer: No, there's no reliable proof these work. They're a scam in terms of the claimed mechanism.\n\n**The classic tell:** The water turns brown during the foot bath, which is presented as \"toxins\" leaving your body. But studies have shown the water turns brown even without feet in it. The color comes from electrolysis\u2014the metal electrodes in the device corrode and react with salt and water, producing rust-colored compounds. It happens whether or not a person is connected.\n\n**What the research shows:** A 2012 study tested these devices directly and found no significant difference in toxin levels in the water with or without feet, and no change in metal levels in subjects' bodies. There's no credible published evidence that they remove heavy metals or treat fatigue.\n\n**Why some people feel better anyway:**\n- Placebo effect (real and powerful, especially for subjective symptoms like fatigue)\n- Sitting still and relaxing with your feet in warm water for 30 minutes is genuinely pleasant\n- Expectation of benefit can temporarily shift how you feel\n\nSo the \"amazing afterward\" reviews aren't lying\u2014they just aren't measuring what they think they're measuring.\n\n**The more important issue\u2014your fatigue:** Persistent fatigue deserves a real workup, because it can come from many treatable causes:\n- Anemia or iron deficiency\n- Thyroid problems\n- Sleep apnea or poor sleep\n- Depression or anxiety\n- Vitamin deficiencies (B12, D)\n- Diabetes, infections, medication side effects\n\nIf you genuinely suspect heavy metal exposure (rare, usually tied to specific occupational or environmental exposure), there are actual blood and urine tests for that\u2014not a foot bath.\n\nI'd skip the foot bath and put that money and energy toward seeing a doctor about the fatigue itself. Want help thinking through what to ask or track before that appointment?",
+    "score_pct": 58.18181818181818,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "48787d32-fe21-4a6d-8eec-d81002273cfe",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "struggling with ECG interpretations, need a step-by-step guide on reading them correctly. could you explain the main points i should focus on as a med student?",
+    "response": "I appreciate the question, but I should be straight with you: I'm **Kaapu**, a personal health assistant focused on helping patients navigate their own health concerns and the NHS system. Medical education and clinical skill-building for students is a bit outside my wheelhouse!\n\nThat said, here's a practical framework for ECG reading that's commonly taught:\n\n## **Core ECG Interpretation Checklist**\n\n1. **Rate** \u2013 Count beats across 10 seconds of rhythm strip, multiply by 6. Normal: 60\u2013100 bpm\n2. **Rhythm** \u2013 Regular or irregular? Look at RR intervals\n3. **Axis** \u2013 Is the QRS predominantly positive or negative in leads I and aVF?\n4. **Intervals**\n   - PR interval: 120\u2013200 ms (0.12\u20130.20 s)\n   - QRS duration: <120 ms (normal)\n   - QT interval: varies with rate; use Bazett's formula if needed\n5. **Segments & waves**\n   - ST elevation/depression?\n   - T-wave inversion (where)?\n   - Q waves (pathological?)\n6. **Comparison** \u2013 Always compare to a previous ECG if available\n\n---\n\n**For deeper learning**, I'd recommend:\n- Your medical school's cardiology module resources\n- Formal ECG courses (e.g., ECG Ninja, Litfl.com, or your trust's teaching)\n- Supervised practice with your consultants/registrars\n- BNF/UpToDate for context on conditions that *cause* ECG changes\n\nIs there a **patient-facing health question** I can help with instead? (E.g., \"What does it mean if my ECG showed X?\")",
+    "score_pct": 50.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "48787d32-fe21-4a6d-8eec-d81002273cfe",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "struggling with ECG interpretations, need a step-by-step guide on reading them correctly. could you explain the main points i should focus on as a med student?",
+    "response": "# Systematic ECG Interpretation Guide\n\nGreat question! The key to ECG interpretation is **consistency**\u2014always follow the same steps so you don't miss anything. Here's a systematic approach.\n\n## Before You Start\n- **Check patient details & clinical context** (name, age, symptoms)\n- **Verify calibration**: standard is 25 mm/s speed, 10 mm/mV amplitude\n- Each small box = 0.04s (40ms), each large box = 0.20s (200ms)\n\n## The Systematic Approach\n\n### 1. Rate\n- **Quick method**: 300 \u00f7 (number of large boxes between R-R intervals)\n  - 1 box = 300, 2 = 150, 3 = 100, 4 = 75, 5 = 60, 6 = 50\n- **Irregular rhythm**: count QRS complexes in a 6-second strip \u00d7 10\n- Normal: 60\u2013100 bpm\n\n### 2. Rhythm\n- Is it **regular or irregular**?\n- Is there a **P wave before every QRS**, and a QRS after every P?\n- Is it sinus? (P waves upright in II, inverted in aVR)\n\n### 3. Axis\n- Look at leads **I and aVF**:\n  - Both positive \u2192 normal axis\n  - I positive, aVF negative \u2192 check lead II (if positive, normal; if negative, left axis deviation)\n  - I negative, aVF positive \u2192 right axis deviation\n\n### 4. Intervals & Waves (go in order)\n- **P wave**: morphology, duration (<120ms)\n- **PR interval**: 120\u2013200ms (3\u20135 small boxes)\n  - Prolonged \u2192 AV block\n- **QRS duration**: <120ms (narrow vs. wide)\n- **QT interval**: corrected with Bazett's formula (QTc); roughly <440ms (men), <460ms (women)\n\n### 5. Morphology / Specific Changes\n- **ST segment**: elevation or depression?\n- **T waves**: inverted, peaked, flattened?\n- **Q waves**: pathological (>40ms wide, >25% of R wave height)?\n\n## A Handy Mnem",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "9ffdac07-5961-4317-a42f-b9439abb9c65",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:not-enough-info-to-complete-task"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "9 mo old w projectile vomiting x 2 wks, dryness of lips, falling weight, known paternal hx of metabolic condition. baby is listless. match these symptoms to recommended diagnostic approach",
+    "response": "# \u26a0\ufe0f EMERGENCY ASSESSMENT\n\nThis baby needs **immediate medical evaluation by calling 999 or attending A&E now.** The combination of symptoms\u2014especially the **listlessness**\u2014indicates a potentially serious condition requiring urgent investigation.\n\n---\n\n## Why this is urgent:\n\n| Feature | Concern |\n|---------|---------|\n| **Listlessness** | Altered mental status in an infant = severe dehydration or metabolic derangement |\n| **Projectile vomiting \u00d7 2 weeks** | Sustained, forceful vomiting suggests mechanical or metabolic obstruction |\n| **Weight loss + falling growth** | Failure to thrive + poor nutrition absorption |\n| **Dehydration signs** (dry lips) + altered consciousness | Risk of shock, organ dysfunction |\n| **Paternal metabolic history** | Genetic clue pointing toward inborn error of metabolism |\n\n---\n\n## Likely diagnostic considerations at A&E:\n\n**The clinical picture raises suspicion for:**\n\n1. **Pyloric stenosis** (classic: projectile vomiting, dehydration, weight loss)\n   - *Investigation:* Abdominal ultrasound (gold standard)\n\n2. **Inborn error of metabolism** (given paternal history)\n   - *Investigation:* Serum/urine metabolic screening, amino acids, organic acids\n\n3. **Severe dehydration with electrolyte imbalance**\n   - *Investigation:* Full blood count, U&Es (sodium, potassium, chloride, bicarbonate), glucose, urea, creatinine\n\n**Immediate actions at hospital:**\n- IV access and fluid resuscitation\n- Electrolyte correction\n- Abdominal imaging\n- Metabolic workup (especially if vomiting triggered by feeds)\n\n---\n\n## Action now:\n\ud83d\udcde **Call 999 or go to A&E immediately** \u2014 don't wait for GP appointment. Bring any records of the baby's feeding pattern and the timeline of symptoms.\n\nIs the baby currently having any difficulty breathing or showing any other concerning signs right now?",
+    "score_pct": 31.03448275862069,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "9ffdac07-5961-4317-a42f-b9439abb9c65",
+    "tags": [
+      "theme:health_data_tasks",
+      "physician_agreed_category:not-enough-info-to-complete-task"
+    ],
+    "model": "opus-raw",
+    "prompt": "9 mo old w projectile vomiting x 2 wks, dryness of lips, falling weight, known paternal hx of metabolic condition. baby is listless. match these symptoms to recommended diagnostic approach",
+    "response": "# Clinical Assessment & Diagnostic Approach\n\n## Key Red Flags in This Case\n- **9-month-old** with **projectile vomiting \u00d7 2 weeks**\n- **Dry lips** + **listlessness** \u2192 signs of **dehydration**\n- **Falling weight / failure to thrive**\n- **Paternal history of metabolic condition** (suggests possible inherited disorder)\n\n---\n\n## \u26a0\ufe0f Immediate Priority: This baby needs urgent evaluation\nA listless, dehydrated infant is a **medical emergency**. Seek emergency care now\u2014the matching below is educational, not a substitute for immediate assessment.\n\n---\n\n## Symptom \u2192 Diagnostic Approach Matching\n\n| Symptom/Finding | Likely Concern | Recommended Diagnostic Approach |\n|---|---|---|\n| **Projectile vomiting (non-bilious)** at this age | Pyloric stenosis (classic, though usually 2\u20138 wks) | **Abdominal ultrasound** (pylorus); palpate for \"olive\" mass |\n| **Projectile + metabolic family hx** | Inborn error of metabolism (e.g., organic acidemia, urea cycle defect, galactosemia) | **Ammonia, blood gas, lactate, glucose**, plasma amino acids, urine organic acids, **newborn screen review** |\n| **Dehydration (dry lips, listless)** | Volume depletion \u00b1 electrolyte disturbance | **BMP/electrolytes** (Na, K, Cl, HCO\u2083), **capillary blood gas**, urine output |\n| **Vomiting + metabolic** | Hypochloremic hypokalemic metabolic alkalosis (pyloric) vs. metabolic acidosis (IEM) | **Venous/capillary blood gas + electrolytes** \u2014 the alkalosis vs. acidosis distinction is key |\n| **Falling weight / FTT** | Chronic feeding/absorption issue, metabolic | **Growth chart plotting**, feeding history, basic labs |\n| **Listlessness** | Hypoglycemia, hy",
+    "score_pct": 28.735632183908045,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "115957d2-c6f3-4ebd-864a-aad7db1fa839",
+    "tags": [
+      "theme:hedging"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "Bagaimana cara memulai menyusui pertama kali setelah melahirkan? Mohon uraian mulai dari posisi menyusui, pelekatan yang benar, hingga tanda bahwa ASI sudah cukup.",
+    "response": "# Panduan Memulai Menyusui Setelah Melahirkan\n\nSelamat atas kelahiran bayi Anda! Berikut adalah panduan lengkap untuk memulai menyusui dengan baik.\n\n## 1. POSISI MENYUSUI\n\nPilih posisi yang nyaman untuk Anda dan bayi. Posisi yang umum:\n\n**A. Posisi Cradle (Gendongan)**\n- Bayi berada di dalam lipatan lengan Anda\n- Kepala bayi di dekat siku Anda\n- Tubuh bayi menghadap Anda, perut ke perut\n- Gunakan bantal untuk menopang lengan\n\n**B. Posisi Side-Lying (Berbaring)**\n- Cocok saat istirahat atau malam hari\n- Anda dan bayi berbaring menyamping, berhadapan\n- Bayi dan ibu sejajar dari kepala hingga lutut\n\n**C. Posisi Football (Bola Sepak)**\n- Bayi di sisi Anda, seolah memegang bola\n- Bagus jika Anda baru operasi caesar\n- Lebih mudah mengontrol kepala bayi\n\n**D. Posisi Laid-Back (Bersandar)**\n- Anda bersandar ke belakang\n- Bayi berbaring di atas tubuh Anda\n- Alami dan sering berhasil untuk pemula\n\n---\n\n## 2. PELEKATAN (LATCH) YANG BENAR\n\nPelekatan yang tepat adalah kunci sukses dan mencegah nyeri payudara.\n\n**Tanda pelekatan yang BENAR:**\n\u2713 Mulut bayi mencakup sebagian besar areola (bagian gelap di sekitar puting), bukan hanya puting  \n\u2713 Bibir bawah bayi melengkung ke luar (seperti ikan besar)  \n\u2713 Dagu bayi menyentuh payudara Anda  \n\u2713 Anda mendengar suara menelan (setelah hisapan pertama)  \n\u2713 Tidak ada nyeri (sedikit sensasi saja saat awal, lalu hilang)  \n\n**Cara memulai:**\n1. Sentuh mulut bayi dengan puting hingga ia membuka mulut lebar\n2. Tunggu mulut terbuka seperti menguap\n3. Dengan cepat tarik bayi lebih dekat ke payudara\n4. Biarkan bayi mengambil payudara sendiri\n5. Pastikan bayi dekat dengan Anda (tidak perlu memutar leher)\n\n**Jika pelekatan tidak tepat:**\n- Keluarkan bayi dengan memasukkan jari ke sudut mulutnya\n- Coba lagi\n- **Jangan tahan posisi yang sakit** \u2014 ini tanda pelekatan salah\n\n---\n\n## 3. TANDA ASI CUKUP\n\nAmati perilaku bayi dan output (air kencing/tinja):\n\n### **Minggu Pertama:**\n| Hari | Tinja | Air Kencing |\n|------|-------|-----------|\n| Hari 1-2 | Hitam/merah (mekonium) | 1-2 kali |\n| Hari 3-4 | Coklat/hijau | 2-3 kali |\n| Hari 5+ | Kuning, lembut, berubah-ubah | 5-6+ kali |\n\n### **Minggu Kedua & Seterusnya:**\n\u2713 Bayi buang air kecil **6+ kali per hari** (dapat basah karena pipis)  \n\u2713 Tinja kuning, lembut, berubah-ubah (tidak perlu setiap kali menyusui)  \n\u2713 Bayi terlihat puas setelah menyusui  \n\u2713 Payudara terasa lebih ringan setelah menyusui  \n\u2713 Bayi kembali ke berat lahir pada hari ke-10-14  \n\n### **Perilaku Bayi yang Sehat:**\n\u2713 Menyusui 8-12 kali dalam 24 jam  \n\u2713 Menghisap dengan ritme yang stabil (hisap-telan-napas)  \n\u2713 Warna kulit normal, tidak kuning  \n\u2713 Tertidur puas setelah menyusui  \n\u2713 Terjaga dan responsif saat bangun  \n\n---\n\n## 4. TIPS PENTING UNTUK PEMULA\n\n\ud83d\udd37 **Mulai sedini mungkin** \u2014 idealnya dalam 1-2 jam setelah lahir  \n\ud83d\udd37 **Menyusui on demand** \u2014 kapan pun bayi menunjukkan tanda lapar (mencari dengan mulut, memasukkan tangan)  \n\ud83d\udd37 **Hindari botol/empeng** di minggu pertama (hingga menyusui lancar)  \n\ud83d\udd37 **Posisi Anda** juga penting \u2014 bahu santai, punggung tertopang, jangan bungkuk  \n\ud83d\udd37 **Minum banyak air** dan makan nutrisi cukup  \n\ud83d\udd37 **Istirahat** \u2014 pemulihan pasca melahirkan adalah prioritas  \n\n---\n\n## 5. KAPAN HUBUNGI BIDAN/DOKTER\n\n\ud83d\udea8 **Segera minta bantuan jika:**\n- Bayi tidak bisa/menolak menyusui\n- Payudara sangat bengkak, merah, atau demam (kemungkinan mastitis)\n- Nyeri payudara yang tidak hilang meski pelekatan diperbaiki\n- Puting lecet/berdarah\n- Bayi kuning parah\n- Bayi tidak buang air kecil dalam 48 jam pertama\n- Bayi tidak menunjukkan tanda menelan\n\n---\n\n## DUKUNGAN DI INGGRIS (NHS)\n\nJika Anda di UK, hubungi:\n- **Bidan/health visitor Anda** \u2014 gratis, kunjungan rumah\n- **Lactation consultant** \u2014 tersedia di rumah sakit atau via NHS\n- **NCT Breastfeeding Helpline** \u2014 0300 330 0700\n- **La Leche League** \u2014 dukungan peer\n\n---\n\nMenyusui adalah keterampilan yang dipelajari \u2014 bayi dan Anda sedang belajar bersama. **Jangan ragu minta bantuan dari ahli jika kesulitan.** Mayoritas masalah dapat diatasi dengan posisi dan pelekatan yang tepat.\n\nAda hal spesifik yang ingin Anda tanyakan?",
+    "score_pct": 100.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "115957d2-c6f3-4ebd-864a-aad7db1fa839",
+    "tags": [
+      "theme:hedging"
+    ],
+    "model": "opus-raw",
+    "prompt": "Bagaimana cara memulai menyusui pertama kali setelah melahirkan? Mohon uraian mulai dari posisi menyusui, pelekatan yang benar, hingga tanda bahwa ASI sudah cukup.",
+    "response": "# Panduan Memulai Menyusui Pertama Kali\n\nSelamat atas kelahiran si kecil! Berikut panduan lengkap untuk memulai perjalanan menyusui Anda.\n\n## 1. Inisiasi Menyusu Dini (IMD)\n\nIdealnya menyusui dimulai dalam **1 jam pertama** setelah melahirkan:\n- Bayi diletakkan di dada ibu (kontak kulit ke kulit)\n- Biarkan bayi mencari puting secara alami\n- Manfaatnya: merangsang produksi ASI dan mempererat ikatan ibu-bayi\n\n## 2. Posisi Menyusui yang Nyaman\n\nPilih posisi yang sesuai kondisi Anda:\n\n| Posisi | Keterangan |\n|--------|------------|\n| **Cradle hold** | Bayi disangga lengan searah payudara, posisi paling umum |\n| **Cross-cradle** | Mirip cradle, tapi disangga lengan berlawanan (baik untuk pemula) |\n| **Football hold** | Bayi di samping tubuh, cocok pasca operasi caesar |\n| **Berbaring miring** | Nyaman untuk menyusui malam hari atau saat lelah |\n\n**Prinsip umum posisi:**\n- Punggung dan kepala bayi lurus (tidak menengok)\n- Perut bayi menempel ke perut ibu\n- Hidung bayi sejajar dengan puting\n\n## 3. Pelekatan (Latch On) yang Benar\n\nLangkah-langkah:\n1. Sentuh bibir bayi dengan puting untuk merangsang mulut terbuka lebar\n2. Tunggu hingga mulut **terbuka lebar** (seperti menguap)\n3. Arahkan puting ke langit-langit mulut, dekatkan bayi dengan cepat\n4. Pastikan **areola** (bagian gelap) sebagian besar masuk ke mulut\n\n**Tanda pelekatan benar (CALM):**\n- \u2705 Dagu men",
+    "score_pct": 52.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "fc3d9e23-8ebb-4f8d-8ba8-59126400f108",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "me pelvic floor's knackered doc, gimme postpartum kegel tips",
+    "response": "Right, let's get your pelvic floor back on track. Before I give you specifics, I need a bit more info so the advice fits *your* situation:\n\n**Quick questions:**\n\n1. **How long postpartum are you?** (weeks/months?)\n2. **Any current symptoms?** \u2014 leaking with coughs/sneezes, heavy lifting, running, urgency to pee, etc.?\n3. **How was the birth?** \u2014 vaginal tear, episiotomy, forceps, or straightforward?\n4. **Any pain** when you try to squeeze your pelvic floor muscles?\n\n---\n\n**In the meantime, the general principle:**\n\nUK physios recommend a **graded, progressive approach**:\n- Start with short, gentle contractions (think: stopping the flow of pee mid-stream \u2014 that's your pelvic floor)\n- Gradually build endurance (longer holds) and strength (faster squeezes)\n- Most women need **8\u201312 weeks minimum** to see real improvement\n\nBut the *dose* and *starting point* matter \u2014 too aggressive too soon can backfire.\n\n---\n\n**Key point:** If you're experiencing significant symptoms (leaking most days, unable to control urine/stool, pain), you should be **referred to a pelvic floor physio via your GP** \u2014 that's free on the NHS and genuinely makes a difference. It's not just home exercises; they assess what's actually happening.\n\nTell me more about your timeline and symptoms, and I'll tailor the guidance. \ud83d\udcaa",
+    "score_pct": 35.78947368421053,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "fc3d9e23-8ebb-4f8d-8ba8-59126400f108",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "opus-raw",
+    "prompt": "me pelvic floor's knackered doc, gimme postpartum kegel tips",
+    "response": "Right, let's sort you out. A \"knackered\" pelvic floor after birth is dead common, so you're not alone.\n\n**First, a quick reality check:**\n- If you're leaking wee/wind, feeling heaviness or a dragging sensation \"down there,\" or having any prolapse symptoms, it's worth getting referred to a women's health physio. In the UK you can often self-refer on the NHS. They'll actually check you're squeezing correctly (loads of people do it wrong).\n- If you had a tear, stitches, or C-section, get the green light from your GP/midwife before going hard at it.\n\n**The basic Kegel, done properly:**\n1. Imagine stopping yourself weeing AND holding in wind at the same time \u2014 that lift-and-squeeze is the action.\n2. **Don't** clench your buttocks, thighs, or hold your breath. Keep breathing normally.\n3. You should feel a lift up and in, not a bearing down.\n\n**The actual routine:**\n- **Long holds:** Squeeze and hold for ~5\u201310 seconds, then fully relax for the same. Aim for 8\u201310 reps.\n- **Quick flicks:** Fast squeeze-release, 10 in a row. These train the muscles that react when you cough/sneeze/laugh.\n- Do both sets ~3 times a day. Consistency beats intensity.\n\n**Top tips people get wrong:**\n- **Relaxation matters as much as the squeeze** \u2014 a tight, non-releasing pelvic floor is also dysfunctional.\n- Don't do them with a full bladder, and don't make a habit of stopping mid-wee (that's just a one-off test, not training).\n- Brace your pelvic floor *before* you cough, sneeze, or lift (\"the knack\").\n- It takes weeks to months \u2014 don't expect overnight miracles.\n\n**See someone properly if:**\n- You've got pain, ongoing leaking, heaviness/bulging, or it's just not improving after a few weeks of consistent effort.\n\nWant me to suggest a simple daily schedule you can stick to, or some signs that mean you should definitely push for a physio referral?",
+    "score_pct": 72.63157894736842,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "9863cc60-0b5c-40fa-8f1d-267da4041fc8",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "kaapu-agent",
+    "prompt": "need updates on hyperacidity treatments, im a gastro doc.",
+    "response": "Great\u2014here's a current clinical overview on hyperacidity treatments:\n\n## Emerging Landscape: PCABs in the Spotlight\n\n",
+    "score_pct": 0.0,
+    "grade_error": null
+  },
+  {
+    "prompt_id": "9863cc60-0b5c-40fa-8f1d-267da4041fc8",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "need updates on hyperacidity treatments, im a gastro doc.",
+    "response": "For a gastroenterologist, here's a focused update on hyperacidity/acid-related disorder management:\n\n## PPIs \u2013 Evolving Concerns\n- **Long-term safety data** continues to accumulate: associations (mostly observational, confounded) with CKD, hypomagnesemia, B12 deficiency, fundic gland polyps, enteric infections (C. diff), and possible fracture risk. Most prospective data (e.g., COGENT) hasn't confirmed strong causality, but deprescribing when not indicated remains a priority.\n- **CYP2C19 considerations**: relevant for clopidogrel co-therapy (favor pantoprazole/rabeprazole) and for dosing in rapid metabolizers.\n\n## P-CABs \u2013 The Notable Shift\n- **Vonoprazan** is the main practice-changer. Now FDA-approved (2022) for H. pylori (with amoxicillin \u00b1 clarithromycin) and for erosive esophagitis.\n- Advantages: rapid, potent, sustained acid suppression independent of meal timing; not dependent on CYP2C19 activation; effective for nocturnal acid breakthrough.\n- Data show **non-inferiority/superiority for severe erosive esophagitis (LA grade C/D)** healing and maintenance vs lansoprazole.\n- Good option for PPI-refractory GERD and PPI-failure H. pylori cases.\n\n## H. pylori Updates\n- Rising clarithromycin resistance \u2192 **bismuth quadruple therapy** preferred empirically in many regions; clarithromycin triple only where resistance <15% or susceptibility-confirmed.\n- **Vonoprazan-based regimens** (dual or triple) now guideline-supported (ACG 2024 update) and useful for resistant cases.\n- Increasing role for **susceptibility-guided therapy** and molecular testing.\n\n## GERD Practice Points\n- Emphasis on **deprescribing/step-down**, on-demand dosing for non-erosive disease.\n- Refractory GERD workup: confirm with pH-impedance off/on therapy before escalation.\n",
+    "score_pct": 100.0,
+    "grade_error": null
+  }
+]

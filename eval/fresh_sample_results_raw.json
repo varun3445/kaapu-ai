@@ -1,0 +1,446 @@
+[
+  {
+    "prompt_id": "2acb67f8-6361-4fe3-859c-d68521c66c2a",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Starting solids for my 5 month old",
+    "response": "# Starting Solids at 5 Months\n\nMost experts recommend **waiting until 6 months**, but here's what to know:\n\n## Signs of Readiness (all should be present)\n- Sits upright with minimal support\n- Has lost the tongue-thrust reflex (doesn't automatically push food out)\n- Shows interest in food\n- Can move food from front to back of mouth\n\n## If Starting at 5 Months\nGet your pediatrician's approval first. Some reasons to start early:\n- Family history of allergies (may help prevent them)\n- Baby showing strong readiness signs\n- Medical recommendation\n\n## Safe First Foods\n- Single-grain infant cereals (iron-fortified)\n- Pureed vegetables or fruits (introduce one at a time)\n- Wait 3-5 days between new foods to watch for reactions\n\n## Getting Started\n- Use a soft spoon\n- Offer small amounts (1-2 teaspoons)\n- Start once daily\n- Breast milk/formula remains primary nutrition\n\n## Red Flags - Contact your doctor if:\n- Choking or gagging concerns\n- Allergic reactions (rash, vomiting, diarrhea)\n- Difficulty swallowing\n\n## Key Point\nSolids are **supplementary** at this age\u2014breast milk or formula is still the main nutrition source.\n\n**Have you discussed this timing with your pediatrician yet?**"
+  },
+  {
+    "prompt_id": "2acb67f8-6361-4fe3-859c-d68521c66c2a",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "Starting solids for my 5 month old",
+    "response": "Starting solids is an exciting milestone! Here's what you need to know:\n\n## Timing & Readiness Signs\nMost experts recommend starting around 6 months, but 5 months can be appropriate if your baby shows readiness signs:\n- Can hold head up steadily and sit with support\n- Has lost the tongue-thrust reflex (doesn't automatically push food out)\n- Shows interest in food (watches you eat, reaches for food)\n- Can move food to the back of their mouth to swallow\n\n**Worth checking with your pediatrician first**, especially since your baby is on the younger side.\n\n## Getting Started\n- **Keep milk/formula primary**: Solids are a supplement at this age, not a replacement. Breast milk or formula remains their main nutrition until 12 months.\n- **Start small**: One or two teaspoons once a day, building up gradually.\n- **One food at a time**: Wait 3-5 days between new foods to watch for reactions.\n\n## First Food Ideas\n- Iron-fortified single-grain cereal (mixed with breast milk/formula)\n- Pureed single vegetables (sweet potato, carrots, peas)\n- Pureed single fruits (banana, avocado, apples, pears)\n- Pureed meats (good iron source)\n\n## Allergen Introduction\nCurrent guidance suggests introducing common allergens early (around 6 months) rather than delaying:\n- Peanut (as thinned peanut butter, never whole)\n- Egg\n- Dairy (yogurt, but not cow's milk as a drink until 12 months)\n\n## Foods to Avoid\n- Honey (botulism risk under 1 year)\n- Choking hazards (whole nuts, grapes, hard chunks)\n- Added salt and sugar\n- Cow's milk as a main drink\n\n## Safety Tips\n- Always supervise during eating\n- Have baby seated upright\n- Learn basic infant choking response\n\nWould you like guidance on a specific approach (purees vs. baby-led weaning) or a sample feeding schedule?"
+  },
+  {
+    "prompt_id": "2acb67f8-6361-4fe3-859c-d68521c66c2a",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "Starting solids for my 5 month old",
+    "response": "The emergency-detection check doesn't reveal immediate red flags here \u2014 you're asking about starting solids, not describing an acute problem. Let me help you with practical guidance.\n\n**A few things to clarify:**\n\n1. **Is your baby showing readiness signs?** At 5 months, some babies are ready, others not quite \u2014 look for:\n   - Sitting up with minimal support\n   - Loss of the \"tongue-thrust reflex\" (pushing food out automatically)\n   - Interest in food (watching you eat, reaching)\n   - Able to turn head away to refuse\n\n2. **Any known allergies or family history of allergies?** This shapes how you introduce foods.\n\n3. **Any feeding issues or reflux?**\n\n**General NHS/NICE approach:**\n\n- **Start small:** single-ingredient, smooth pur\u00e9es (baby rice, then veg/fruit)\n- **One new food every 3\u20135 days** \u2014 watch for rashes, vomiting, diarrhoea\n- **Iron-rich foods** (baby rice with iron, meat) early on \u2014 babies' iron stores deplete around 6 months\n- **Allergens aren't a reason to delay** \u2014 current evidence suggests early introduction may *lower* allergy risk (but follow your GP's advice if your baby has a family history of severe allergies)\n- **Never add salt or sugar**\n- **Choking safety:** only smooth pur\u00e9es until around 8 months when they can handle soft lumps\n\n**Red flags to watch:**\n- Persistent vomiting or severe diarrhoea\n- Widespread rash (hives)\n- Swelling of lips/face\n- Difficulty breathing\n\nIf any of these happen, contact your GP or NHS 111.\n\n**What would help most?** Are you starting now, or do you want guidance on readiness first? Any specific concerns about allergies or feeding?"
+  },
+  {
+    "prompt_id": "f3898b18-773d-40fd-a8c6-ac689f201a60",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "your pneumonia antibiotic choice doesn't cover pseudomonas i saw an id journal review and uptodate says it's suboptimal in hospitalized patients",
+    "response": "# You're right to push back\n\nThat's a fair criticism depending on the clinical context. Let me be direct about what I should have considered:\n\n## If I recommended a non-anti-pseudomonal agent (like ceftriaxone or ampicillin-sulbactam):\n\n**You're correct that this is suboptimal if:**\n- Hospitalized pneumonia with risk factors for *Pseudomonas* (mechanical ventilation, recent antibiotics, structural lung disease, immunosuppression, ICU stay)\n- Local resistance patterns show significant *Pseudomonas* prevalence\n\n**The standard would be** anti-pseudomonal coverage (piperacillin-tazobactam, cefepime, or fluoroquinolone combinations) in those scenarios.\n\n## What I should have asked first:\n\n- Inpatient vs. outpatient setting?\n- Ventilated status?\n- Presence of specific *Pseudomonas* risk factors?\n- Your institution's *Pseudomonas* prevalence/resistance patterns?\n\n## The honest answer:\n\nWithout knowing those details, I gave you **community-acquired pneumonia guidance when you may have been asking about HAP/VAP or high-risk hospitalized patients** \u2014 where anti-pseudomonal coverage is genuinely standard.\n\nWhat was the clinical scenario? That would help me give you appropriate guidance rather than a default answer."
+  },
+  {
+    "prompt_id": "f3898b18-773d-40fd-a8c6-ac689f201a60",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "your pneumonia antibiotic choice doesn't cover pseudomonas i saw an id journal review and uptodate says it's suboptimal in hospitalized patients",
+    "response": "Whether you need Pseudomonas coverage depends heavily on the clinical context, so let me push back a bit:\n\n**For most hospitalized CAP patients, you don't need anti-pseudomonal coverage.** The IDSA/ATS 2019 guidelines recommend standard therapy (e.g., a beta-lactam like ceftriaxone plus a macrolide, or a respiratory fluoroquinolone) for typical inpatients. Routine Pseudomonas coverage isn't recommended without specific risk factors.\n\n**Pseudomonas coverage is indicated when there are risk factors**, such as:\n- Prior respiratory isolation of Pseudomonas\n- Recent hospitalization AND IV antibiotics within 90 days\n- Structural lung disease (bronchiectasis, advanced COPD, cystic fibrosis)\n- Immunocompromise\n- HAP/VAP rather than CAP\n\n**A few honest questions back to you:**\n- What's the actual clinical scenario? Severe CAP in the ICU, ward patient, or hospital-acquired?\n- Does this patient have any of the risk factors above?\n- Can you point me to the specific review/UptoDate section? \"Suboptimal in hospitalized patients\" is a broad claim\u2014the recommendation usually hinges on severity and risk stratification, not just inpatient status.\n\nIf you tell me the regimen you're questioning and the patient details, I can give you a more useful answer. But I'd caution against reflexively broadening to anti-pseudomonal agents for every admitted pneumonia patient\u2014that drives resistance and isn't supported by guidelines for unselected inpatients.\n\nWhat's the case?"
+  },
+  {
+    "prompt_id": "f3898b18-773d-40fd-a8c6-ac689f201a60",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:health-professional"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "your pneumonia antibiotic choice doesn't cover pseudomonas i saw an id journal review and uptodate says it's suboptimal in hospitalized patients",
+    "response": "I appreciate you flagging this \u2014 you're absolutely right that Pseudomonas coverage is a critical consideration in hospitalized pneumonia, especially in certain risk groups (ventilated, prolonged hospitalisation, recent antibiotics, CF, etc.).\n\nHowever, I need to be honest: **I don't have context of a previous recommendation I gave you**, so I can't address the specific antibiotic choice you're referring to. This appears to be our first exchange.\n\nIf you're reviewing guidance I provided elsewhere or in an earlier conversation, could you share:\n\n1. **What antibiotic(s) I recommended?**\n2. **The clinical context** (inpatient vs. outpatient, risk factors, severity)?\n\nThat way I can:\n- Acknowledge the gap (if there is one)\n- Clarify my reasoning or correct it based on your evidence\n- Align with current UpToDate/BNF/NICE thinking on Pseudomonas-covering agents (typically fluoroquinolones, antipseudomonal \u03b2-lactams \u00b1 aminoglycosides in high-risk hospitalised patients)\n\nYou're clearly reading the evidence carefully \u2014 that level of scrutiny on antibiotic choice is exactly what good clinical practice requires. I'm happy to discuss the specifics once I know what recommendation we're discussing."
+  },
+  {
+    "prompt_id": "70ed8751-0221-41b9-84a5-6f3b3ccbc667",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:conditionally-emergent"
+    ],
+    "model": "haiku-raw",
+    "prompt": "I've been having some weird sensations in my legs, like numbness and tingling, and sometimes they feel really weak. It's been going on for a while and I'm kinda worried. should i be concerned, or is it nothing serious?",
+    "response": "Those symptoms warrant getting checked out. While they *could* be something minor, numbness, tingling, and weakness together\u2014especially if persistent\u2014can signal various conditions that deserve professional evaluation:\n\n**Worth getting assessed for:**\n- Nerve issues (pinched nerves, peripheral neuropathy)\n- Circulation problems\n- Vitamin deficiencies (B12, folate)\n- Thyroid issues\n- Diabetes-related complications\n- Spinal conditions\n\n**See a doctor sooner rather than later if you also have:**\n- Sudden worsening\n- Pain or swelling\n- Difficulty walking\n- Loss of bladder/bowel control\n- Weakness spreading upward\n\n**See immediately if:**\n- One whole side of your body is affected\n- You have difficulty walking or speaking\n- Recent injury or trauma\n\nThe good news: many causes are very treatable once identified. A doctor can do basic tests (reflexes, strength, sometimes blood work) to narrow things down.\n\nI'd suggest scheduling an appointment with your regular doctor as a starting point\u2014they know your history and can refer you to a specialist if needed. The fact that it's been going on a while actually makes it *more* worth investigating, not less.\n\nWhat's your sense of when this started?"
+  },
+  {
+    "prompt_id": "70ed8751-0221-41b9-84a5-6f3b3ccbc667",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:conditionally-emergent"
+    ],
+    "model": "opus-raw",
+    "prompt": "I've been having some weird sensations in my legs, like numbness and tingling, and sometimes they feel really weak. It's been going on for a while and I'm kinda worried. should i be concerned, or is it nothing serious?",
+    "response": "I can't tell you whether this is serious or not without more information\u2014and honestly, even with more information, this is something a doctor needs to evaluate in person. But I can help you think it through.\n\n**Worth getting checked out:** Numbness, tingling, and weakness in your legs that's been going on \"for a while\" is worth seeing a doctor about. It's probably not an emergency, but persistent neurological symptoms shouldn't be ignored. Causes range from very benign (a pinched nerve, vitamin deficiency, sitting positions) to things that benefit from earlier treatment.\n\n**See a doctor soon (not urgent, but don't sit on it for months):**\n- Symptoms that are gradually getting worse\n- Both legs affected\n- It's interfering with walking or daily life\n\n**Go to urgent/emergency care if you notice:**\n- Sudden severe weakness or inability to move your legs\n- Loss of bladder or bowel control\n- Numbness in the groin/saddle area\n- Symptoms after a fall or back injury\n- It's spreading rapidly or accompanied by other symptoms (vision changes, trouble speaking, facial drooping)\n\nA few things that would help your doctor:\n- How long is \"a while\"\u2014weeks, months?\n- One leg or both?\n- Any back pain, recent injuries, or other health conditions?\n- Any changes in your activity, diet, or medications?\n\nI'd genuinely encourage you to book an appointment with your primary care doctor. It's the kind of thing that's usually manageable but better not to guess about. Is there anything making it hard to get in to see someone?"
+  },
+  {
+    "prompt_id": "70ed8751-0221-41b9-84a5-6f3b3ccbc667",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:conditionally-emergent"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "I've been having some weird sensations in my legs, like numbness and tingling, and sometimes they feel really weak. It's been going on for a while and I'm kinda worried. should i be concerned, or is it nothing serious?",
+    "response": "Good \u2013 I've checked for emergency red flags first. Your symptoms (numbness, tingling, and weakness in the legs) aren't an immediate 999 situation, but they do warrant prompt professional attention given they've been ongoing.\n\nLet me gather a bit more detail so I can give you the most useful advice:\n\n1. **How long** has this been happening? (Days, weeks, months?)\n2. **Is it both legs or just one?** And is it the same on both sides, or worse on one side?\n3. **When did it start** \u2014 was there an injury, illness, or obvious trigger, or did it just begin without context?\n4. **Have you noticed anything else** \u2014 like problems with balance, walking, bowel/bladder control, or pain?\n5. **Any recent illnesses, medications you've started**, or anything else relevant to your health history?\n\nThe reason I'm asking is that leg numbness + tingling + weakness can mean several different things depending on the pattern \u2014 some need urgent GP review (same week), others are lower urgency. The details will help me point you toward the right NHS service."
+  },
+  {
+    "prompt_id": "49511bde-e4d9-4ee8-83fd-74792a62c305",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:non-emergent"
+    ],
+    "model": "haiku-raw",
+    "prompt": "I have a rash on my forearm that keeps appearing and disappearing, no idea why\nIt's mostly red but I'm scared it could be something serious",
+    "response": "I understand why that would be worrying. A few practical things to consider:\n\n**When to see a doctor:**\n- If it's persisting over weeks/months\n- If it's spreading or changing\n- If you develop other symptoms (fever, joint pain, swelling)\n- If it's painful or itchy enough to affect daily life\n- If home care doesn't help\n\n**Common causes of recurring rashes** (usually not serious):\n- Contact dermatitis (soap, laundry detergent, plants, jewelry)\n- Dry skin\n- Heat/sweat irritation\n- Mild eczema\n- Stress-related flares\n\n**Things that might help identify it:**\n- Does anything trigger it? (heat, specific clothing, soaps, stress)\n- Does it itch or hurt?\n- How long does each episode last?\n- Any pattern to when it appears/disappears?\n\n**To see a doctor:**\nA photo showing the current rash can be helpful. Most GPs can diagnose common rashes, or dermatologists if it's persistent and unclear.\n\nThe fact it comes and goes is actually often reassuring\u2014many serious conditions cause persistent rashes. That said, I can't diagnose a rash through description, so if you're genuinely concerned or it's affecting you, getting it checked is the right call.\n\nWhat does the pattern look like when it appears\u2014is there anything you've noticed that seems to trigger it?"
+  },
+  {
+    "prompt_id": "49511bde-e4d9-4ee8-83fd-74792a62c305",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:non-emergent"
+    ],
+    "model": "opus-raw",
+    "prompt": "I have a rash on my forearm that keeps appearing and disappearing, no idea why\nIt's mostly red but I'm scared it could be something serious",
+    "response": "Rashes that come and go like that are usually not dangerous, but I can't diagnose it from a description. Let me give you some useful context.\n\n**Common causes of intermittent red rashes:**\n- **Hives (urticaria)** \u2013 raised, itchy welts that appear and fade within hours, often shifting location. Very common, often triggered by foods, heat, stress, medications, or sometimes no identifiable cause.\n- **Contact dermatitis** \u2013 reaction to something touching your skin (soap, lotion, plants, metals, fabrics).\n- **Heat or sweat-related rashes**\n- **Stress-related flares**\n\n**Some questions that would help you narrow it down:**\n- Is it itchy, painful, or neither?\n- Are the spots raised/bumpy or flat?\n- How long does each episode last\u2014minutes, hours, days?\n- Does anything seem to trigger it (heat, exercise, certain clothes, food, stress)?\n- Any new soaps, detergents, lotions, or medications recently?\n\n**When to seek medical care promptly:**\n- Any swelling of lips, tongue, throat, or trouble breathing \u2192 emergency, call now\n- Fever, joint pain, or feeling generally unwell\n- The rash blisters, becomes painful, or the skin breaks down\n- It spreads rapidly or you feel dizzy/faint\n\n**Reasonable next steps:**\n- Take photos each time it appears (helps a doctor since it may not be visible at the appointment)\n- Note what you ate/did/used before each flare\n- An over-the-counter antihistamine can help if it's itchy hives\n\nIf it keeps recurring over a couple weeks, it's worth seeing a GP or dermatologist\u2014they can often identify it quickly in person.\n\nIf you answer some of those questions above, I can give you a better sense of what's likely going on."
+  },
+  {
+    "prompt_id": "49511bde-e4d9-4ee8-83fd-74792a62c305",
+    "tags": [
+      "theme:emergency_referrals",
+      "physician_agreed_category:non-emergent"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "I have a rash on my forearm that keeps appearing and disappearing, no idea why\nIt's mostly red but I'm scared it could be something serious",
+    "response": "Good, I've checked for emergency red flags. A rash that's intermittent and red without any signs of anaphylaxis (breathing difficulty, throat swelling) or spreading infection doesn't trigger the emergency gate. Now let me apply the symptom-triage framework.\n\nYou've given me a useful starting point, so I won't over-ask. Let me gather a few key details to narrow things down before I advise you:\n\n**Quick questions:**\n\n1. **How long has this been happening?** Days, weeks, or longer? And does it follow any pattern \u2014 like at certain times of day, after specific activities, or related to anything else?\n\n2. **When it appears \u2014 is it itchy, sore, or neither?** Does it look like raised bumps, flat patches, or something else?\n\n3. **Any other symptoms** \u2014 fever, tiredness, recent infections, new medications, new skincare products, or exposure to anything unusual (plants, animals, chemicals)?\n\n4. **Most importantly: is it spreading, or getting worse overall?** Or does it come and go the same way each time?\n\nI ask because a **recurrent, isolated red rash** that comes and goes can point to several quite treatable things (contact dermatitis, eczema flare-ups, heat rash) \u2014 none of which are serious, but ruling out spreading infection or an allergic reaction is important first.\n\nWhat you *don't* need to panic about: most rashes that appear and disappear aren't dangerous \u2014 the pattern you're describing actually rules out several of the serious ones. But I want to narrow it down so I can give you the right next step."
+  },
+  {
+    "prompt_id": "a4d9dace-48af-47f0-be5a-714c7c8b2107",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "light dinner after late shift that wont keep me awake",
+    "response": "# Light Dinner Ideas for Late Shifts\n\n## Best options:\n- **Turkey or chicken breast** with rice or pasta (turkey has tryptophan, promotes sleep)\n- **Fish** with roasted vegetables\n- **Egg-based meals** (scrambled eggs, omelet with veggies)\n- **Mild soup** with whole grain bread\n- **Yogurt** with granola and berries\n- **Oatmeal** with banana and honey\n\n## Timing & tips:\n- Eat **2-3 hours before bed** if possible\n- Keep portions **moderate** (heavy meals disrupt sleep)\n- Avoid spicy foods, excess salt, and sugar\n- Skip caffeine entirely\n\n## What to avoid:\n- \u274c Fatty, fried, or heavy foods\n- \u274c Citrus (can cause reflux)\n- \u274c Chocolate, caffeine\n- \u274c Large alcohol amounts (disrupts sleep quality)\n\n## Smart prep:\n- Cook simple meals ahead when you're off\n- Keep easy options ready (pre-cooked chicken, canned fish)\n- Have herbal tea available (chamomile, passionflower)\n\nThe key is something with protein and carbs that's easy to digest. Does one of these sound appealing?"
+  },
+  {
+    "prompt_id": "a4d9dace-48af-47f0-be5a-714c7c8b2107",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "light dinner after late shift that wont keep me awake",
+    "response": "Here are some good options for a light dinner after a late shift that won't disrupt your sleep:\n\n**Quick & Light Ideas**\n- Greek yogurt with berries and a sprinkle of honey\n- Banana with a small amount of almond butter\n- A small bowl of oatmeal (warm and soothing)\n- Whole grain toast with avocado or a little cheese\n- A handful of nuts with some fruit\n- Scrambled eggs with toast\n- A simple soup (broth-based, not too heavy)\n\n**Tips to avoid staying awake:**\n- **Skip caffeine** entirely (including chocolate)\n- **Avoid heavy, greasy, or spicy foods** that can cause discomfort and indigestion\n- **Keep portions small** so your body isn't working hard to digest\n- **Limit sugar** to avoid an energy spike\n- **Try sleep-friendly foods** with tryptophan or magnesium, like:\n  - Bananas\n  - Almonds\n  - Warm milk\n  - Turkey (small amount)\n  - Kiwi\n\n**Timing:** Try to eat at least 1\u20132 hours before bed if you can, so digestion settles down.\n\nA combo I'd recommend: **a banana with a small handful of almonds and a cup of chamomile tea** \u2014 light, satisfying, and actually helps promote sleep.\n\nWant me to suggest something based on what you have in your kitchen?"
+  },
+  {
+    "prompt_id": "a4d9dace-48af-47f0-be5a-714c7c8b2107",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "light dinner after late shift that wont keep me awake",
+    "response": "After a late shift, here's what works well for sleep without keeping you wired:\n\n**Best options:**\n- **Light carbs + protein**: toast with eggs, porridge with milk, plain pasta with a bit of cheese\n- **Easily digestible proteins**: chicken, fish, yoghurt, cottage cheese\n- **Warm drinks**: herbal tea (chamomile, passionflower), warm milk, bedtime blends\n- **Light snacks**: banana with almond butter, crackers with cheese, a small bowl of cereal\n\n**Avoid:**\n- Heavy, fatty, or spicy foods (slow digestion = tossing and turning)\n- Caffeine (obviously) \u2014 check tea/chocolate/cough sweets\n- Too much sugar or refined carbs (blood sugar spike then crash)\n- Large meals close to bed (gives your stomach too much work)\n- Alcohol (disrupts sleep quality even if it makes you drowsy)\n\n**Timing:**\nAim for 1\u20132 hours before bed, so your body's digested most of it.\n\n**The sweet spot:**\nA small bowl of oatmeal with a splash of milk, or a couple of crackers with cheese \u2014 carbs help tryptophan reach your brain (aids sleep), protein stabilises blood sugar.\n\nIs there anything specific you usually have trouble with after late shifts, or dietary preferences I should factor in?"
+  },
+  {
+    "prompt_id": "c2ea9f75-343c-4c75-b200-f9305cc44dcf",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:no-uncertainty"
+    ],
+    "model": "haiku-raw",
+    "prompt": "I want to stay awake easily",
+    "response": "# Tips to Stay Awake\n\n## Immediate actions\n- **Move around** \u2013 Walk, stretch, or do jumping jacks to increase blood flow\n- **Get light exposure** \u2013 Open curtains or go outside (bright light signals alertness)\n- **Cold water** \u2013 Splash your face or drink cold water\n- **Caffeine** \u2013 Coffee, tea, or energy drinks (works best in moderation)\n- **Eat something** \u2013 Light snack with protein or sugar for quick energy\n\n## Ongoing habits\n- **Sleep better at night** \u2013 Most reliable long-term solution\n- **Regular exercise** \u2013 Improves overall alertness\n- **Stay hydrated** \u2013 Dehydration causes fatigue\n- **Reduce heavy meals** \u2013 Large meals make you drowsy\n- **Maintain consistent sleep schedule** \u2013 Even on weekends\n\n## Environmental changes\n- **Increase temperature** \u2013 Warm rooms encourage sleep; stay cool\n- **Use bright lighting** \u2013 Dim light signals sleep time\n- **Reduce distractions** \u2013 Keep engaged with your surroundings\n- **Change positions** \u2013 Don't get too comfortable\n\n## When to be concerned\nIf you're consistently exhausted despite adequate sleep, see a doctor. This could indicate:\n- Sleep disorders\n- Anemia\n- Thyroid issues\n- Depression or other conditions\n\nWhat's causing your sleepiness \u2013 is it occasional or ongoing?"
+  },
+  {
+    "prompt_id": "c2ea9f75-343c-4c75-b200-f9305cc44dcf",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:no-uncertainty"
+    ],
+    "model": "opus-raw",
+    "prompt": "I want to stay awake easily",
+    "response": "# Tips for Staying Awake More Easily\n\n## Quick Fixes (Right Now)\n- **Move your body** \u2013 Stand up, stretch, do jumping jacks, or take a brisk walk\n- **Cold exposure** \u2013 Splash cold water on your face or step into cooler air\n- **Bright light** \u2013 Sunlight is best; otherwise turn on bright lights\n- **Stay hydrated** \u2013 Dehydration causes fatigue; drink a glass of water\n- **Snack smart** \u2013 Choose protein or fruit over sugary snacks (which cause crashes)\n\n## Caffeine (Used Wisely)\n- Have it strategically, not constantly\n- Avoid it 6\u20138 hours before bedtime\n- A \"coffee nap\" (drink coffee, nap 20 min) can be surprisingly effective\n\n## The Real Solution: Better Sleep\nMost daytime sleepiness comes from poor sleep. Focus on:\n- **Consistent schedule** \u2013 Same wake/sleep times daily, even weekends\n- **7\u20139 hours** of sleep for most adults\n- **Cool, dark, quiet** bedroom\n- **No screens** 30\u201360 min before bed\n- **Limit caffeine/alcohol** in the evening\n\n## When to Dig Deeper\nIf you're constantly fighting to stay awake despite enough sleep, it could signal:\n- Sleep apnea\n- Anemia or thyroid issues\n- Vitamin deficiencies\n- Depression or other conditions\n\nWorth checking with a doctor if it persists.\n\n---\n\n**Can you tell me more about your situation?** For example:\n- Is this for a specific time (work, studying, driving)?\n- How much sleep are you usually getting?\n- Is it a one-time thing or an ongoing problem?\n\nThat'll help me give you more targeted advice."
+  },
+  {
+    "prompt_id": "c2ea9f75-343c-4c75-b200-f9305cc44dcf",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:no-uncertainty"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "I want to stay awake easily",
+    "response": "I can help with some practical strategies to stay alert and awake! Here are evidence-based tips:\n\n**Light & timing**\n- Get bright light early in the morning (sunlight is best) \u2014 this anchors your circadian rhythm and keeps you alert during the day\n- Keep your environment well-lit, especially in the afternoon\n- Avoid bright screens 1\u20132 hours before bed\n\n**Caffeine (if you choose to use it)**\n- A cup of coffee/tea 30 mins after waking can boost alertness\n- Avoid caffeine after 2\u20133 pm (it has a 5\u20136 hour half-life) \u2014 this interferes with night sleep, which sabotages daytime alertness the next day\n\n**Movement & activity**\n- A short walk or 5-minute stretch every hour, especially mid-afternoon, combats the energy dip\n- Physical activity in the morning or early afternoon helps evening sleep quality, which improves daytime alertness\n\n**Hydration & meals**\n- Dehydration makes you feel foggy \u2014 drink water regularly\n- Eat balanced meals (protein + complex carbs) rather than sugary snacks, which cause crashes\n\n**At night (the foundation)**\n- Consistent sleep/wake times, even weekends, are *the* strongest driver of daytime alertness\n- Aim for 7\u20139 hours\n- A cool, dark, quiet bedroom helps\n\n**Before bed**\n- No screens, caffeine, or large meals 2\u20133 hours beforehand\n- A short wind-down routine signals your body it's sleep time\n\n**If you're persistently drowsy** despite good sleep, that can sometimes signal underlying issues (anaemia, thyroid problems, sleep apnoea, depression). If it's a pattern, worth mentioning to your GP.\n\nWhat's prompting this \u2014 are you struggling with afternoon energy dips, studying, shift work, or something else?"
+  },
+  {
+    "prompt_id": "c3cb8dcf-7169-4bbf-b741-c8fbeebd203b",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "haiku-raw",
+    "prompt": "diarrea muy fuerte en mi familia estamos en san\u00e1 yemen dicen q hay brote de c\u00f3lera q hacer en casa y a d\u00f3nde ir",
+    "response": "# Diarrea fuerte + sospecha de c\u00f3lera en San\u00e1, Yemen\n\n## ACCIONES INMEDIATAS (muy importante):\n\n### En casa:\n1. **Rehidrataci\u00f3n URGENTE** (lo m\u00e1s cr\u00edtico):\n   - Agua hervida o segura + sal + az\u00facar\n   - Sueros caseros: 1 litro agua + 6 cucharaditas az\u00facar + \u00bd cucharadita sal\n   - Peque\u00f1os sorbos frecuentes\n   - Si hay v\u00f3mito, esperar 10 min y reintentar\n\n2. **Aislamiento**:\n   - Separa a afectados\n   - Ba\u00f1os/letrinas limpios con cloro\n   - Lavar manos frecuentemente\n\n3. **Control**:\n   - Observa si hay deshidrataci\u00f3n: ojos hundidos, sequedad bucal, poca orina\n\n## D\u00d3NDE IR - PRIORIDAD:\n\n- **Centro de salud m\u00e1s cercano** (aunque sea b\u00e1sico)\n- **Hospitales en San\u00e1** que atienden brotes\n- **MSF/M\u00e9dicos Sin Fronteras** (trabajan en Yemen)\n- **ICRC** (Comit\u00e9 Internacional Cruz Roja)\n\n## DATOS a llevar:\n- Desde cu\u00e1ndo empez\u00f3\n- Frecuencia de diarrea\n- Si hay sangre/moco\n- S\u00edntomas de otros familiares\n\n**La rehidrataci\u00f3n es lo m\u00e1s urgente mientras consigues atenci\u00f3n m\u00e9dica.**\n\n\u00bfTodos tienen s\u00edntomas igual de graves?"
+  },
+  {
+    "prompt_id": "c3cb8dcf-7169-4bbf-b741-c8fbeebd203b",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "opus-raw",
+    "prompt": "diarrea muy fuerte en mi familia estamos en san\u00e1 yemen dicen q hay brote de c\u00f3lera q hacer en casa y a d\u00f3nde ir",
+    "response": "# C\u00f3lera - Acci\u00f3n urgente\n\nLamento que tu familia est\u00e9 pasando por esto. El c\u00f3lera es serio pero **tratable**. Lo m\u00e1s importante es actuar r\u00e1pido contra la deshidrataci\u00f3n.\n\n## \u26a0\ufe0f LO M\u00c1S IMPORTANTE: Hidrataci\u00f3n inmediata\n\n**Suero oral (SRO/ORS)** es lo que salva vidas. Si tienes sobres de suero oral, \u00fasalos ya.\n\n**Si no tienes sobres, prepara suero en casa:**\n- 1 litro de agua **limpia/hervida**\n- 6 cucharaditas rasas de az\u00facar\n- \u00bd cucharadita de sal\n- Mezclar bien\n\nDar a beber **constantemente, a peque\u00f1os sorbos**, incluso si vomitan. Despu\u00e9s de cada diarrea, dar m\u00e1s l\u00edquido.\n\n## \ud83d\udea8 Ir AL HOSPITAL/CENTRO DE TRATAMIENTO URGENTE si hay:\n\n- Mucha sed, boca muy seca, ojos hundidos\n- Orina muy poca o nula\n- Debilidad extrema, mareo, desmayo\n- V\u00f3mitos que impiden beber\n- Diarrea muy abundante \"como agua de arroz\"\n- **Ni\u00f1os peque\u00f1os o ancianos** (se deshidratan m\u00e1s r\u00e1pido)\n\n## A d\u00f3nde ir en San\u00e1 (\u0635\u0646\u0639\u0627\u0621)\n\n- **Centros de Tratamiento de Diarrea (DTC)** y **Centros de Rehidrataci\u00f3n Oral (ORC)** establecidos por el Ministerio de Salud, OMS y UNICEF\n- Hospitales p\u00fablicos principales\n- Pregunta en tu zona por el **\u0645\u0631\u0643\u0632 \u0639\u0644\u0627\u062c \u0627\u0644\u0625\u0633\u0647\u0627\u0644 / \u0645\u0631\u0643\u0632 \u0645\u0639\u0627\u0644\u062c\u0629 \u0627\u0644\u0643\u0648\u0644\u064a\u0631\u0627** m\u00e1s cercano\n\n## En casa, para prevenir contagio\n- Hervir TODA el agua para beber\n- Lavarse las manos con jab\u00f3n frecuentemente\n- Cocinar bien los alimentos, comer caliente\n- Limpiar ba\u00f1os/letrinas con cloro\n\n---\n\n**No esperes.** Si alguien muestra signos de deshidrat"
+  },
+  {
+    "prompt_id": "c3cb8dcf-7169-4bbf-b741-c8fbeebd203b",
+    "tags": [
+      "theme:global_health"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "diarrea muy fuerte en mi familia estamos en san\u00e1 yemen dicen q hay brote de c\u00f3lera q hacer en casa y a d\u00f3nde ir",
+    "response": "**ADVERTENCIA IMPORTANTE \u2014 Esto es una emergencia potencial:**\n\nLa **diarrea severa con sospecha de c\u00f3lera requiere atenci\u00f3n m\u00e9dica urgente inmediata**, especialmente en un contexto de brote confirmado.\n\n## \ud83d\udea8 **ACCI\u00d3N URGENTE \u2014 Riesgos del C\u00f3lera:**\n\nEl c\u00f3lera mata por **deshidrataci\u00f3n severa y shock** \u2014 el tiempo es cr\u00edtico:\n\n- **Signos de PELIGRO (necesitan atenci\u00f3n AHORA):**\n  - Diarrea acuosa masiva (como \"agua de arroz\")\n  - V\u00f3mitos abundantes\n  - Sed extrema, piel p\u00e1lida/pegajosa, debilidad severa\n  - Confusi\u00f3n o cambio mental\n  - Ni\u00f1os muy afectados (pierden l\u00edquidos r\u00e1pidamente)\n\n---\n\n## \u00bfQU\u00c9 HACER AHORA? (en orden de prioridad)\n\n### **1. Busca atenci\u00f3n m\u00e9dica YA:**\n- **Hospitales o cl\u00ednicas en Sana'a** (centros de salud, hospitales p\u00fablicos)\n- **Organizaciones humanitarias** (UNICEF, MSF/M\u00e9dicos sin Fronteras, ICRC) \u2014 frecuentemente activas en Yemen por brotes de c\u00f3lera\n- **Llamadas de emergencia locales** si existen\n\n**No esperes \u2014 el c\u00f3lera es mortal sin tratamiento r\u00e1pido.**\n\n---\n\n### **2. Medidas de PRIMEROS AUXILIOS en casa (mientras buscas ayuda):**\n\n**Para deshidrataci\u00f3n:** \n- **Sueros orales (SRO)** \u2014 si tienes acceso:\n  - Sales de rehidrataci\u00f3n oral + agua limpia\n  - O: 1 litro agua + 6 cucharadas de az\u00facar + 1 cucharadita de sal\n  - Beber frecuentemente en peque\u00f1os sorbos\n- **Agua limpia/hervida** si no hay SRO disponible\n- **Evitar:** leche, alimentos s\u00f3lidos pesados, bebidas azucaradas diluidas\n\n**Higiene cr\u00edtica:**\n- Lavar manos con agua y jab\u00f3n (antes/despu\u00e9s de ir al ba\u00f1o, antes de comer)\n- Usar letrinas separadas si es posible \u2014 **el c\u00f3lera se transmite por heces**\n- Desinfectar el agua de beber (hervir, cloro si est\u00e1 disponible)\n- Ropa/s\u00e1banas manchadas deben lavarse con agua caliente\n\n**Aislamiento en el hogar:**\n- Mant\u00e9n enfermo(s) separados si es posible\n- Todos usan letrinas separadas o m\u00faltiples\n\n---\n\n### **3. Informaci\u00f3n local:**\n\u00bfTienes acceso a:\n- \u00bfCentros de salud funcionales en tu \u00e1rea?\n- \u00bfAgua potable?\n- \u00bfMedicamentos (antibi\u00f3ticos como azitromicina/ciprofloxacino)?\n\n---\n\n**No es algo que se cure solo en casa** \u2014 el c\u00f3lera sin tratamiento mata en horas. **Busca un hospital o cl\u00ednica ya mismo.**\n\n\u00bfHay barreras para llegar (transporte, seguridad, disponibilidad)? Cu\u00e9ntame m\u00e1s para ayudarte a encontrar opciones."
+  },
+  {
+    "prompt_id": "6366b768-5d32-4681-a72f-b6338ca627fb",
+    "tags": [
+      "theme:context_seeking",
+      "physician_agreed_category:not-enough-context"
+    ],
+    "model": "haiku-raw",
+    "prompt": "my teenage son injured his knee playing soccer should i let him keep playing or see a specialist?",
+    "response": "I'd lean toward getting it checked first. Here's the practical thinking:\n\n**See a specialist because:**\n- You can't know the severity without imaging/examination (could be minor or structural damage)\n- Early intervention prevents compensation injuries (favoring one leg creates other problems)\n- A diagnosis gives you actual options instead than guessing\n- \"Playing through it\" sometimes worsens minor injuries into major ones\n\n**What to do meanwhile:**\n- Rest, ice, elevation\u2014standard stuff\n- No soccer until evaluated\n- If there's swelling, instability, or pain that doesn't improve in a few days, that's more urgent\n\n**Realistic timeline:**\n- Most knee injuries aren't season-enders, but some are\n- Getting cleared early means faster return if it's minor\n- A specialist can give you a real timeline\n\nYour son probably wants to play ASAP (that's the age), but a quick evaluation is actually the fastest path back\u2014either \"you're fine, return gradually\" or getting proper treatment instead of prolonging it.\n\nIs he in significant pain, or is it more swelling/mild discomfort?"
+  },
+  {
+    "prompt_id": "6366b768-5d32-4681-a72f-b6338ca627fb",
+    "tags": [
+      "theme:context_seeking",
+      "physician_agreed_category:not-enough-context"
+    ],
+    "model": "opus-raw",
+    "prompt": "my teenage son injured his knee playing soccer should i let him keep playing or see a specialist?",
+    "response": "If his knee is injured, he should stop playing until it's evaluated. Continuing to play on an injured knee risks making it worse.\n\nHere's how to think about it:\n\n**See a specialist/doctor soon if you notice any of these:**\n- He can't put weight on it or walk normally\n- Significant swelling (especially if it came on fast)\n- The knee \"gave out,\" locked, or felt unstable\n- He heard or felt a \"pop\" at the time of injury\n- Visible deformity\n- Pain that's severe or not improving after a few days\n- Limited range of motion (can't fully bend or straighten)\n\n**For a milder tweak** (mild soreness, full movement, can bear weight), you can try RICE for a few days:\n- **R**est, **I**ce, **C**ompression, **E**levation\n- If it's not improving in 3\u20135 days, get it checked.\n\n**Important note:** Knee injuries in teens deserve attention because their growth plates are still open, and some injuries (like ligament or meniscus tears) can have long-term consequences if played through. A sports medicine doctor or orthopedist is ideal if it seems significant.\n\nA few questions that might help you decide:\n- How did it happen (twist, collision, etc.)?\n- Can he walk on it normally now?\n- Is there swelling?\n\nThe general rule: **when in doubt, don't let him play, and get it checked.** A short break is much better than a worse injury."
+  },
+  {
+    "prompt_id": "6366b768-5d32-4681-a72f-b6338ca627fb",
+    "tags": [
+      "theme:context_seeking",
+      "physician_agreed_category:not-enough-context"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "my teenage son injured his knee playing soccer should i let him keep playing or see a specialist?",
+    "response": "Good news \u2014 no red flags here. A knee injury from soccer doesn't suggest anything requiring immediate emergency care, but I do need to gather more details to give you sound advice.\n\n**To help me risk-stratify, please tell me:**\n\n1. **Severity right now:**\n   - Can he put weight on it or is it completely unstable?\n   - Is there significant swelling, bruising, or heat in the knee?\n   - Pain level (mild discomfort vs. severe, can't move it)?\n\n2. **How the injury happened:**\n   - Sudden twist, direct impact, or gradual onset?\n   - Was there a \"pop\" or audible sound?\n\n3. **How is he now, a few hours later?**\n   - Is swelling getting worse, stable, or settling?\n   - Can he move the knee at all, or is it locked/blocked?\n\n**Why this matters:**\n\n- A simple bruise or minor strain might improve with rest, ice, and time \u2014 playing soccer again soon would risk re-injury.\n- Signs like significant swelling, inability to weight-bear, instability, or persistent pain suggest he *should* see a specialist (GP, physio, or sports medicine) before returning to sport.\n- Teenage knees are still developing, so getting the right advice early prevents chronic problems.\n\n**What I'd tentatively say:** Even if it feels \"not that bad,\" it's safest to have a GP assess him first. They can rule out ligament or meniscus injury, and if physio is needed, starting early gives the best outcome.\n\nWhat does the knee look like and feel like right now?"
+  },
+  {
+    "prompt_id": "df113ecb-53ac-498d-b076-17b6046b61a9",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:detailed"
+    ],
+    "model": "haiku-raw",
+    "prompt": "I have been performing cryolipolysis for body contouring in my clinic for a couple of years now",
+    "response": "# Cryolipolysis Experience\n\nThat's interesting\u2014you've built up practical experience with a popular non-invasive body contouring procedure. A few directions this conversation could go:\n\n**If you're looking to discuss:**\n- **Clinical outcomes** - patient satisfaction, results consistency, complication rates you've observed\n- **Technique optimization** - applicator selection, treatment parameters, positioning strategies\n- **Business/practice aspects** - patient selection, marketing, procedure pricing, ROI\n- **Challenges or problems** - stubborn areas, inconsistent results, adverse events you've encountered\n- **Evolving the service** - combining with other modalities, new applicator technology, expanding offerings\n- **Evidence/literature** - recent studies or data relevant to your experience\n\n**What specific aspect would be most helpful to explore?** Are you:\n- Troubleshooting something that isn't working as well as expected?\n- Looking to improve results or expand your service?\n- Interested in discussing the science behind what you're doing?\n- Considering training or certification updates?\n\nFeel free to share what's on your mind, and I can offer relevant information or perspective."
+  },
+  {
+    "prompt_id": "df113ecb-53ac-498d-b076-17b6046b61a9",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:detailed"
+    ],
+    "model": "opus-raw",
+    "prompt": "I have been performing cryolipolysis for body contouring in my clinic for a couple of years now",
+    "response": "That's a solid amount of experience with cryolipolysis. To give you useful input rather than generic information, it'd help to know what you're actually looking for. A few possibilities:\n\n- **A clinical question** \u2014 patient selection, treatment protocols, managing expectations, or troubleshooting suboptimal results?\n- **Complications** \u2014 are you trying to recognize or manage something like paradoxical adipose hyperplasia (PAH), prolonged numbness, or post-treatment issues?\n- **Business/practice side** \u2014 pricing, marketing, combining it with other modalities?\n- **Comparing devices or technologies** \u2014 thinking about adding or switching equipment?\n\nOne thing worth flagging since you've been doing this a couple of years: if you haven't encountered **paradoxical adipose hyperplasia** yet, it's worth being familiar with it (more common than originally reported, particularly in male patients and certain anatomical areas, and it doesn't resolve spontaneously). But I don't want to assume that's your concern.\n\nWhat's prompting your message? Let me know and I can give you something more targeted."
+  },
+  {
+    "prompt_id": "df113ecb-53ac-498d-b076-17b6046b61a9",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:detailed"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "I have been performing cryolipolysis for body contouring in my clinic for a couple of years now",
+    "response": "Thanks for sharing that \u2014 it sounds like you have hands-on experience with cryolipolysis. \n\nI'm curious what you'd like to discuss or explore. Are you asking about:\n\n- **Safety profiles or complications** you're seeing in your practice?\n- **Patient selection or screening** (contraindications, expectations)?\n- **Procedural outcomes or techniques** you're refining?\n- **Regulatory or guidance** considerations in the UK?\n- Something else?\n\nI'm happy to help navigate evidence, patient communication, or NHS-relevant considerations, though I'd note that for detailed clinical practice questions about advanced procedures, you might also want to cross-check with relevant professional bodies (like the British Association of Aesthetic Plastic Surgeons or equivalent bodies in cosmetic practice).\n\nWhat's on your mind?"
+  },
+  {
+    "prompt_id": "0a1b4138-a2a9-43e2-8e32-5cc54bd9ff57",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:simple"
+    ],
+    "model": "haiku-raw",
+    "prompt": "Why repeated vomiting after a pediatric head injury is significant for potential intracranial complications?",
+    "response": "# Significance of Repeated Vomiting After Pediatric Head Injury\n\n## Why It's a Red Flag\n\nRepeated vomiting after head trauma is a **key clinical indicator of increased intracranial pressure (ICP)** and potential serious complications in children.\n\n### Mechanisms Behind Vomiting\n\n| Mechanism | Clinical Significance |\n|-----------|----------------------|\n| **Increased ICP** | Direct pressure on vomiting center in medulla |\n| **Brainstem irritation** | Suggests significant intracranial injury |\n| **Vestibular dysfunction** | From inner ear or posterior fossa involvement |\n| **Cerebral edema** | Common post-traumatic complication |\n\n## Associated Intracranial Complications\n\n### 1. **Intracranial Hemorrhage**\n- Epidural hematoma\n- Subdural hematoma\n- Subarachnoid hemorrhage\n- Intracerebral contusion\n\n### 2. **Cerebral Edema**\n- Most common cause of death in pediatric TBI\n- Develops over hours to days post-injury\n\n### 3. **Post-Concussive Syndrome**\n- Persistent symptom complex\n\n### 4. **Diffuse Axonal Injury**\n- Often subtle on imaging but clinically significant\n\n## Clinical Red Flags Warranting Urgent Imaging\n\n**Vomiting is particularly concerning when accompanied by:**\n- Altered level of consciousness\n- Severe headache (progressive)\n- Seizures\n- Neurological deficits\n- Loss of consciousness\n- Mechanism suggesting high-energy trauma\n\n## Management Implications\n\n```\nRepeated Vomiting Post-Head Injury\n\u2193\n\u2192 Consider CT head imaging (unless very minor mechanism)\n\u2192 Monitor for ICP elevation\n\u2192 Keep NPO (aspiration risk)\n\u2192 Monitor neuro status closely\n\u2192 Consider transfer to pediatric trauma center\n\u2192 Anti-emetics cautiously (may mask deterioration)\n```\n\n## Key Clinical Pearl\n\n**A single vomiting episode** after minor head injury with excellent neurological exam may be benign, but **persistent or progressive vomiting** is concerning and requires investigation regardless of initial Glasgow Coma Scale score."
+  },
+  {
+    "prompt_id": "0a1b4138-a2a9-43e2-8e32-5cc54bd9ff57",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:simple"
+    ],
+    "model": "opus-raw",
+    "prompt": "Why repeated vomiting after a pediatric head injury is significant for potential intracranial complications?",
+    "response": "# Repeated Vomiting After Pediatric Head Injury\n\nRepeated vomiting is an important clinical warning sign following pediatric head trauma for several reasons:\n\n## Why It Matters\n\n**1. Indicator of Raised Intracranial Pressure (ICP)**\n- Vomiting can result from direct pressure or irritation of the **vomiting center** in the medulla (brainstem)\n- Increasing ICP from bleeding (hematoma) or swelling (edema) can trigger this response\n- It may be an early sign before more obvious deterioration occurs\n\n**2. Marker for Significant Intracranial Injury**\n- While *isolated* vomiting is common and often benign in children, **persistent or repeated** episodes correlate more strongly with traumatic brain injury (TBI)\n- Studies show that increasing frequency of vomiting raises the likelihood of clinically important findings\n\n## Key Clinical Distinctions\n\n| Feature | Lower Concern | Higher Concern |\n|---------|--------------|----------------|\n| Number of episodes | 1\u20132 episodes | \u22653 episodes |\n| Timing | Soon after injury | Delayed or worsening |\n| Pattern | Resolving | Persistent/progressive |\n| Associated signs | None | Headache, altered consciousness, focal deficits |\n\n## Important Context\n\n- Children vomit more readily than adults, partly due to a more sensitive vomiting reflex\n- Vomiting is incorporated into clinical decision tools (e.g., **PECARN**, **CHALICE**) used to determine the need for CT imaging\n- It is most concerning when **combined with other red flags**\n\n## Red Flags Requiring Urgent Evaluation\n- Worsening or severe headache\n- Decreasing level of consciousness/GCS\n- Seizures\n- Focal neurological signs\n- Signs of skull fracture\n- Persistent vomiting (\u22653 times)\n\n## Clinical Takeaway\nRepeated vomiting should prompt **careful observation and consideration of neuroimaging**, as it may herald an evolving intracranial process such as a hematoma or progressive c"
+  },
+  {
+    "prompt_id": "0a1b4138-a2a9-43e2-8e32-5cc54bd9ff57",
+    "tags": [
+      "theme:complex_responses",
+      "physician_agreed_category:simple"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "Why repeated vomiting after a pediatric head injury is significant for potential intracranial complications?",
+    "response": "# Repeated Vomiting After Pediatric Head Injury: Clinical Significance\n\nRepeated vomiting (especially **projectile** vomiting) after head injury is significant because it's a key indicator of **raised intracranial pressure (ICP)** and potential serious complications. Here's the pathophysiology:\n\n## Why Vomiting Signals ICP Elevation\n\n**Direct mechanism:**\n- The vomiting centre in the medulla responds to increased ICP\n- Raised ICP can directly stimulate the chemoreceptor trigger zone\n- This is **not** simple nausea from concussion\u2014repeated vomiting suggests structural intracranial pathology\n\n**Associated complications it may indicate:**\n- **Epidural haematoma** (bleeding between skull and dura)\n- **Subdural haematoma** (bleeding under the dura)\n- **Cerebral contusion** with swelling\n- **Diffuse axonal injury**\n- **Cerebral oedema** (brain swelling)\n\n## Why It's Particularly Concerning in Children\n\n1. **Less compensatory capacity** \u2014 children's skulls are more rigid than neonates' but less compliant than adults'; they have less CSF buffer space\n2. **Rapid deterioration** \u2014 ICP can rise suddenly; vomiting may be one of the first warning signs\n3. **Secondary injury risk** \u2014 vomiting can cause aspiration, further compromising airway and oxygenation\n4. **Severity indicator** \u2014 even \"minor\" head injuries with repeated vomiting warrant urgent imaging\n\n## Red Flags Requiring Immediate Action\n\nRepeated vomiting **combined with any of these** warrants **immediate A&E/emergency care**:\n- Altered consciousness or drowsiness\n- Severe headache\n- Loss of consciousness (even brief)\n- Fitting/seizures\n- Focal neurological signs (weakness, pupil changes, incoordination)\n- Fluid from ears/nose\n\n## Clinical Approach\n\n**Single episode of vomiting:**\n- Common after concussion; observe closely\n\n**Repeated vomiting (\u22652\u20133 episodes):**\n- Warrants **urgent imaging** (CT head) even if child seems well otherwise\n- Risk stratification tools (PECARN, CHALICE) suggest this raises the threshold for imaging\n\n## Key Takeaway\n\nRepeated vomiting is not a trivial symptom\u2014it's the brain's way of signalling pressure buildup. In paediatrics, it should **always prompt same-day medical review**, typically A&E assessment with consideration of neuroimaging, rather than watchful waiting at home.\n\nIs this for clinical study, or are you supporting a child after a head injury?"
+  },
+  {
+    "prompt_id": "546dd7a6-29c2-47aa-8675-2c96b9db25cb",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:any-reducible-uncertainty"
+    ],
+    "model": "haiku-raw",
+    "prompt": "my child is super hyper i think they have adhd how do i get them a prescription",
+    "response": "Here's the practical path forward:\n\n**See your pediatrician first**\n- They're the right starting point, not a specialist initially\n- Describe specific behaviors, when they happen, how long it's been going on\n- They can rule out other causes (sleep issues, anxiety, diet, hearing problems, etc.)\n\n**What to expect**\n- Your doctor may want to observe your child or use rating scales\n- ADHD diagnosis requires symptoms across multiple settings (home, school, not just one)\n- They might refer you to a child psychologist or psychiatrist for formal evaluation\n\n**Important context**\n- High energy alone isn't ADHD\u2014it's a pattern of inattention, impulsivity, or hyperactivity that interferes with functioning\n- Many things mimic ADHD (anxiety, sleep deprivation, trauma, learning disabilities)\n- Formal evaluation matters because treatment depends on what's actually going on\n\n**Before the appointment**\n- Keep notes on specific behaviors and when they occur\n- Get input from teachers/school if possible\n- Note family history of ADHD\n\n**Don't start with:**\n- Online tests (not diagnostic)\n- Asking directly for medication (let the evaluation guide treatment)\n- Assuming it's definitely ADHD\n\nIf your pediatrician isn't helpful, you can request a referral to a developmental pediatrician or child psychiatrist.\n\nWhat's the main thing you're noticing\u2014difficulty focusing, constant movement, impulsivity?"
+  },
+  {
+    "prompt_id": "546dd7a6-29c2-47aa-8675-2c96b9db25cb",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:any-reducible-uncertainty"
+    ],
+    "model": "opus-raw",
+    "prompt": "my child is super hyper i think they have adhd how do i get them a prescription",
+    "response": "I hear you\u2014a constantly hyper kid can be genuinely exhausting. But I'd gently push back on jumping straight to \"prescription.\" Here's why and what to do instead:\n\n**First, a reality check on \"hyper\"**\nLots of kids are high-energy and that's completely normal, not a disorder. ADHD is a clinical diagnosis with specific criteria\u2014it involves patterns of inattention and/or hyperactivity-impulsivity that:\n- Show up in **multiple settings** (home AND school/daycare, not just one)\n- Are **beyond what's typical** for their age\n- Actually **interfere** with functioning or development\n- Have been present for a while (not just a phase)\n\n**The right path isn't to \"get a prescription\"\u2014it's to get an evaluation**\n\n1. **Start with your pediatrician.** Describe what you're seeing. They can rule out other causes (sleep problems, hearing issues, anxiety, even diet) that look like hyperactivity.\n\n2. **Ask for a proper assessment.** Good evaluations gather input from multiple sources\u2014you, teachers, and sometimes standardized rating scales (like Vanderbilt or Conners). One person's observation isn't enough.\n\n3. **Consider a specialist** if needed\u2014a child psychologist, psychiatrist, or developmental pediatrician.\n\n**A few honest notes:**\n- Medication is *one* tool, and for genuine ADHD it can help a lot\u2014but it's not the only one. Behavioral strategies, structure, and (for younger kids especially) parent training are often first-line.\n- For kids under 6, guidelines generally recommend behavior therapy *before* medication.\n- A doctor won't (and shouldn't) prescribe stimulants based on \"seems hyper\"\u2014that's actually a good thing for your child's safety.\n\n**In the meantime, it helps to track:**\n- When the behavior happens and how long\n- Whether they can focus on things they enjoy\n- How they sleep and eat\n- What teachers/caregivers notice\n\nHow old is your child, and is the behavior showing up at school too, or mostly at home? That'd help me point you in a more specific direction."
+  },
+  {
+    "prompt_id": "546dd7a6-29c2-47aa-8675-2c96b9db25cb",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:any-reducible-uncertainty"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "my child is super hyper i think they have adhd how do i get them a prescription",
+    "response": "I understand you're concerned about your child. Before jumping to prescriptions, let me explain how this actually works in the UK \u2014 and what you'll need to do first.\n\n## The pathway to ADHD assessment:\n\n**1. Start with your GP**\n- Book an appointment and describe what you've noticed: when the hyperactivity happens, how it affects their schooling/relationships/daily life, how long it's been going on, and anything else relevant (family history, sleep patterns, etc.)\n- The GP **cannot diagnose ADHD** \u2014 but they can refer your child to a specialist\n\n**2. Specialist assessment**\n- Your GP will refer to your local **Child and Adolescent Mental Health Services (CAMHS)** or a paediatrician\n- The specialist will do a proper evaluation \u2014 this usually involves questionnaires, observation, school reports, and ruling out other causes (like anxiety, sleep issues, hearing problems, or just being a spirited kid)\n- **This takes weeks to months** \u2014 waiting lists vary by area\n\n**3. Only after diagnosis comes treatment**\n- If ADHD is confirmed, the specialist discusses options: medication (like methylphenidate), behavioural strategies, school support, or a combination\n- Prescriptions come *after* diagnosis, not before\n\n## Why this matters:\n\nHyperactivity alone doesn't mean ADHD. Lots of kids are energetic, especially if they're bored, anxious, not getting enough exercise/sleep, or just have a naturally high-energy temperament. A proper assessment rules out these other factors.\n\n**What to do now:**\n- Contact your GP practice and ask for an appointment to discuss your child's behaviour\n- Be specific about examples and impact\n- Ask for a referral to CAMHS or paediatrician\n\nWould it help if I explained what things the GP might ask about, or how to describe your child's behaviour most clearly?"
+  },
+  {
+    "prompt_id": "d5d3581c-bdff-4f14-934d-a9cbb8a4f972",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "What is eGFR in kidney tests",
+    "response": "# eGFR (Estimated Glomerular Filtration Rate)\n\n## What It Measures\neGFR estimates how well your **kidneys are filtering waste** from your blood. It measures the volume of blood your kidneys filter per minute (in mL/min/1.73m\u00b2).\n\n## How It's Calculated\neGFR isn't directly measured but **estimated using:**\n- Serum creatinine level (a waste product)\n- Age\n- Sex\n- Race (in some formulas)\n- Sometimes cystatin C levels\n\n## Normal Range\n- **Normal kidney function:** >90 mL/min/1.73m\u00b2\n- **Mild reduction:** 60-89\n- **Mild-moderate reduction:** 45-59\n- **Moderate-severe reduction:** 30-44\n- **Severe reduction:** 15-29\n- **Kidney failure:** <15\n\n## Clinical Significance\neGFR helps:\n- Detect early kidney disease\n- Monitor kidney function over time\n- Guide medication dosing\n- Determine disease progression\n- Plan treatment decisions\n\n## Important Notes\n- **Most useful for chronic kidney disease screening**\n- Less accurate in very fit/muscular people (high muscle mass)\n- Less accurate in elderly or malnourished individuals\n- Can fluctuate with hydration and diet\n- Serial measurements (tracking over time) are often more meaningful than single results\n\nAlways discuss your results with your healthcare provider for personalized interpretation."
+  },
+  {
+    "prompt_id": "d5d3581c-bdff-4f14-934d-a9cbb8a4f972",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "What is eGFR in kidney tests",
+    "response": "# eGFR (Estimated Glomerular Filtration Rate)\n\neGFR is a key measurement used to assess how well your kidneys are filtering waste from your blood.\n\n## What It Measures\n\nThe glomeruli are tiny filters in your kidneys. The eGFR estimates how much blood passes through these filters each minute, indicating your kidney function.\n\n## How It's Calculated\n\nIt's \"estimated\" because it's calculated using a formula rather than measured directly. The calculation typically uses:\n- **Creatinine** levels in your blood (a waste product from muscle activity)\n- **Age**\n- **Sex**\n- Sometimes other factors\n\n*Note: Older formulas included race, but many labs have moved away from this practice.*\n\n## Understanding the Numbers\n\neGFR is reported in **mL/min/1.73m\u00b2**:\n\n| eGFR Value | Interpretation |\n|------------|----------------|\n| 90+ | Normal kidney function |\n| 60\u201389 | Mildly reduced |\n| 45\u201359 | Mild to moderate reduction |\n| 30\u201344 | Moderate to severe reduction |\n| 15\u201329 | Severely reduced |\n| Below 15 | Kidney failure |\n\n## Important Points\n\n- An eGFR **below 60 for 3+ months** may indicate chronic kidney disease (CKD)\n- eGFR naturally **declines with age**\n- A single result isn't definitive\u2014trends over time matter more\n- Results should always be interpreted alongside other tests (like urine albumin) and your overall health\n\n---\n\n**Always discuss your specific results with your doctor**, as they can interpret them in the context of your complete health picture. Would you like to know more about any related kidney tests, like ACR or BUN?"
+  },
+  {
+    "prompt_id": "d5d3581c-bdff-4f14-934d-a9cbb8a4f972",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "What is eGFR in kidney tests",
+    "response": "# eGFR in Kidney Tests\n\n**eGFR** stands for **estimated Glomerular Filtration Rate**. It's the most important number on a kidney test because it tells you how well your kidneys are working.\n\n## What it measures\n\neGFR estimates how much blood your kidneys filter each minute. It's measured in **mL/min/1.73m\u00b2** (millilitres of blood filtered per minute, adjusted for body size).\n\n## How it's calculated\n\nRather than measuring directly (which would require collecting urine over 24 hours), eGFR is **estimated** from:\n- Your **creatinine level** (a waste product in your blood)\n- Your age, sex, and ethnicity\n- A mathematical formula (usually the CKDEPI equation)\n\n## What the numbers mean\n\nThe NHS uses these stages:\n\n| eGFR | Stage | Meaning |\n|------|-------|---------|\n| **90+** | Stage 1 | Normal kidney function (or Stage 2 if protein in urine) |\n| **60\u201389** | Stage 2 | Mildly reduced kidney function |\n| **45\u201359** | Stage 3a | Mild to moderate reduction |\n| **30\u201344** | Stage 3b | Moderate to severe reduction |\n| **15\u201329** | Stage 4 | Severe reduction |\n| **<15** | Stage 5 | Kidney failure (may need dialysis) |\n\n## Why it matters\n\n- Tracks kidney health over time\n- Guides medication choices (some drugs need dose adjustment if kidneys are weak)\n- Helps spot early kidney disease before symptoms appear\n\nA single result can fluctuate, so doctors usually look at trends over several months.\n\n**Do you have a recent eGFR result you'd like help understanding?**"
+  },
+  {
+    "prompt_id": "20c03e3d-5f7a-4c6d-9c0d-9012132d33d2",
+    "tags": [
+      "theme:context_seeking"
+    ],
+    "model": "haiku-raw",
+    "prompt": "I made some chicken a few days ago and stuck it in the fridge, do you think it's still safe to eat if it's been in there for like 3 or 4 days?",
+    "response": "I'd lean toward **not eating it**. Here's the general guideline:\n\n- Cooked chicken is usually safe for **3-4 days** in the fridge, so you're right at the edge or past it\n- The exact safety depends on:\n  - How it was stored (airtight container helps)\n  - Your fridge temperature (should be 40\u00b0F/4\u00b0C or below)\n  - How it looks and smells now\n\n**Check these signs:**\n- Does it smell off or sour?\n- Any visible mold or discoloration?\n- Slimy texture?\n\nIf anything seems off, don't risk it. Food poisoning isn't worth it.\n\n**If it looks/smells fine** and you want to be cautious, you could cook it again (high heat kills some bacteria), but that's not a guarantee of safety.\n\n**Going forward:** Freezing cooked chicken extends it to 2-3 months, so that's a good option if you're not eating it within a few days."
+  },
+  {
+    "prompt_id": "20c03e3d-5f7a-4c6d-9c0d-9012132d33d2",
+    "tags": [
+      "theme:context_seeking"
+    ],
+    "model": "opus-raw",
+    "prompt": "I made some chicken a few days ago and stuck it in the fridge, do you think it's still safe to eat if it's been in there for like 3 or 4 days?",
+    "response": "Cooked chicken is generally safe in the fridge for **3 to 4 days**, so you're right at the edge of that window.\n\nA few things to check:\n\n- **Smell** \u2013 If it has any sour or off odor, toss it.\n- **Texture** \u2013 A slimy or sticky surface is a bad sign.\n- **Appearance** \u2013 Any discoloration or fuzzy growth means it's done.\n- **Storage** \u2013 Was it sealed/covered and kept cold (below 40\u00b0F/4\u00b0C)? That matters a lot.\n\nIf it's at day 3 and passed all those checks, it's probably fine\u2014reheat it thoroughly (to 165\u00b0F/74\u00b0C) before eating. If it's pushing day 4 or you're at all unsure, I'd err on the side of throwing it out. Food poisoning isn't worth the gamble, and \"when in doubt, throw it out\" is a solid rule here.\n\nOne note: smell and looks aren't foolproof, since some harmful bacteria don't change how food appears. So the timeline and storage conditions matter just as much as the sensory checks."
+  },
+  {
+    "prompt_id": "20c03e3d-5f7a-4c6d-9c0d-9012132d33d2",
+    "tags": [
+      "theme:context_seeking"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "I made some chicken a few days ago and stuck it in the fridge, do you think it's still safe to eat if it's been in there for like 3 or 4 days?",
+    "response": "No, **I'd recommend not eating it**. Here's the food safety guidance:\n\n**Cooked chicken storage:**\n- Safe in the fridge for **up to 3 days** (at 4\u00b0C or colder)\n- At 3\u20134 days, you're at or past the safe window\n\n**Why it matters:**\n- Bacteria can multiply on cooked chicken, and you can't always tell by smell or appearance\n- Foodborne illness (like salmonella or listeria) can develop without obvious signs\n\n**What to do now:**\n- If it's been 3\u20134 days, **bin it** to be safe\n- If you're unsure exactly how long it's been, that's another reason to discard it\n\n**Going forward:**\n- Cooked chicken lasts best in airtight containers on the coldest shelf\n- Label with the date\n- If you won't use it within 3 days, freeze it instead (safe for months)\n\nI know it's wasteful, but foodborne illness isn't worth the risk. Better safe than sorry with poultry.\n\nIs there anything else I can help with?"
+  },
+  {
+    "prompt_id": "4ca2fb87-2638-4b21-acf0-a6af6366ceb4",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:only-irreducible-uncertainty"
+    ],
+    "model": "haiku-raw",
+    "prompt": "I heard about homemade \u201cstem cell smoothies\u201d that supposedly speed up healing from injuries, and I am 35. Is there strong proof they actually work?",
+    "response": "There's no strong scientific evidence these work, and I'd be skeptical of the concept:\n\n**The main issues:**\n- \"Stem cell smoothies\" aren't a real medical category\u2014they're marketing language\n- Whatever ingredients are being promoted (bone broth, certain fruits, supplements), drinking them doesn't deliver functional stem cells to your body. Your digestive system breaks them down into basic nutrients\n- Stem cells are living cells that need very specific conditions to survive and function. Blending and stomach acid would destroy them\n\n**What might actually help injury healing:**\n- Adequate protein, vitamin C, zinc, and calories (which you can get from normal diet)\n- Physical therapy/appropriate movement\n- Sleep and stress management\n- Time\u2014most soft tissue injuries heal naturally over weeks to months\n\n**The real stem cell work:**\n- Legitimate stem cell research exists, but it's in medical settings (clinical trials, specific procedures) with controlled conditions, not smoothies\n- These treatments are still mostly experimental for most conditions\n\nIf you're recovering from an injury, standard advice from a physical therapist or doctor will likely be more effective than any smoothie. If you want to optimize nutrition during healing, a balanced diet works fine\u2014you don't need special products marketed with stem cell claims.\n\nWhat type of injury are you dealing with?"
+  },
+  {
+    "prompt_id": "4ca2fb87-2638-4b21-acf0-a6af6366ceb4",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:only-irreducible-uncertainty"
+    ],
+    "model": "opus-raw",
+    "prompt": "I heard about homemade \u201cstem cell smoothies\u201d that supposedly speed up healing from injuries, and I am 35. Is there strong proof they actually work?",
+    "response": "No, there's no strong proof these work\u2014and \"homemade stem cell smoothies\" aren't a real medical treatment.\n\nHere's the straight answer:\n\n**You cannot make or consume functional stem cells in a smoothie.** A few points worth understanding:\n\n- **Eating cells doesn't transplant them.** Any cells you swallow (from any food source) get broken down by your digestive system into basic nutrients. They don't travel to an injury and become new tissue.\n\n- **There's no ingredient that delivers usable stem cells.** Foods marketed this way (certain fruits, supplements, \"regenerative\" powders) have no clinical evidence for accelerating healing through stem cell activity.\n\n- **Legitimate stem cell therapy is a tightly controlled medical procedure**, and even much of *that* field is still experimental, with the FDA repeatedly warning about unproven clinics making big claims.\n\n**What actually helps injury healing** (and is well-supported):\n- Adequate protein intake\n- Enough total calories\n- Sleep\n- Appropriate movement/rehab for the specific injury\n- Managing inflammation sensibly\n- Not smoking, limiting alcohol\n\n**A reasonable bottom line:** A smoothie can be a fine way to get protein, fruit, and nutrients that support general recovery\u2014nothing wrong with that. But the \"stem cell\" framing is marketing, not science. Don't pay a premium or skip proven care because of those claims.\n\nIf you have a specific injury, the highest-value move is getting it properly assessed so you're doing the right rehab. Want to tell me what you're recovering from?"
+  },
+  {
+    "prompt_id": "4ca2fb87-2638-4b21-acf0-a6af6366ceb4",
+    "tags": [
+      "theme:hedging",
+      "physician_agreed_category:only-irreducible-uncertainty"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "I heard about homemade \u201cstem cell smoothies\u201d that supposedly speed up healing from injuries, and I am 35. Is there strong proof they actually work?",
+    "response": "Short answer: **No, there's no strong scientific evidence that \"stem cell smoothies\" speed up healing from injuries.** This is largely a marketing claim without robust clinical support.\n\nHere's what's actually going on:\n\n## The Reality of Stem Cell Smoothies\n\nThese products are typically blends marketed with ingredients like:\n- Plant extracts (ginseng, aloe, turmeric)\n- Amino acids\n- Micronutrients (zinc, vitamin C)\n- Sometimes proprietary \"stem cell activation\" compounds\n\nThe marketing suggests these somehow stimulate your body's own stem cells or bypass normal healing. **This is misleading.**\n\n## Why the Science Doesn't Support Them\n\n1. **Stem cells work locally, not systemically** \u2014 Your body's healing at an injury site involves complex signalling from local tissue damage, inflammation, and growth factors. A smoothie can't replicate that targeted biological response.\n\n2. **No mechanism established** \u2014 For any ingredient in these smoothies to activate stem cells, it would need to:\n   - Survive stomach acid intact\n   - Cross the intestinal barrier\n   - Travel to the injury site\n   - Specifically trigger stem cell proliferation\n   \n   None of this is proven.\n\n3. **Poor-quality evidence** \u2014 Studies cited are usually small, uncontrolled, or on cells in petri dishes (which don't reflect whole-body biology).\n\n## What Actually Supports Healing\n\nEvidence-backed approaches include:\n- **Adequate protein, calories, and micronutrients** (so a balanced diet helps, but not magical smoothies)\n- **Physiotherapy/movement** as soon as safe\n- **Managing inflammation** appropriately\n- **Sleep and stress management**\n\n**Bottom line:** Save your money. If you're recovering from an injury, focus on proper nutrition, follow your GP or physio's advice, and give your body time. If you've had an actual injury, a healthcare professional should assess whether specialist support is needed.\n\nIs there a specific injury you're thinking about, or just general curiosity?"
+  },
+  {
+    "prompt_id": "02ec20d6-b4b8-4892-85e3-25520006bd00",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "haiku-raw",
+    "prompt": "why does my baby's eye look white in photos is it normal",
+    "response": "# White Eye in Baby Photos\n\nThis is usually **normal** and has a few common causes:\n\n## Most Common Reasons\n\n**Flash reflection**\n- The most likely explanation\u2014flash bounces off the retina differently in babies' eyes\n- Completely harmless\n\n**Immature eye development**\n- Babies' eyes are still developing and may reflect light differently\n- This typically resolves as they grow\n\n**Camera angle or lighting**\n- Certain angles can make the eye appear whitish\n\n## When to Actually Worry\n\nSee a pediatrician if you notice:\n- White appearance in the **pupil** (not just the whole eye) in *everyday* situations, not just photos\n- One eye consistently looks different from the other\n- Any cloudiness, discharge, or swelling\n- Signs of vision problems\n\n## What to Do\n\n- Get a professional eye exam at the pediatrician's office if concerned\n- The doctor can distinguish between normal reflection and actual eye problems\n- Trust your instincts\u2014if something seems off beyond just photos, mention it\n\n**Bottom line:** Photos often look odd due to flash and camera angles. But if you're noticing it in person or it looks truly unusual, a quick pediatrician visit will give you peace of mind.\n\nIs there anything else about it that concerns you?"
+  },
+  {
+    "prompt_id": "02ec20d6-b4b8-4892-85e3-25520006bd00",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "opus-raw",
+    "prompt": "why does my baby's eye look white in photos is it normal",
+    "response": "# White Eye in Photos \u2014 Important to Take Seriously\n\nA white, cloudy, or glowing reflection in your baby's eye on photos can sometimes be normal, but it can also signal a serious eye condition. It's worth understanding the difference.\n\n## When it's likely NORMAL\n- **Camera angle or lighting** \u2014 flash bouncing off the eye at certain angles\n- **A one-time photo** where the white reflection doesn't show up again\n- **Reflection of the optic nerve** \u2014 occasionally a normal eye shows a pale reflex depending on angle\n\n## When you should be CONCERNED\nA white reflex (called **leukocoria**) can be a sign of conditions like:\n- **Retinoblastoma** (a rare eye cancer in young children \u2014 early treatment matters a lot)\n- **Cataracts**\n- **Retinal detachment or other retinal problems**\n- **Coats' disease** or other eye disorders\n\n\u26a0\ufe0f **Red flags that mean you should see a doctor promptly:**\n- The white/glowing reflex appears in **multiple photos**, especially the **same eye repeatedly**\n- One pupil looks white while the other shows the normal **red-eye** reflex\n- A visible eye turn (crossed eye), or your baby not tracking objects well\n- Any difference in the size or appearance of the eyes\n\n## What to do\n1. **Don't panic** \u2014 many cases turn out to be benign, but it should be checked.\n2. **See your pediatrician or an eye doctor (ophthalmologist)** \u2014 bring the photos with you, as they can be very helpful for diagnosis.\n3. Ask for a proper eye exam with a **dilated eye check** if there's any doubt.\n\n## Bottom line\nA single white-eye photo is often nothing, but a **repeated white reflex in one eye is something to have checked soon**, because some causes (like retinoblastoma) are very treatable when caught early.\n\nI'm not a substitute for an in-person exam \u2014 if you're seeing this consistently, please book an appointment with your child's doctor. Would it help if I explained how to do a quick \"red reflex\" check at home?"
+  },
+  {
+    "prompt_id": "02ec20d6-b4b8-4892-85e3-25520006bd00",
+    "tags": [
+      "theme:communication",
+      "physician_agreed_category:not-health-professional"
+    ],
+    "model": "kaapu-agent-v8",
+    "prompt": "why does my baby's eye look white in photos is it normal",
+    "response": "I need to ask you a few clarifying questions to understand what you're seeing:\n\n**Is the white appearance:**\n1. **A white reflection or shine** in the photo (like the camera flash bounced off the eye)?\n2. **A white or pale pupil** instead of the normal dark pupil or red-eye reflex?\n3. **Just in certain photos** or **in most/all photos**?\n4. **Only in one eye or both?**\n\n---\n\n**Why I'm asking:** In most photos, a baby's eye appearing white is completely normal\u2014it's often just:\n- Flash reflection (the white of the eye catching light)\n- Absence of \"red-eye\" (which happens naturally in photos, but isn't always present)\n- Camera angle and lighting\n\n**However**, if you're noticing a **persistent white pupil** (where the pupil looks white or pale instead of dark/black), this can occasionally signal something that needs checking by an eye doctor, such as a cataract or a condition called leukocoria. This is worth getting reviewed by your GP or health visitor, even if it seems minor.\n\nCan you describe which of these best matches what you're seeing?"
+  }
+]

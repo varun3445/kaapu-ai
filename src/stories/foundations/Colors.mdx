@@ -1,0 +1,72 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Foundations/Colors" />
+
+export const primary = [
+  { name: 'primary-50',  hex: '#eef2ff', label: 'Lightest tint' },
+  { name: 'primary-100', hex: '#e0e7ff', label: 'Hover bg' },
+  { name: 'primary-200', hex: '#c7d2fe', label: 'Border / ring' },
+  { name: 'primary-400', hex: '#818cf8', label: 'Muted icon' },
+  { name: 'primary-500', hex: '#6366f1', label: 'Brand default' },
+  { name: 'primary-600', hex: '#4f46e5', label: 'CTA / active' },
+  { name: 'primary-700', hex: '#4338ca', label: 'Pressed state' },
+]
+
+export const surfaces = [
+  { name: 'surface',  hex: '#eeeae6',               label: 'App background' },
+  { name: 'card',     hex: 'rgba(255,255,255,0.68)', label: 'Glass card fill' },
+  { name: 'white',    hex: '#ffffff',                label: 'Elevated / modal' },
+]
+
+export const accents = [
+  { name: 'rose-500',    hex: '#f43f5e', label: 'Emergency / danger' },
+  { name: 'amber-500',   hex: '#f59e0b', label: 'Warning' },
+  { name: 'emerald-500', hex: '#10b981', label: 'Success / resolved' },
+]
+
+export const neutral = [
+  { name: 'gray-800', hex: '#1f2937', label: 'Primary text' },
+  { name: 'gray-500', hex: '#6b7280', label: 'Secondary text' },
+  { name: 'gray-400', hex: '#9ca3af', label: 'Placeholder / muted' },
+  { name: 'gray-200', hex: '#e5e7eb', label: 'Border' },
+  { name: 'gray-100', hex: '#f3f4f6', label: 'Subtle bg' },
+]
+
+export function Swatch({ name, hex, label }) {
+  return (
+    <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+      <div style={{ height:64, borderRadius:12, background:hex, border:'0.75px solid rgba(0,0,0,0.09)', boxShadow:'0 1px 4px rgba(0,0,0,0.06)' }} />
+      <p style={{ fontSize:11, fontWeight:700, color:'#1f2937', margin:0 }}>{name}</p>
+      <p style={{ fontSize:10, color:'#818cf8', margin:0, fontFamily:'monospace' }}>{hex}</p>
+      <p style={{ fontSize:10, color:'#9ca3af', margin:0 }}>{label}</p>
+    </div>
+  )
+}
+
+export function Grid({ items }) {
+  return (
+    <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(130px,1fr))', gap:16, marginBottom:40 }}>
+      {items.map(s => <Swatch key={s.name} {...s} />)}
+    </div>
+  )
+}
+
+export function Label({ children }) {
+  return <p style={{ fontSize:11, fontWeight:800, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:12, marginTop:32 }}>{children}</p>
+}
+
+# Colors
+
+All values are exact — sourced directly from `tailwind.config.js`.
+
+<Label>Primary — Indigo</Label>
+<Grid items={primary} />
+
+<Label>Surfaces</Label>
+<Grid items={surfaces} />
+
+<Label>Accent</Label>
+<Grid items={accents} />
+
+<Label>Neutral / Text</Label>
+<Grid items={neutral} />

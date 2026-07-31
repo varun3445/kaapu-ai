@@ -1,0 +1,55 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Foundations/Typography" />
+
+export const scale = [
+  { label:'Display',    size:24, weight:800, usage:'Page titles, onboarding headers' },
+  { label:'Heading 1',  size:20, weight:800, usage:'Section headers, modal titles' },
+  { label:'Heading 2',  size:16, weight:700, usage:'Card headings, condition names' },
+  { label:'Heading 3',  size:14, weight:700, usage:'Sub-headings, user name in header' },
+  { label:'Body',       size:14, weight:500, usage:'Primary body text' },
+  { label:'Body Small', size:13, weight:500, usage:'Secondary descriptions, notes' },
+  { label:'Label',      size:12, weight:600, usage:'Form labels, badge text' },
+  { label:'Caption',    size:11, weight:600, usage:'Timestamps, ICD codes, metadata' },
+  { label:'Micro',      size:10, weight:700, usage:'Section eyebrows, pill labels' },
+]
+
+export const weights = [
+  { label:'Regular',   weight:400 },
+  { label:'Medium',    weight:500 },
+  { label:'Semibold',  weight:600 },
+  { label:'Bold',      weight:700 },
+  { label:'Extrabold', weight:800 },
+  { label:'Black',     weight:900 },
+]
+
+export function Label({ children }) {
+  return <p style={{ fontSize:11, fontWeight:800, color:'#9ca3af', textTransform:'uppercase', letterSpacing:'0.1em', margin:'32px 0 16px' }}>{children}</p>
+}
+
+# Typography
+
+Font: **Figtree** — loaded via Google Fonts in `index.html`, declared in `tailwind.config.js` as the default `sans` family.
+
+<Label>Type Scale</Label>
+
+<div style={{ background:'rgba(255,255,255,0.68)', borderRadius:16, padding:'8px 24px', border:'0.75px solid rgba(0,0,0,0.09)' }}>
+  {scale.map(({ label, size, weight, usage }) => (
+    <div key={label} style={{ display:'grid', gridTemplateColumns:'120px 1fr 220px', alignItems:'baseline', padding:'12px 0', borderBottom:'0.75px solid rgba(0,0,0,0.06)', gap:24 }}>
+      <p style={{ fontSize:10, fontWeight:700, color:'#9ca3af', margin:0, textTransform:'uppercase', letterSpacing:'0.06em' }}>{label}</p>
+      <p style={{ fontFamily:'Figtree, system-ui', fontSize:size, fontWeight:weight, color:'#1f2937', margin:0 }}>The quick brown fox</p>
+      <p style={{ fontSize:10, color:'#9ca3af', margin:0, lineHeight:1.4 }}>{size}px / {weight} — {usage}</p>
+    </div>
+  ))}
+</div>
+
+<Label>Weight Showcase</Label>
+
+<div style={{ background:'rgba(255,255,255,0.68)', borderRadius:16, padding:'20px 28px', border:'0.75px solid rgba(0,0,0,0.09)', display:'flex', flexDirection:'column', gap:10 }}>
+  {weights.map(({ label, weight }) => (
+    <div key={weight} style={{ display:'flex', alignItems:'baseline', gap:16 }}>
+      <p style={{ fontSize:10, color:'#9ca3af', margin:0, width:80, fontWeight:600 }}>{label} {weight}</p>
+      <p style={{ fontFamily:'Figtree, system-ui', fontSize:20, fontWeight:weight, color:'#1f2937', margin:0 }}>Kaapu Health</p>
+    </div>
+  ))}
+</div>

@@ -1,0 +1,37 @@
+import { Meta } from '@storybook/blocks'
+
+<Meta title="Foundations/Shadows" />
+
+export const shadows = [
+  { name:'shadow-card',         token:'card',    value:'0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',                                                                       usage:'Default card elevation' },
+  { name:'shadow-card-lg',      token:'card-lg', value:'0 4px 6px rgba(0,0,0,0.04), 0 16px 40px rgba(0,0,0,0.10)',                                                                      usage:'Hover / focused card' },
+  { name:'shadow-glass',        token:'glass',   value:'0 1px 2px rgba(0,0,0,0.03), 0 4px 20px rgba(0,0,0,0.07), inset 0 1px 0 rgba(255,255,255,0.9)',                                  usage:'.glass-card surfaces' },
+  { name:'glass-elevated',      token:'—',       value:'0 2px 4px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,1)',                                   usage:'Modals, bottom sheets' },
+  { name:'No shadow',           token:'none',    value:'none',                                                                                                                           usage:'Flat / inline elements' },
+]
+
+export function Row({ name, token, value, usage }) {
+  return (
+    <div style={{ display:'flex', gap:24, alignItems:'flex-start', padding:'18px 0', borderBottom:'0.75px solid rgba(0,0,0,0.07)' }}>
+      <div style={{ width:72, height:72, flexShrink:0, borderRadius:14, background:'white', boxShadow: value === 'none' ? undefined : value, border:'0.75px solid rgba(0,0,0,0.05)' }} />
+      <div>
+        <p style={{ fontSize:13, fontWeight:700, color:'#1f2937', margin:'0 0 2px' }}>{name}</p>
+        {token !== '—' && (
+          <p style={{ fontSize:11, color:'#818cf8', margin:'0 0 5px' }}>
+            Tailwind: <code style={{ background:'#eef2ff', padding:'1px 5px', borderRadius:4 }}>shadow-{token}</code>
+          </p>
+        )}
+        <code style={{ fontSize:10, color:'#6366f1', display:'block', lineHeight:1.6, maxWidth:420 }}>{value}</code>
+        <p style={{ fontSize:11, color:'#9ca3af', margin:'4px 0 0' }}>{usage}</p>
+      </div>
+    </div>
+  )
+}
+
+# Shadows
+
+From `tailwind.config.js` `boxShadow` extension + `index.css`. All shadows use low-opacity black to stay neutral on the warm beige background.
+
+<div style={{ background:'rgba(255,255,255,0.68)', borderRadius:20, padding:'0 24px', border:'0.75px solid rgba(0,0,0,0.09)', margin:'24px 0' }}>
+  {shadows.map(s => <Row key={s.name} {...s} />)}
+</div>

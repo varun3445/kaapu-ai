@@ -390,12 +390,15 @@ export default function AI() {
   const [actionDoneIdx,        setActionDoneIdx]        = useState(new Set()) // message indices whose action chip is done
   const [gpReportLoading,      setGpReportLoading]      = useState(false)
   const [isRecording,          setIsRecording]          = useState(false)
+  const [voiceMode,            setVoiceMode]            = useState(false)
+  const [isSpeaking,           setIsSpeaking]           = useState(false)
   const currentSessionId  = useRef(null) // stable ID for the Supabase chat history row
   const agentSessionIdRef = useRef(null) // stable ID for the Managed Agent session
   const bottomRef  = useRef(null)
   const scrollRef  = useRef(null)
   const inputRef   = useRef(null)
   const recognitionRef = useRef(null)
+  const audioRef = useRef(null)
 
   const hasMessages = messages.length > 0
 
@@ -596,6 +599,34 @@ export default function AI() {
     }
   }
 
+  async function speakText(text) {
+    if (!voiceMode || !supabase) return
+    setIsSpeaking(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('kaapu-tts', {
+        body: { text },
+      })
+      if (error || !data?.audioContent) {
+        console.error('TTS error:', error)
+        setIsSpeaking(false)
+        return
+      }
+      // Convert base64 to blob and play
+      const audioBlob = new Blob([Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0))], { type: 'audio/mpeg' })
+      const audioUrl = URL.createObjectURL(audioBlob)
+      if (audioRef.current) audioRef.current.pause()
+      audioRef.current = new Audio(audioUrl)
+      audioRef.current.onended = () => setIsSpeaking(false)
+      audioRef.current.play().catch(err => {
+        console.error('Audio playback error:', err)
+        setIsSpeaking(false)
+      })
+    } catch (err) {
+      console.error('speakText error:', err)
+      setIsSpeaking(false)
+    }
+  }
+
   // Call AI but only show the assistant's response (no user bubble) — used for streak auto-start
   async function sendSilent(content, sessionId) {
     if (!supabase || loading) return
@@ -645,6 +676,10 @@ export default function AI() {
       const aiMsg = { role: 'assistant', content: data.content, timestamp: Date.now(), action: data.action || null }
       const finalMessages = [...newMessages, aiMsg]
       setMessages(finalMessages)
+      // Speak response if in voice mode
+      if (voiceMode) {
+        setTimeout(() => speakText(data.content), 100)
+      }
       // Auto-save after every AI reply — upsert keeps it in the same session row
       if (!currentSessionId.current) currentSessionId.current = `chat-${userId}-${Date.now()}`
       upsertSession(currentSessionId.current, finalMessages, userId)
@@ -730,6 +765,19 @@ export default function AI() {
           <AlertTriangle size={14} className="text-white" strokeWidth={2.5} />
           <span className="text-[11px] font-bold text-white">SOS</span>
         </motion.button>
+
+        {/* Voice Mode toggle */}
+        <button
+          onClick={() => setVoiceMode(!voiceMode)}
+          className={`flex items-center gap-1.5 px-3 h-9 rounded-xl border shadow-sm transition-colors ${
+            voiceMode
+              ? 'bg-primary-50 border-primary-200 text-primary-600'
+              : 'bg-white/70 border-gray-100 text-gray-500'
+          }`}
+        >
+          {voiceMode ? <Mic size={15} /> : <MicOff size={15} />}
+          <span className="text-[11px] font-semibold">{voiceMode ? 'Voice' : 'Text'}</span>
+        </button>
       </div>
 
       {/* ── Content: static empty state OR scrollable messages ── */}
@@ -838,32 +886,66 @@ export default function AI() {
             AI-generated response — always check with your GP before acting on it.
           </p>
           <div className="flex items-center gap-2 max-w-lg mx-auto">
-            <div data-tour="ai-chat-input" className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center gap-2 focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
-              <input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask about your health…"
-                className="flex-1 text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-300"
-                disabled={loading}
-              />
-              <button
-                onClick={toggleVoiceInput}
-                disabled={loading}
-                className={`flex-shrink-0 transition-colors ${isRecording ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
-              >
-                {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
-              </button>
-            </div>
-            <button
-              onClick={() => sendMessage()}
-              disabled={!input.trim() || loading}
-              className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center shrink-0 disabled:opacity-40 transition-opacity"
-            >
-              <Send size={14} className="text-white" />
-            </button>
+            {voiceMode ? (
+              /* Voice Mode */
+              <>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  <button
+                    onClick={toggleVoiceInput}
+                    disabled={loading || isSpeaking}
+                    className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${
+                      isRecording
+                        ? 'bg-red-500 scale-110 shadow-lg'
+                        : isSpeaking
+                        ? 'bg-primary-400 animate-pulse'
+                        : 'bg-primary-600 hover:bg-primary-700'
+                    } disabled:opacity-60`}
+                  >
+                    {isRecording ? (
+                      <MicOff size={24} className="text-white" />
+                    ) : (
+                      <Mic size={24} className="text-white" />
+                    )}
+                  </button>
+                  {isRecording && (
+                    <p className="text-[10px] text-red-500 font-semibold mt-2 animate-pulse">Recording...</p>
+                  )}
+                  {isSpeaking && (
+                    <p className="text-[10px] text-primary-500 font-semibold mt-2">Speaking...</p>
+                  )}
+                </div>
+              </>
+            ) : (
+              /* Text Mode */
+              <>
+                <div data-tour="ai-chat-input" className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-3 flex items-center gap-2 focus-within:border-primary-400 focus-within:bg-white transition-colors" style={{ height: '2.5rem' }}>
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Ask about your health…"
+                    className="flex-1 text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-300"
+                    disabled={loading}
+                  />
+                  <button
+                    onClick={toggleVoiceInput}
+                    disabled={loading}
+                    className={`flex-shrink-0 transition-colors ${isRecording ? 'text-primary-600' : 'text-gray-400 hover:text-gray-600'}`}
+                  >
+                    {isRecording ? <MicOff size={16} /> : <Mic size={16} />}
+                  </button>
+                </div>
+                <button
+                  onClick={() => sendMessage()}
+                  disabled={!input.trim() || loading}
+                  className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center shrink-0 disabled:opacity-40 transition-opacity"
+                >
+                  <Send size={14} className="text-white" />
+                </button>
+              </>
+            )}
           </div>
         </div>,
         document.body

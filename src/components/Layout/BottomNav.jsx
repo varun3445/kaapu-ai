@@ -1,11 +1,9 @@
 import { NavLink } from 'react-router-dom'
-import { Home, BookOpen, Users, Sparkles, ActivitySquare } from 'lucide-react'
-
-const links = [
-  { to: '/',        icon: Home,      label: 'Home',     tour: null         },
-  { to: '/history', icon: BookOpen,  label: 'Timeline', tour: null         },
-  { to: '/family',  icon: Users,     label: 'People',   tour: 'nav-family' },
-]
+import navHomeIcon from '../../assets/icons/nav-home.svg'
+import navLogPainIcon from '../../assets/icons/nav-logpain.svg'
+import navSparklesIcon from '../../assets/icons/nav-sparkles.svg'
+import navTimelineIcon from '../../assets/icons/nav-timeline.svg'
+import navPeopleIcon from '../../assets/icons/nav-people.svg'
 
 export default function BottomNav() {
   return (
@@ -18,16 +16,16 @@ export default function BottomNav() {
         <NavLink to="/" end
           className={({ isActive }) =>
             `flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-gray-800' : 'text-gray-400 hover:text-gray-600'
+              isActive ? 'text-black' : 'text-black/75 hover:text-black/75'
             }`
           }
         >
           {({ isActive }) => (
             <>
               <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-white shadow-sm' : ''}`}>
-                <Home size={19} strokeWidth={isActive ? 2.5 : 1.8} />
+                <img src={navHomeIcon} alt="" className={`w-6 h-6 transition-opacity ${isActive ? 'opacity-100' : 'opacity-75'}`} />
               </div>
-              <span className={`text-[10px] font-semibold ${isActive ? 'text-gray-700' : ''}`}>Home</span>
+              <span className={`text-[10px] font-semibold ${isActive ? 'text-black/80' : ''}`}>Home</span>
             </>
           )}
         </NavLink>
@@ -36,16 +34,16 @@ export default function BottomNav() {
         <NavLink to="/log-pain"
           className={({ isActive }) =>
             `flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-gray-800' : 'text-gray-400 hover:text-gray-600'
+              isActive ? 'text-black' : 'text-black/75 hover:text-black/75'
             }`
           }
         >
           {({ isActive }) => (
             <>
               <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-white shadow-sm' : ''}`}>
-                <ActivitySquare size={19} strokeWidth={isActive ? 2.5 : 1.8} />
+                <img src={navLogPainIcon} alt="" className={`w-6 h-6 transition-opacity ${isActive ? 'opacity-100' : 'opacity-75'}`} />
               </div>
-              <span className={`text-[10px] font-semibold ${isActive ? 'text-gray-700' : ''}`}>Log Pain</span>
+              <span className={`text-[10px] font-semibold ${isActive ? 'text-black/80' : ''}`}>Log Pain</span>
             </>
           )}
         </NavLink>
@@ -57,11 +55,11 @@ export default function BottomNav() {
           {({ isActive }) => (
             <div className={`p-2.5 rounded-full transition-all ${
               isActive
-                ? 'bg-indigo-600 shadow-lg shadow-indigo-200'
-                : 'bg-indigo-100 hover:bg-indigo-200'
+                ? 'bg-[#4f46e5] shadow-lg shadow-indigo-200'
+                : 'bg-[rgba(79,70,229,0.1)] hover:bg-[rgba(79,70,229,0.18)]'
             }`}>
-              <Sparkles size={20} strokeWidth={isActive ? 2.2 : 1.8}
-                className={isActive ? 'text-white' : 'text-indigo-500'} />
+              <img src={navSparklesIcon} alt="" className="w-5 h-5"
+                style={isActive ? { filter: 'brightness(0) invert(1)' } : undefined} />
             </div>
           )}
         </NavLink>
@@ -70,16 +68,16 @@ export default function BottomNav() {
         <NavLink to="/history"
           className={({ isActive }) =>
             `flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-gray-800' : 'text-gray-400 hover:text-gray-600'
+              isActive ? 'text-black' : 'text-black/75 hover:text-black/75'
             }`
           }
         >
           {({ isActive }) => (
             <>
               <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-white shadow-sm' : ''}`}>
-                <BookOpen size={19} strokeWidth={isActive ? 2.5 : 1.8} />
+                <img src={navTimelineIcon} alt="" className={`w-6 h-6 transition-opacity ${isActive ? 'opacity-100' : 'opacity-75'}`} />
               </div>
-              <span className={`text-[10px] font-semibold ${isActive ? 'text-gray-700' : ''}`}>Timeline</span>
+              <span className={`text-[10px] font-semibold ${isActive ? 'text-black/80' : ''}`}>Timeline</span>
             </>
           )}
         </NavLink>
@@ -88,16 +86,16 @@ export default function BottomNav() {
         <NavLink to="/family" data-tour="nav-family"
           className={({ isActive }) =>
             `flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-all duration-200 ${
-              isActive ? 'text-gray-800' : 'text-gray-400 hover:text-gray-600'
+              isActive ? 'text-black' : 'text-black/75 hover:text-black/75'
             }`
           }
         >
           {({ isActive }) => (
             <>
               <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-white shadow-sm' : ''}`}>
-                <Users size={19} strokeWidth={isActive ? 2.5 : 1.8} />
+                <img src={navPeopleIcon} alt="" className={`w-6 h-6 transition-opacity ${isActive ? 'opacity-100' : 'opacity-75'}`} />
               </div>
-              <span className={`text-[10px] font-semibold ${isActive ? 'text-gray-700' : ''}`}>People</span>
+              <span className={`text-[10px] font-semibold ${isActive ? 'text-black/80' : ''}`}>People</span>
             </>
           )}
         </NavLink>

@@ -19,8 +19,8 @@ function PatientSymptomCard({ symptom }) {
     }`}>
       <span className="text-xl">{cat?.icon}</span>
       <div className="flex-1">
-        <p className="text-xs font-bold text-gray-800">{symptom.bodyLabel}</p>
-        <p className="text-[11px] text-gray-500">{symptom.type} · {symptom.duration}</p>
+        <p className="text-xs font-bold text-black">{symptom.bodyLabel}</p>
+        <p className="text-[11px] text-black/75">{symptom.type} · {symptom.duration}</p>
       </div>
       <div className="text-right">
         <p className="text-sm font-bold" style={{
@@ -39,14 +39,14 @@ function ConditionsTab({ member, memberConditions, memberMedications, onAddCondi
       {/* Conditions */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Chronic Conditions</p>
+          <p className="text-xs font-extrabold text-black/75 uppercase tracking-wider">Chronic Conditions</p>
           <button onClick={onAddCondition}
             className="flex items-center gap-1 text-xs font-bold text-primary-600 bg-primary-50 px-2.5 py-1.5 rounded-xl">
             <Plus size={11} /> Add
           </button>
         </div>
         {memberConditions.length === 0 ? (
-          <p className="text-xs text-gray-300 italic text-center py-3">No conditions recorded</p>
+          <p className="text-xs text-black/75 italic text-center py-3">No conditions recorded</p>
         ) : (
           <div className="space-y-2">
             {memberConditions.map(c => (
@@ -70,14 +70,14 @@ function ConditionsTab({ member, memberConditions, memberMedications, onAddCondi
       {/* Medications */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Medications</p>
+          <p className="text-xs font-extrabold text-black/75 uppercase tracking-wider">Medications</p>
           <button onClick={onAddMedication}
             className="flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-xl">
             <Plus size={11} /> Add
           </button>
         </div>
         {memberMedications.length === 0 ? (
-          <p className="text-xs text-gray-300 italic text-center py-3">No medications recorded</p>
+          <p className="text-xs text-black/75 italic text-center py-3">No medications recorded</p>
         ) : (
           <div className="space-y-2">
             {memberMedications.map(m => (
@@ -123,14 +123,14 @@ function RiskConfigTab({ member, riskProfile, onSave }) {
     <div className="space-y-5">
       {/* Risk level */}
       <div>
-        <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <p className="text-xs font-extrabold text-black/75 uppercase tracking-wider mb-2 flex items-center gap-1.5">
           <Shield size={12} /> Risk Level
         </p>
         <div className="grid grid-cols-3 gap-2">
           {RISK_LEVELS.map(r => (
             <button key={r.id} onClick={() => setLevel(r.id)}
               className={`py-3 rounded-xl text-xs font-extrabold border-2 transition-all capitalize ${
-                level === r.id ? 'border-current scale-[1.02]' : 'border-gray-100 text-gray-400'
+                level === r.id ? 'border-current scale-[1.02]' : 'border-gray-100 text-black/75'
               }`}
               style={level === r.id ? { background: r.bg, color: r.color, borderColor: r.color } : {}}>
               {r.label}
@@ -142,8 +142,8 @@ function RiskConfigTab({ member, riskProfile, onSave }) {
       {/* Mandatory check-in */}
       <div className="flex items-center justify-between glass-card rounded-2xl px-4 py-3.5">
         <div>
-          <p className="text-xs font-bold text-gray-700">Mandatory Check-in</p>
-          <p className="text-[11px] text-gray-400 mt-0.5">Escalate if missed past window</p>
+          <p className="text-xs font-bold text-black/80">Mandatory Check-in</p>
+          <p className="text-[11px] text-black/75 mt-0.5">Escalate if missed past window</p>
         </div>
         <button onClick={() => setMandatory(m => !m)}
           className="relative flex-shrink-0"
@@ -231,7 +231,7 @@ function DoctorAddConditionModal({ onClose, onAdd }) {
         className="relative glass-elevated rounded-t-3xl w-full max-w-md flex flex-col"
         style={{ maxHeight:'85vh' }}>
         <div className="flex justify-between items-center px-5 pt-5 pb-3 flex-shrink-0">
-          <h2 className="text-sm font-extrabold text-gray-800">
+          <h2 className="text-sm font-extrabold text-black">
             {selected ? `Add ${selected.name}` : 'Add Condition'}
           </h2>
           <div className="flex items-center gap-2">
@@ -250,22 +250,22 @@ function DoctorAddConditionModal({ onClose, onAdd }) {
                 className="w-full flex items-center gap-3 p-3 bg-gray-50 rounded-2xl hover:bg-primary-50 border border-transparent hover:border-primary-200 transition-all text-left">
                 <span className="text-xl">{p.icon}</span>
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-gray-800">{p.name}</p>
-                  <p className="text-[10px] text-gray-400">ICD: {p.icd}</p>
+                  <p className="text-xs font-bold text-black">{p.name}</p>
+                  <p className="text-[10px] text-black/75">ICD: {p.icd}</p>
                 </div>
-                <span className="text-gray-300">›</span>
+                <span className="text-black/75">›</span>
               </button>
             ))}
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto px-5 pb-2 space-y-3">
             <div>
-              <p className="text-xs font-semibold text-gray-500 mb-1.5">Severity</p>
+              <p className="text-xs font-semibold text-black/75 mb-1.5">Severity</p>
               <div className="grid grid-cols-3 gap-2">
                 {['mild','moderate','severe'].map(s => (
                   <button key={s} type="button" onClick={() => setSeverity(s)}
                     className={`py-2 rounded-xl text-xs font-bold border-2 capitalize transition-all ${
-                      severity===s ? (s==='mild'?'border-emerald-400 bg-emerald-50 text-emerald-700':s==='moderate'?'border-amber-400 bg-amber-50 text-amber-700':'border-rose-400 bg-rose-50 text-rose-700') : 'border-gray-100 text-gray-400'
+                      severity===s ? (s==='mild'?'border-emerald-400 bg-emerald-50 text-emerald-700':s==='moderate'?'border-amber-400 bg-amber-50 text-amber-700':'border-rose-400 bg-rose-50 text-rose-700') : 'border-gray-100 text-black/75'
                     }`}>{s}</button>
                 ))}
               </div>
@@ -305,7 +305,7 @@ function DoctorAddMedModal({ onClose, onAdd, conditions }) {
         transition={{ type:'spring', damping:28 }}
         className="relative glass-elevated rounded-t-3xl w-full max-w-md px-5 pt-5 pb-8 space-y-3">
         <div className="flex justify-between items-center mb-1">
-          <h2 className="text-sm font-extrabold text-gray-800">Prescribe Medication</h2>
+          <h2 className="text-sm font-extrabold text-black">Prescribe Medication</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X size={14} /></button>
         </div>
         <input type="text" placeholder="Medication name *" value={name} onChange={e => setName(e.target.value)}
@@ -315,7 +315,7 @@ function DoctorAddMedModal({ onClose, onAdd, conditions }) {
         <div className="flex flex-wrap gap-2">
           {FREQS.map(f => (
             <button key={f} type="button" onClick={() => setFrequency(f)}
-              className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border-2 transition-all ${frequency===f?'border-primary-500 bg-primary-50 text-primary-700':'border-gray-100 text-gray-400'}`}>
+              className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border-2 transition-all ${frequency===f?'border-primary-500 bg-primary-50 text-primary-700':'border-gray-100 text-black/75'}`}>
               {f}
             </button>
           ))}
@@ -386,8 +386,8 @@ function DocsTab({ documents, memberId, onUpload }) {
               <FileText size={15} className="text-primary-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-gray-700 truncate">{d.name}</p>
-              <p className="text-[10px] text-gray-400">{d.docType} · {format(new Date(d.uploadedAt), 'MMM d, yyyy')}</p>
+              <p className="text-xs font-bold text-black/80 truncate">{d.name}</p>
+              <p className="text-[10px] text-black/75">{d.docType} · {format(new Date(d.uploadedAt), 'MMM d, yyyy')}</p>
             </div>
             {d.uploadedBy === 'doctor' && (
               <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-full flex-shrink-0">DR</span>
@@ -396,9 +396,9 @@ function DocsTab({ documents, memberId, onUpload }) {
         ))}
         {documents.length === 0 && (
           <div className="text-center py-6">
-            <Paperclip size={24} className="text-gray-200 mx-auto mb-2" />
-            <p className="text-xs text-gray-400">No documents yet</p>
-            <p className="text-[10px] text-gray-300 mt-0.5">Upload reports, prescriptions or scans above</p>
+            <Paperclip size={24} className="text-black/20 mx-auto mb-2" />
+            <p className="text-xs text-black/75">No documents yet</p>
+            <p className="text-[10px] text-black/75 mt-0.5">Upload reports, prescriptions or scans above</p>
           </div>
         )}
       </div>
@@ -460,7 +460,7 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex-shrink-0 px-4 py-3 text-xs font-semibold transition-colors border-b-2 whitespace-nowrap ${
-              tab === t.id ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-400 hover:text-gray-600'
+              tab === t.id ? 'border-primary-500 text-primary-600' : 'border-transparent text-black/75 hover:text-black/75'
             }`}>
             {t.label}
           </button>
@@ -480,7 +480,7 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
               ].map(s => (
                 <div key={s.label} className="glass-card rounded-2xl p-2.5 text-center">
                   <p className="text-lg font-extrabold" style={{ color: s.color }}>{s.value}</p>
-                  <p className="text-[9px] text-gray-400">{s.label}</p>
+                  <p className="text-[9px] text-black/75">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -488,10 +488,10 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
               <div className="flex items-center gap-3 glass-card rounded-2xl p-3">
                 <span className="text-2xl">{FEELING_CONFIG[recentCheckIn.feeling]?.emoji}</span>
                 <div>
-                  <p className="text-xs font-bold text-gray-700">
+                  <p className="text-xs font-bold text-black/80">
                     Last check-in: {FEELING_CONFIG[recentCheckIn.feeling]?.label}
                   </p>
-                  <p className="text-[10px] text-gray-400">
+                  <p className="text-[10px] text-black/75">
                     {format(new Date(recentCheckIn.date), 'MMM d, yyyy')}
                     {recentCheckIn.notes && ` · "${recentCheckIn.notes}"`}
                   </p>
@@ -508,7 +508,7 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
             )}
             {activeSymptoms.filter(s => s.severity < 7).length > 0 && (
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Other Active</p>
+                <p className="text-xs font-bold text-black/75 uppercase tracking-wider mb-2">Other Active</p>
                 <div className="space-y-2">
                   {activeSymptoms.filter(s => s.severity < 7).map(s => <PatientSymptomCard key={s.id} symptom={s} />)}
                 </div>
@@ -516,7 +516,7 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
             )}
             {activeSymptoms.length === 0 && (
               <div className="text-center py-6">
-                <p className="text-sm text-gray-400">No active symptoms 🎉</p>
+                <p className="text-sm text-black/75">No active symptoms 🎉</p>
               </div>
             )}
           </>
@@ -549,14 +549,14 @@ function PatientPanel({ member, symptoms, checkIns, documents, conditions, medic
                 <div key={s.id} className="flex items-center gap-3 p-3 glass-card rounded-xl">
                   <span className="text-lg">{cat?.icon}</span>
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-gray-700">{s.bodyLabel} — {s.type}</p>
-                    <p className="text-[10px] text-gray-400">{format(new Date(s.timestamp), 'MMM d')} · {severityLabel(s.severity)} · {s.duration}</p>
+                    <p className="text-xs font-bold text-black/80">{s.bodyLabel} — {s.type}</p>
+                    <p className="text-[10px] text-black/75">{format(new Date(s.timestamp), 'MMM d')} · {severityLabel(s.severity)} · {s.duration}</p>
                   </div>
                   {s.resolved && <span className="text-[10px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">✓</span>}
                 </div>
               )
             })}
-            {symptoms.length === 0 && <p className="text-center text-sm text-gray-400 py-4">No history</p>}
+            {symptoms.length === 0 && <p className="text-center text-sm text-black/75 py-4">No history</p>}
           </div>
         )}
 
@@ -639,11 +639,11 @@ export default function DoctorPortal() {
         <div className="max-w-lg mx-auto flex items-center justify-between">
           <div>
             <p className="text-[11px] text-primary-500 font-semibold uppercase tracking-wider">Doctor Portal</p>
-            <h1 className="text-lg font-extrabold text-gray-900">Dr. {currentUser?.name}</h1>
-            <p className="text-xs text-gray-400">{myPatients.length} patient{myPatients.length !== 1 ? 's' : ''} tracked</p>
+            <h1 className="text-lg font-extrabold text-black">Dr. {currentUser?.name}</h1>
+            <p className="text-xs text-black/75">{myPatients.length} patient{myPatients.length !== 1 ? 's' : ''} tracked</p>
           </div>
           <button onClick={logout}
-            className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-rose-500 transition-colors">
+            className="flex items-center gap-1.5 text-xs font-semibold text-black/75 hover:text-rose-500 transition-colors">
             <LogOut size={15} /> Sign out
           </button>
         </div>
@@ -652,7 +652,7 @@ export default function DoctorPortal() {
       <div className="px-4 pt-5 pb-10 max-w-lg mx-auto space-y-5">
         {/* Add patient */}
         <div className="glass-card rounded-2xl p-4">
-          <h3 className="text-sm font-bold text-gray-800 mb-3">Add Patient by ID</h3>
+          <h3 className="text-sm font-bold text-black mb-3">Add Patient by ID</h3>
           <form onSubmit={handleAddPatient} className="flex gap-2">
             <input
               type="text"
@@ -672,7 +672,7 @@ export default function DoctorPortal() {
           </form>
           {error && <p className="text-xs text-rose-500 mt-2 font-medium">{error}</p>}
           {members.length > 0 && (
-            <p className="text-[10px] text-gray-400 mt-2">
+            <p className="text-[10px] text-black/75 mt-2">
               Member IDs: {members.map(m => `${m.id} (${m.name.split(' ')[0]})`).join(', ')}
             </p>
           )}
@@ -682,8 +682,8 @@ export default function DoctorPortal() {
         {myPatients.length === 0 ? (
           <div className="text-center py-16">
             <div className="text-5xl mb-3">🩺</div>
-            <p className="text-sm font-bold text-gray-600">No patients yet</p>
-            <p className="text-xs text-gray-400 mt-1">Enter a patient ID above to start tracking.</p>
+            <p className="text-sm font-bold text-black/75">No patients yet</p>
+            <p className="text-xs text-black/75 mt-1">Enter a patient ID above to start tracking.</p>
           </div>
         ) : (
           <div className="space-y-4">

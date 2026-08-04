@@ -17,7 +17,7 @@ function FileIcon({ name }) {
   const ext = name?.split('.').pop()?.toLowerCase()
   if (['jpg','jpeg','png','gif','webp'].includes(ext)) return <Image size={20} className="text-blue-400" />
   if (['pdf'].includes(ext)) return <FileText size={20} className="text-rose-400" />
-  return <File size={20} className="text-gray-400" />
+  return <File size={20} className="text-black/75" />
 }
 
 function DocCard({ doc, onDelete }) {
@@ -36,17 +36,17 @@ function DocCard({ doc, onDelete }) {
           {type.icon}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-gray-800 truncate">{doc.name}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{type.label}</p>
-          {doc.notes && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{doc.notes}</p>}
-          <p className="text-[10px] text-gray-300 mt-1">
+          <p className="text-sm font-bold text-black truncate">{doc.name}</p>
+          <p className="text-xs text-black/75 mt-0.5">{type.label}</p>
+          {doc.notes && <p className="text-xs text-black/75 mt-1 line-clamp-2">{doc.notes}</p>}
+          <p className="text-[10px] text-black/75 mt-1">
             Uploaded {format(new Date(doc.uploadedAt), 'MMM d, yyyy')}
           </p>
         </div>
         <div className="flex flex-col gap-1.5">
           <button
             onClick={() => onDelete(doc.id)}
-            className="w-7 h-7 rounded-lg bg-gray-50 hover:bg-rose-50 flex items-center justify-center text-gray-300 hover:text-rose-400 transition-colors"
+            className="w-7 h-7 rounded-lg bg-gray-50 hover:bg-rose-50 flex items-center justify-center text-black/75 hover:text-rose-400 transition-colors"
           >
             <Trash2 size={12} />
           </button>
@@ -85,7 +85,7 @@ function UploadModal({ onClose, onSave }) {
         transition={{ type: 'spring', damping: 28 }}
         className="relative glass-elevated rounded-t-3xl w-full max-w-md p-6 pb-10"
       >
-        <h2 className="text-base font-bold text-gray-800 mb-4">Add Document</h2>
+        <h2 className="text-base font-bold text-black mb-4">Add Document</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* File drop zone */}
           <div
@@ -94,11 +94,11 @@ function UploadModal({ onClose, onSave }) {
           >
             <input ref={fileRef} type="file" className="hidden"
               onChange={e => { setFile(e.target.files[0]); if (!name) setName(e.target.files[0]?.name || '') }} />
-            <Upload size={24} className="mx-auto text-gray-300 mb-2" />
+            <Upload size={24} className="mx-auto text-black/75 mb-2" />
             {file
               ? <p className="text-sm font-medium text-primary-600">{file.name}</p>
-              : <><p className="text-sm text-gray-500 font-medium">Tap to upload a file</p>
-                  <p className="text-xs text-gray-300 mt-1">PDF, images, any format</p></>
+              : <><p className="text-sm text-black/75 font-medium">Tap to upload a file</p>
+                  <p className="text-xs text-black/75 mt-1">PDF, images, any format</p></>
             }
           </div>
 
@@ -119,7 +119,7 @@ function UploadModal({ onClose, onSave }) {
                 }`}
               >
                 <div className="text-lg">{t.icon}</div>
-                <p className="text-[10px] font-medium text-gray-600 mt-0.5 leading-tight">{t.label}</p>
+                <p className="text-[10px] font-medium text-black/75 mt-0.5 leading-tight">{t.label}</p>
               </button>
             ))}
           </div>
@@ -164,8 +164,8 @@ export default function Documents() {
     <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       <div className="flex justify-between items-center mb-5">
         <div>
-          <h2 className="text-lg font-extrabold text-gray-900">Health Records</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <h2 className="text-lg font-extrabold text-black">Health Records</h2>
+          <p className="text-xs text-black/75 mt-0.5">
             {currentMember?.name} · {allDocs.length} document{allDocs.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -181,7 +181,7 @@ export default function Documents() {
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4">
         {['All', ...DOC_TYPES.map(t => t.label)].map(label => (
           <button key={label}
-            className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full glass-card text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+            className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full glass-card text-black/75 hover:text-primary-600 hover:bg-primary-50 transition-colors">
             {label}
           </button>
         ))}
@@ -196,8 +196,8 @@ export default function Documents() {
           <div className="w-20 h-20 bg-gray-100 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-4">
             📋
           </div>
-          <p className="text-sm font-bold text-gray-600">No documents yet</p>
-          <p className="text-xs text-gray-400 mt-1 mb-6">Upload lab results, prescriptions, and more</p>
+          <p className="text-sm font-bold text-black/75">No documents yet</p>
+          <p className="text-xs text-black/75 mt-1 mb-6">Upload lab results, prescriptions, and more</p>
           <button
             onClick={() => setShowUpload(true)}
             className="bg-primary-600 text-white text-sm font-bold px-6 py-3 rounded-2xl shadow-sm"

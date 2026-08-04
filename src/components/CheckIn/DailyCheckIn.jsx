@@ -39,8 +39,8 @@ export default function DailyCheckIn({ onClose, targetDate }) {
         className="flex flex-col items-center py-8 gap-3"
       >
         <div className="text-5xl">{cfg.emoji}</div>
-        <p className="text-base font-semibold text-gray-800">{isEdit ? 'Check-in updated!' : 'Check-in saved!'}</p>
-        <p className="text-sm text-gray-500">
+        <p className="text-base font-semibold text-black">{isEdit ? 'Check-in updated!' : 'Check-in saved!'}</p>
+        <p className="text-sm text-black/75">
           {isPast ? `Logged for ${format(target, 'EEE, d MMM')}.` : 'Keep taking care of yourself.'}
         </p>
       </motion.div>
@@ -60,7 +60,7 @@ export default function DailyCheckIn({ onClose, targetDate }) {
         </div>
       )}
 
-      <p className="text-sm text-gray-500 mb-4 font-medium">
+      <p className="text-sm text-black/75 mb-4 font-medium">
         How were you feeling {isPast ? `on ${dayLabel}` : dayLabel}?
       </p>
 

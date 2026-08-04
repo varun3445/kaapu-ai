@@ -2,7 +2,12 @@ import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, X, Smartphone, Activity, CheckCircle, Loader, RotateCcw, CheckCircle2, Search, Pill, Trash2 } from 'lucide-react'
+import { Plus, X, Smartphone, Activity, CheckCircle, Loader, RotateCcw, CheckCircle2, Search, Trash2 } from 'lucide-react'
+import { getConditionIcon } from '../components/Conditions/conditionIcons'
+import chevronRightIcon from '../assets/icons/chevron-right.svg'
+import pillChipIcon from '../assets/icons/pill-chip.svg'
+import doingGreatIcon from '../assets/icons/doing-great.svg'
+import medPillFilledIcon from '../assets/icons/med-pill.svg'
 import { useApp } from '../context/AppContext'
 import { calculateMoodFromSymptoms } from '../context/AppContext'
 import BodyScene from '../components/Body3D/BodyScene'
@@ -75,24 +80,24 @@ function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain
             <span className="text-4xl">{cfg.emoji}</span>
             <div>
               <p className="text-xs font-semibold" style={{ color: cfg.color }}>{title}</p>
-              <p className="text-lg font-extrabold text-gray-800">{cfg.label}</p>
+              <p className="text-lg font-extrabold text-black">{cfg.label}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-white/60 flex items-center justify-center">
-            <X size={15} className="text-gray-600" />
+            <X size={15} className="text-black/75" />
           </button>
         </div>
 
         <div className="px-5 py-4 space-y-4">
           {/* Score pill */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-gray-500">Pain score:</span>
+            <span className="text-xs font-semibold text-black/75">Pain score:</span>
             <span className="text-xs font-bold px-2.5 py-1 rounded-full"
               style={{ background: cfg.color + '18', color: cfg.color }}>
               {score} pt{score !== 1 ? 's' : ''} → {cfg.label}
             </span>
             {score > 0 && (
-              <span className="text-[10px] text-gray-400">
+              <span className="text-[10px] text-black/75">
                 {severe.length > 0 && `${severe.length} severe (×4)`}
                 {moderate.length > 0 && `${severe.length > 0 ? ' · ' : ''}${moderate.length} moderate (×2)`}
                 {minor.length > 0 && `${(severe.length + moderate.length) > 0 ? ' · ' : ''}${minor.length} minor (×1)`}
@@ -103,7 +108,7 @@ function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain
           {/* Symptom list */}
           {daySymptoms.length > 0 ? (
             <div>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <p className="text-[10px] font-bold text-black/75 uppercase tracking-wider mb-2">
                 Active symptoms this day
               </p>
               <div className="space-y-2 max-h-52 overflow-y-auto">
@@ -116,8 +121,8 @@ function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain
                       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
                         style={{ background: (cat?.color || '#6366f1') + '22' }}>{cat?.icon}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-gray-800 truncate">{s.bodyLabel}</p>
-                        <p className="text-[10px] text-gray-400">{s.type} · {severityLabel(sev)}</p>
+                        <p className="text-xs font-semibold text-black truncate">{s.bodyLabel}</p>
+                        <p className="text-[10px] text-black/75">{s.type} · {severityLabel(sev)}</p>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
@@ -132,7 +137,7 @@ function DayDetailModal({ day, symptoms, memberId, onClose, onResolve, onLogPain
                           </button>
                         )}
                         {!stillActive && (
-                          <span className="text-[10px] text-gray-300 font-medium">Resolved</span>
+                          <span className="text-[10px] text-black/75 font-medium">Resolved</span>
                         )}
                       </div>
                     </div>
@@ -196,7 +201,7 @@ function MoodBar({ symptoms, memberId, onDayPress }) {
               className={`w-full rounded-lg transition-all ${MOOD_BAR_H[mood]}`}
               style={{ background: cfg.color + '55', border: `2px solid ${cfg.color}` }}
             />
-            <span className="text-[9px] text-gray-400 font-medium">{lbl}</span>
+            <span className="text-[9px] text-black/75 font-medium">{lbl}</span>
           </button>
         )
       })}
@@ -223,12 +228,12 @@ function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, 
         className="relative w-full max-w-sm glass-elevated rounded-3xl px-5 pt-5 pb-6"
       >
         <div className="flex items-center justify-between mb-1">
-          <p className="text-sm font-extrabold text-gray-900">Connect Health App</p>
+          <p className="text-sm font-extrabold text-black">Connect Health App</p>
           <button onClick={onClose} className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
             <X size={13} />
           </button>
         </div>
-        <p className="text-xs text-gray-400 mb-4">Sync vitals automatically from your phone.</p>
+        <p className="text-xs text-black/75 mb-4">Sync vitals automatically from your phone.</p>
         <div className="space-y-3">
           {/* Apple Health */}
           <button
@@ -243,14 +248,14 @@ function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, 
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900">Apple Health</p>
-              <p className="text-xs text-gray-400 mt-0.5">{isIOS ? 'Heart rate, steps, SpO₂ & calories' : 'iOS only'}</p>
+              <p className="text-sm font-bold text-black">Apple Health</p>
+              <p className="text-xs text-black/75 mt-0.5">{isIOS ? 'Heart rate, steps, SpO₂ & calories' : 'iOS only'}</p>
             </div>
             {(connecting && isIOS)
               ? <Loader size={16} className="text-primary-400 animate-spin flex-shrink-0" />
               : isIOS
-                ? <span className="text-gray-300 flex-shrink-0">›</span>
-                : <span className="text-[10px] text-gray-300 flex-shrink-0">iOS only</span>}
+                ? <span className="text-black/75 flex-shrink-0">›</span>
+                : <span className="text-[10px] text-black/75 flex-shrink-0">iOS only</span>}
           </button>
           {/* Google Health Connect */}
           <button
@@ -267,14 +272,14 @@ function ConnectHealthModal({ onClose, onConnect, connecting, isIOS, isAndroid, 
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900">Google Health Connect</p>
-              <p className="text-xs text-gray-400 mt-0.5">{isAndroid ? 'Steps, heart rate, SpO₂ & calories' : 'Android only'}</p>
+              <p className="text-sm font-bold text-black">Google Health Connect</p>
+              <p className="text-xs text-black/75 mt-0.5">{isAndroid ? 'Steps, heart rate, SpO₂ & calories' : 'Android only'}</p>
             </div>
             {(connecting && isAndroid)
               ? <Loader size={16} className="text-primary-400 animate-spin flex-shrink-0" />
               : isAndroid
-                ? <span className="text-gray-300 flex-shrink-0">›</span>
-                : <span className="text-[10px] text-gray-300 flex-shrink-0">Android only</span>}
+                ? <span className="text-black/75 flex-shrink-0">›</span>
+                : <span className="text-[10px] text-black/75 flex-shrink-0">Android only</span>}
           </button>
           {unavailable && (
             <p className="text-[11px] text-amber-600 bg-amber-50 rounded-xl px-3 py-2 text-center">
@@ -297,15 +302,15 @@ function WebHealthPrompt() {
   return (
     <div className="glass-card rounded-2xl p-5 flex flex-col items-center text-center gap-3 relative overflow-hidden">
       {/* Coming soon overlay */}
-      <div className="absolute inset-0 rounded-2xl bg-white/85 backdrop-blur-md z-10 flex flex-col items-center justify-center gap-1.5">
-        <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">Coming Soon</span>
+      <div className="absolute inset-0 rounded-2xl bg-white/75 backdrop-blur-md z-10 flex flex-col items-center justify-center gap-1.5">
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-black/75">Coming Soon</span>
       </div>
       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-50 flex items-center justify-center">
         <Smartphone size={22} className="text-primary-400" />
       </div>
       <div>
-        <p className="text-sm font-bold text-gray-800">Health data needs the app</p>
-        <p className="text-xs text-gray-400 mt-1 leading-relaxed">
+        <p className="text-sm font-bold text-black">Health data needs the app</p>
+        <p className="text-xs text-black/75 mt-1 leading-relaxed">
           Steps, heart rate, SpO₂ and calories sync from Apple Health on iPhone or Google Health Connect on Android.
         </p>
       </div>
@@ -337,16 +342,16 @@ function VitalCard({ icon, label, value, unit, onConnect, connected }) {
     <div className="glass-card rounded-2xl p-3.5 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-xl">{icon}</span>
-        {connected ? <CheckCircle size={12} className="text-emerald-400" /> : <Smartphone size={12} className="text-gray-300" />}
+        {connected ? <CheckCircle size={12} className="text-emerald-400" /> : <Smartphone size={12} className="text-black/75" />}
       </div>
       {connected ? (
         value != null
-          ? <p className="text-base font-extrabold text-gray-800 leading-none">{value.toLocaleString()}<span className="text-[10px] font-medium text-gray-400 ml-0.5">{unit}</span></p>
-          : <p className="text-sm font-bold text-gray-300 leading-none">N/A</p>
+          ? <p className="text-base font-extrabold text-black leading-none">{value.toLocaleString()}<span className="text-[10px] font-medium text-black/75 ml-0.5">{unit}</span></p>
+          : <p className="text-sm font-bold text-black/75 leading-none">N/A</p>
       ) : (
-        <p className="text-[10px] text-gray-300 font-medium leading-none">—</p>
+        <p className="text-[10px] text-black/75 font-medium leading-none">—</p>
       )}
-      <p className="text-[10px] text-gray-400 font-medium leading-none">{label}</p>
+      <p className="text-[10px] text-black/75 font-medium leading-none">{label}</p>
       {!connected && (
         <button onClick={onConnect} className="w-6 h-6 rounded-lg bg-primary-50 flex items-center justify-center hover:bg-primary-100 transition-colors">
           <Plus size={13} className="text-primary-500" />
@@ -365,14 +370,14 @@ function SymptomPill({ symptom, onResolve }) {
       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
         style={{ background: (cat?.color || '#6366f1') + '22' }}>{cat?.icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800 truncate">{symptom.bodyLabel}</p>
-        <p className="text-[10px] text-gray-400">{symptom.type} · {symptom.duration}</p>
+        <p className="text-xs font-semibold text-black truncate">{symptom.bodyLabel}</p>
+        <p className="text-[10px] text-black/75">{symptom.type} · {symptom.duration}</p>
       </div>
       <div className="flex items-center gap-1.5">
         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
           sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-100 text-rose-600' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
         }`}>{severityLabel(sev)}</span>
-        <button onClick={() => onResolve(symptom.id)} className="p-1 text-gray-300 hover:text-rose-400 transition-colors">
+        <button onClick={() => onResolve(symptom.id)} className="p-1 text-black/75 hover:text-rose-400 transition-colors">
           <X size={12} />
         </button>
       </div>
@@ -435,14 +440,14 @@ function BodyMapModal({ onClose, onSymptomAdded, skinColor }) {
         {/* Header */}
         <div className="px-5 pt-4 pb-3 flex items-center justify-between flex-shrink-0 border-b border-gray-100">
           <div>
-            <h2 className="text-base font-bold text-gray-800">Body Map</h2>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <h2 className="text-base font-bold text-black">Body Map</h2>
+            <p className="text-xs text-black/75 mt-0.5">
               {activeSymptoms.length > 0
                 ? `${activeSymptoms.length} active symptom${activeSymptoms.length !== 1 ? 's' : ''} · tap to log more`
                 : 'Tap the body to log a symptom'}
             </p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors">
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-black/75 hover:bg-gray-200 transition-colors">
             <X size={16} />
           </button>
         </div>
@@ -476,7 +481,7 @@ function BodyMapModal({ onClose, onSymptomAdded, skinColor }) {
               </motion.div>
             )}
           </AnimatePresence>
-          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[10px] text-gray-400 font-medium">
+          <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[10px] text-black/75 font-medium">
             <RotateCcw size={10} /> Rotate · Pan · Zoom
           </div>
         </div>
@@ -484,7 +489,7 @@ function BodyMapModal({ onClose, onSymptomAdded, skinColor }) {
         {/* Active symptoms list */}
         {activeSymptoms.length > 0 && (
           <div className="flex-shrink-0 px-4 pt-3 pb-4 border-t border-gray-100 max-h-44 overflow-y-auto">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Active Symptoms</p>
+            <p className="text-[10px] font-semibold text-black/75 uppercase tracking-wider mb-2">Active Symptoms</p>
             <div className="space-y-2">
               {activeSymptoms.map(s => (
                 <SymptomPill key={s.id} symptom={s} onResolve={resolveSymptom} />
@@ -553,8 +558,8 @@ function AddConditionModal({ onClose }) {
         style={{ background:'white', maxHeight:'88vh', boxShadow:'0 -4px 40px rgba(0,0,0,0.18)' }}>
         <div className="flex justify-between items-center px-5 pt-5 pb-3 flex-shrink-0 border-b border-gray-100">
           <div>
-            <h2 className="text-sm font-extrabold text-gray-800">{step === 'pick' ? 'Add Condition' : selected?.name}</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{step === 'pick' ? 'Select from common conditions' : 'Fill in details'}</p>
+            <h2 className="text-sm font-extrabold text-black">{step === 'pick' ? 'Add Condition' : selected?.name}</h2>
+            <p className="text-xs text-black/75 mt-0.5">{step === 'pick' ? 'Select from common conditions' : 'Fill in details'}</p>
           </div>
           <div className="flex items-center gap-2">
             {step === 'details' && <button onClick={() => setStep('pick')} className="text-xs text-primary-500 font-semibold">← Back</button>}
@@ -565,23 +570,26 @@ function AddConditionModal({ onClose }) {
         {step === 'pick' && (
           <div className="flex-1 overflow-y-auto px-5 pt-4 pb-6">
             <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-black" />
               <input type="text" placeholder="Search conditions…" value={query} onChange={e => setQuery(e.target.value)}
-                className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" />
+                className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm text-black placeholder:text-black focus:outline-none"
+                style={{ background: 'rgba(0,0,0,0.25)' }} />
             </div>
             <div className="space-y-2">
               {filtered.map(p => (
                 <button key={p.name} onClick={() => selectPreset(p)}
-                  className="w-full flex items-center gap-3 p-3 rounded-2xl border border-gray-100 hover:bg-gray-50 transition-all text-left">
-                  <span className="text-2xl">{p.icon}</span>
+                  className="w-full flex items-center gap-3 p-3 bg-white border border-black/10 rounded-2xl hover:bg-gray-50 transition-all text-left">
+                  <span className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(79,70,229,0.1)' }}>
+                    <img src={getConditionIcon(p)} alt="" className="w-[18px] h-[18px]" />
+                  </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800">{p.name}</p>
-                    <p className="text-[11px] text-gray-400">ICD: {p.icd} · {p.category}</p>
+                    <p className="text-sm font-semibold text-black">{p.name}</p>
+                    <p className="text-[11px] text-black/75">ICD: {p.icd} · {p.category}</p>
                   </div>
-                  <span className="text-primary-400 text-lg">›</span>
+                  <img src={chevronRightIcon} alt="" className="w-4 h-4 flex-shrink-0" />
                 </button>
               ))}
-              {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-6">No matches found</p>}
+              {filtered.length === 0 && <p className="text-center text-sm text-black/75 py-6">No matches found</p>}
             </div>
           </div>
         )}
@@ -589,7 +597,7 @@ function AddConditionModal({ onClose }) {
         {step === 'details' && selected && (
           <div className="flex-1 overflow-y-auto px-5 pt-4 space-y-4 pb-4">
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-2">Severity</label>
+              <label className="text-xs font-semibold text-black/75 block mb-2">Severity</label>
               <div className="grid grid-cols-3 gap-2">
                 {['mild','moderate','severe'].map(s => (
                   <button key={s} type="button" onClick={() => setSeverity(s)}
@@ -598,18 +606,18 @@ function AddConditionModal({ onClose }) {
                         ? s === 'mild' ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
                           : s === 'moderate' ? 'border-amber-400 bg-amber-50 text-amber-700'
                           : 'border-rose-400 bg-rose-50 text-rose-700'
-                        : 'border-gray-100 text-gray-400'
+                        : 'border-gray-100 text-black/75'
                     }`}>{s}</button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Diagnosis Date (optional)</label>
+              <label className="text-xs font-semibold text-black/75 block mb-1.5">Diagnosis Date (optional)</label>
               <input type="date" value={diagDate} onChange={e => setDiagDate(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-2">Monitor Symptom Categories</label>
+              <label className="text-xs font-semibold text-black/75 block mb-2">Monitor Symptom Categories</label>
               <div className="flex flex-wrap gap-2">
                 {SYMPTOM_CATEGORIES.filter(c => c.id !== 'other').map(cat => (
                   <button key={cat.id} type="button" onClick={() => toggleCat(cat.id)}
@@ -621,7 +629,7 @@ function AddConditionModal({ onClose }) {
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Clinical Notes (optional)</label>
+              <label className="text-xs font-semibold text-black/75 block mb-1.5">Clinical Notes (optional)</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Triggers, management strategy, doctor notes…" rows={3}
                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm resize-none focus:outline-none focus:border-primary-400" />
             </div>
@@ -643,7 +651,15 @@ function AddConditionModal({ onClose }) {
 
 // ── Condition detail modal ────────────────────────────────────────────────────
 function ConditionDetailModal({ condition, onClose, onAddMed }) {
-  const { currentMedications, currentSymptoms } = useApp()
+  const { currentMedications, currentSymptoms, currentConditions } = useApp()
+
+  // Auto-close once the condition has been removed (e.g. via the delete
+  // confirmation inside ConditionCard), otherwise this modal keeps
+  // rendering a stale/deleted condition.
+  useEffect(() => {
+    if (!currentConditions.some(c => c.id === condition.id)) onClose()
+  }, [currentConditions, condition.id, onClose])
+
   return createPortal(
     <motion.div
       initial={{ opacity:0 }}
@@ -663,26 +679,28 @@ function ConditionDetailModal({ condition, onClose, onAddMed }) {
       >
         <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">{condition.icon}</span>
+            <span className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(79,70,229,0.1)' }}>
+              <img src={getConditionIcon(condition)} alt="" className="w-6 h-6" />
+            </span>
             <div>
-              <p className="text-sm font-extrabold text-gray-800">{condition.name}</p>
-              <p className="text-[11px] text-gray-400 capitalize">{condition.severity} · ICD {condition.icd}</p>
+              <p className="text-sm font-extrabold text-black">{condition.name}</p>
+              <p className="text-[11px] text-black/75 capitalize">{condition.severity} · ICD {condition.icd}</p>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-            <X size={15} className="text-gray-500" />
+            <X size={15} className="text-black/75" />
           </button>
         </div>
         <div className="overflow-y-auto" style={{ maxHeight:'65vh' }}>
           <div className="p-4">
-            <ConditionCard condition={condition} medications={currentMedications} symptoms={currentSymptoms} />
+            <ConditionCard condition={condition} medications={currentMedications} symptoms={currentSymptoms} hideSummary />
           </div>
           <div className="px-4 pb-5">
             <button
               onClick={() => { onClose(); onAddMed() }}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold border-2 border-dashed border-primary-200 text-primary-500 hover:bg-primary-50 transition-colors"
             >
-              <Pill size={14} /> Add Medication to this Condition
+              <img src={pillChipIcon} alt="" className="w-4 h-4" /> Add Medication to this Condition
             </button>
           </div>
         </div>
@@ -752,12 +770,12 @@ export default function Dashboard() {
         className="glass-card rounded-3xl p-5 overflow-hidden">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-gray-400 font-medium">How are you feeling?</p>
+            <p className="text-xs text-black/75 font-medium">How are you feeling?</p>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-3xl">{todayCfg.emoji}</span>
               <div>
-                <p className="text-base font-extrabold text-gray-800">{todayCfg.label}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">
+                <p className="text-base font-extrabold text-black">{todayCfg.label}</p>
+                <p className="text-[10px] text-black/75 mt-0.5">
                   {activeSymptoms.length === 0
                     ? 'No active symptoms — great work!'
                     : `${activeSymptoms.length} active symptom${activeSymptoms.length !== 1 ? 's' : ''}`}
@@ -768,7 +786,7 @@ export default function Dashboard() {
           <button
             data-tour="log-pain-btn"
             onClick={() => navigate('/log-pain')}
-            className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors whitespace-nowrap"
+            className="flex-shrink-0 flex items-center gap-1.5 text-xs font-bold bg-[rgba(79,70,229,0.1)] text-[#4f46e5] border border-black/10 px-3 py-2 rounded-full hover:opacity-80 transition-colors whitespace-nowrap"
           >
             <Plus size={13} /> Log Pain
           </button>
@@ -776,7 +794,7 @@ export default function Dashboard() {
 
         {/* 7-day mood bar — symptom-derived, always shown */}
         <div>
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-2">7-Day History</p>
+          <p className="text-[10px] text-black/75 uppercase tracking-wider font-semibold mb-2">7-Day History</p>
           <MoodBar symptoms={currentSymptoms} memberId={currentMember?.id} onDayPress={setSelectedDay} />
         </div>
       </motion.div>
@@ -785,18 +803,18 @@ export default function Dashboard() {
       <div data-tour="health-mapping" className="glass-card rounded-2xl p-4">
         <div className="flex justify-between items-center mb-3">
           <div>
-            <h3 className="text-sm font-bold text-gray-800">Health Mapping</h3>
-            <p className="text-xs text-gray-400">
+            <h3 className="text-sm font-bold text-black">Health Mapping</h3>
+            <p className="text-xs text-black/75">
               {activeSymptoms.length > 0 ? `${activeSymptoms.length} active` : 'Nothing logged yet'}
             </p>
           </div>
           <div className="flex items-center gap-1.5">
             <button data-tour="add-med-btn" onClick={() => setShowAddMed(true)}
-              className="flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-xl hover:bg-indigo-100 transition-colors">
-              <Pill size={12} /> Med
+              className="flex items-center gap-1 text-xs font-semibold bg-[rgba(79,70,229,0.1)] text-[#4f46e5] border border-black/10 px-2.5 py-1.5 rounded-full hover:opacity-80 transition-colors">
+              <img src={pillChipIcon} alt="" className="w-3.5 h-3.5" /> Med
             </button>
             <button onClick={() => setShowAddCond(true)}
-              className="flex items-center gap-1 text-xs font-semibold text-primary-600 bg-primary-50 px-2.5 py-1.5 rounded-xl hover:bg-primary-100 transition-colors">
+              className="flex items-center gap-1 text-xs font-semibold bg-[rgba(79,70,229,0.1)] text-[#4f46e5] border border-black/10 px-2.5 py-1.5 rounded-full hover:opacity-80 transition-colors">
               <Plus size={12} /> Condition
             </button>
           </div>
@@ -820,10 +838,10 @@ export default function Dashboard() {
               border: '0.75px solid rgba(0,0,0,0.08)',
               boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9)',
             }}>
-            <span className="text-2xl">✨</span>
+            <img src={doingGreatIcon} alt="" className="w-8 h-8 flex-shrink-0" />
             <div>
-              <p className="text-sm font-bold text-gray-700">Doing great, champ!</p>
-              <p className="text-xs text-gray-400">No symptoms logged — keep it up</p>
+              <p className="text-sm font-bold text-black/80">Doing great, champ!</p>
+              <p className="text-xs text-black/75">No symptoms logged — keep it up</p>
             </div>
           </div>
         )}
@@ -831,29 +849,24 @@ export default function Dashboard() {
         {/* ── Conditions — always visible ── */}
         {currentConditions.length > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Conditions</p>
+            <p className="text-[10px] font-bold text-black/75 uppercase tracking-wider mb-2">Conditions</p>
             <div className="space-y-1.5">
-              {currentConditions.map(c => {
-                const sevColor =
-                  c.severity === 'severe'   ? { bg: '#fee2e2', text: '#dc2626', dot: '#ef4444' } :
-                  c.severity === 'moderate' ? { bg: '#fef3c7', text: '#b45309', dot: '#f59e0b' } :
-                                              { bg: '#dcfce7', text: '#15803d', dot: '#22c55e' }
-                return (
-                  <button key={c.id}
-                    onClick={() => setSelectedCond(c)}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left active:scale-[0.98] transition-transform"
-                    style={{ background: sevColor.bg }}>
-                    <span className="text-base flex-shrink-0">{c.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold truncate" style={{ color: sevColor.text }}>{c.name}</p>
-                      {c.severity && (
-                        <p className="text-[10px] capitalize" style={{ color: sevColor.dot }}>{c.severity}</p>
-                      )}
-                    </div>
-                    <span className="text-[10px] font-semibold flex-shrink-0" style={{ color: sevColor.dot }}>›</span>
-                  </button>
-                )
-              })}
+              {currentConditions.map(c => (
+                <button key={c.id}
+                  onClick={() => setSelectedCond(c)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 bg-white border border-black/10 rounded-xl text-left active:scale-[0.98] transition-transform">
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(79,70,229,0.1)' }}>
+                    <img src={getConditionIcon(c)} alt="" className="w-[16px] h-[16px]" />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-bold text-black truncate">{c.name}</p>
+                    {c.severity && (
+                      <p className="text-[10px] capitalize text-black/60">{c.severity}</p>
+                    )}
+                  </div>
+                  <img src={chevronRightIcon} alt="" className="w-4 h-4 flex-shrink-0" />
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -861,7 +874,7 @@ export default function Dashboard() {
         {/* ── Medications — always visible ── */}
         {currentMedications.length > 0 && (
           <div className="mt-3 pt-3 border-t border-gray-100">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Medications</p>
+            <p className="text-[10px] font-bold text-black/75 uppercase tracking-wider mb-2">Medications</p>
             <div className="space-y-1.5">
               {currentMedications.map(m => {
                 const linkedCondition = currentConditions.find(c => c.id === m.conditionId)
@@ -871,18 +884,18 @@ export default function Dashboard() {
                     {!isConfirming ? (
                       <button
                         onClick={() => setSelectedMed(m)}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-indigo-50 text-left active:scale-[0.98] transition-transform"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 bg-white border border-black/10 rounded-2xl text-left active:scale-[0.98] transition-transform"
                       >
-                        <Pill size={13} className="text-indigo-400 flex-shrink-0" />
+                        <img src={medPillFilledIcon} alt="" className="w-6 h-6 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-indigo-800 truncate">{m.name}</p>
-                          <p className="text-[10px] text-indigo-400">
+                          <p className="text-xs font-bold text-black truncate">{m.name}</p>
+                          <p className="text-[10px] text-black/60">
                             {[m.dosage, m.frequency].filter(Boolean).join(' · ')}
                             {linkedCondition && (
-                              <span className="ml-1 text-indigo-300">· {linkedCondition.icon} {linkedCondition.name}</span>
+                              <span className="ml-1 text-black/75 inline-flex items-center gap-0.5">· <img src={getConditionIcon(linkedCondition)} alt="" className="w-3 h-3 inline-block" /> {linkedCondition.name}</span>
                             )}
                             {!linkedCondition && (
-                              <span className="ml-1 text-indigo-200">· unlinked</span>
+                              <span className="ml-1 text-black/75">· unlinked</span>
                             )}
                           </p>
                         </div>
@@ -911,7 +924,7 @@ export default function Dashboard() {
                                 Yes, remove it
                               </button>
                               <button onClick={() => setMedicationToDelete(null)}
-                                className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                                className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-black/75 text-[11px] font-semibold">
                                 Keep it
                               </button>
                             </div>
@@ -935,10 +948,10 @@ export default function Dashboard() {
               <Activity size={18} className="text-primary-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-gray-500">Steps today</p>
+              <p className="text-xs font-semibold text-black/75">Steps today</p>
               {connected && vitals?.steps != null
-                ? <p className="text-base font-extrabold text-gray-800 mt-0.5">{vitals.steps.toLocaleString()}</p>
-                : <p className="text-sm text-gray-300 font-medium mt-0.5">No data yet</p>}
+                ? <p className="text-base font-extrabold text-black mt-0.5">{vitals.steps.toLocaleString()}</p>
+                : <p className="text-sm text-black/75 font-medium mt-0.5">No data yet</p>}
             </div>
             {connected
               ? <CheckCircle size={16} className="text-emerald-400 flex-shrink-0" />
@@ -951,7 +964,7 @@ export default function Dashboard() {
               )}
           </div>
           {!connected && (
-            <p className="text-[10px] text-gray-300 mt-2.5 pl-[52px]">
+            <p className="text-[10px] text-black/75 mt-2.5 pl-[52px]">
               {isIOS ? 'Sync from Apple Health' : 'Sync from Google Health Connect'}
             </p>
           )}
@@ -963,7 +976,7 @@ export default function Dashboard() {
       {/* ── Health Vitals ─────────────────────────────────────────────────── */}
       {isNative && (
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">Health Vitals</p>
+          <p className="text-xs font-semibold text-black/75 uppercase tracking-wider mb-2 px-1">Health Vitals</p>
           <div className="grid grid-cols-3 gap-2.5">
             <VitalCard icon="❤️" label="Heart Rate" unit="bpm"  value={vitals?.heartRate} connected={connected} onConnect={() => setShowConnect(true)} />
             <VitalCard icon="🫁" label="SpO₂"       unit="%"    value={vitals?.spo2}      connected={connected} onConnect={() => setShowConnect(true)} />

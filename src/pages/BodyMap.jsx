@@ -16,14 +16,14 @@ function PinCard({ symptom, onResolve }) {
       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
         style={{ background: (cat?.color || '#6366f1') + '22' }}>{cat?.icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-gray-800">{symptom.bodyLabel}</p>
-        <p className="text-[11px] text-gray-500">{symptom.type} · {symptom.duration}</p>
+        <p className="text-xs font-bold text-black">{symptom.bodyLabel}</p>
+        <p className="text-[11px] text-black/75">{symptom.type} · {symptom.duration}</p>
       </div>
       <div className="flex flex-col items-end gap-1">
         <span className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
           sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-100 text-rose-600' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
         }`}>{severityLabel(sev)}</span>
-        <button onClick={() => onResolve(symptom.id)} className="text-[10px] text-gray-300 hover:text-emerald-500 transition-colors font-medium">
+        <button onClick={() => onResolve(symptom.id)} className="text-[10px] text-black/75 hover:text-emerald-500 transition-colors font-medium">
           Resolve ✓
         </button>
       </div>
@@ -76,14 +76,14 @@ export default function BodyMap() {
     <div className="flex flex-col h-[calc(100dvh-156px)] max-w-lg mx-auto overflow-hidden">
       <div className="px-4 pt-3 pb-2 flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-gray-800">Body Map</h2>
-          <p className="text-xs text-gray-400">
+          <h2 className="text-base font-bold text-black">Body Map</h2>
+          <p className="text-xs text-black/75">
             {activeSymptoms.length} active {activeSymptoms.length === 1 ? 'symptom' : 'symptoms'}
           </p>
         </div>
         <button
           onClick={() => setShowTip(t => !t)}
-          className="w-8 h-8 glass-card rounded-full flex items-center justify-center text-gray-400 hover:text-primary-600 transition-colors"
+          className="w-8 h-8 glass-card rounded-full flex items-center justify-center text-black/75 hover:text-primary-600 transition-colors"
         >
           <Info size={15} />
         </button>
@@ -139,7 +139,7 @@ export default function BodyMap() {
           )}
         </AnimatePresence>
 
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[10px] text-gray-400 font-medium">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] text-black/75 font-medium">
           <RotateCcw size={10} /> Rotate · Pan · Zoom
         </div>
       </div>
@@ -159,13 +159,13 @@ export default function BodyMap() {
             >
               <span className="text-2xl">✨</span>
               <div>
-                <p className="text-sm font-bold text-gray-700">Doing great, champ!</p>
-                <p className="text-xs text-gray-400">No symptoms logged — keep it up</p>
+                <p className="text-sm font-bold text-black/80">Doing great, champ!</p>
+                <p className="text-xs text-black/75">No symptoms logged — keep it up</p>
               </div>
             </motion.div>
           ) : (
             <motion.div key="symptom-list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Logged Symptoms</p>
+              <p className="text-xs font-semibold text-black/75 uppercase tracking-wider mb-2">Logged Symptoms</p>
               <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
                 <AnimatePresence>
                   {activeSymptoms.map(s => (

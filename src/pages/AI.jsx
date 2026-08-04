@@ -158,7 +158,7 @@ function MessageBubble({ msg }) {
         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
           isUser
             ? 'bg-primary-600 text-white rounded-br-sm'
-            : 'bg-white border border-gray-100 text-gray-800 rounded-bl-sm'
+            : 'bg-white border border-gray-100 text-black rounded-bl-sm'
         }`}>
           {isUser ? msg.content : (
             <span>
@@ -168,7 +168,7 @@ function MessageBubble({ msg }) {
             </span>
           )}
         </div>
-        <span className="text-[10px] text-gray-300 px-1">
+        <span className="text-[10px] text-black/75 px-1">
           {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
@@ -280,7 +280,7 @@ function HistorySheet({ onClose, onRestore, userId }) {
         style={{ maxHeight: '75vh' }}
       >
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
-          <h2 className="text-sm font-extrabold text-gray-800">Chat History</h2>
+          <h2 className="text-sm font-extrabold text-black">Chat History</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
             <X size={14} />
           </button>
@@ -288,13 +288,13 @@ function HistorySheet({ onClose, onRestore, userId }) {
         <div className="overflow-y-auto" style={{ maxHeight: 'calc(75vh - 60px)' }}>
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 size={20} className="animate-spin text-gray-300" />
+              <Loader2 size={20} className="animate-spin text-black/75" />
             </div>
           ) : sessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center px-6">
-              <MessageSquare size={28} className="text-gray-200 mb-3" />
-              <p className="text-sm font-semibold text-gray-400">No past chats yet</p>
-              <p className="text-xs text-gray-300 mt-1">Your conversations will appear here</p>
+              <MessageSquare size={28} className="text-black/20 mb-3" />
+              <p className="text-sm font-semibold text-black/75">No past chats yet</p>
+              <p className="text-xs text-black/75 mt-1">Your conversations will appear here</p>
             </div>
           ) : (
             <AnimatePresence initial={false}>
@@ -316,8 +316,8 @@ function HistorySheet({ onClose, onRestore, userId }) {
                         className="flex-1 min-w-0 text-left"
                         onClick={() => { setConfirmId(null); onRestore(session.messages, session.id); onClose() }}
                       >
-                        <p className={`text-xs font-semibold truncate mb-0.5 ${isConfirming ? 'text-rose-700' : 'text-gray-700'}`}>{session.preview}</p>
-                        <p className="text-[10px] text-gray-400">
+                        <p className={`text-xs font-semibold truncate mb-0.5 ${isConfirming ? 'text-rose-700' : 'text-black/80'}`}>{session.preview}</p>
+                        <p className="text-[10px] text-black/75">
                           {new Date(session.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                           {' · '}
                           {Math.ceil(session.messages.length / 2)} exchanges
@@ -325,7 +325,7 @@ function HistorySheet({ onClose, onRestore, userId }) {
                       </button>
                       <button
                         onClick={e => handleDelete(e, session.id)}
-                        className={`shrink-0 p-1.5 rounded-xl transition-colors ${isConfirming ? 'text-rose-400' : 'text-gray-300 hover:text-rose-400'}`}
+                        className={`shrink-0 p-1.5 rounded-xl transition-colors ${isConfirming ? 'text-rose-400' : 'text-black/75 hover:text-rose-400'}`}
                       >
                         <Trash2 size={13} />
                       </button>
@@ -353,7 +353,7 @@ function HistorySheet({ onClose, onRestore, userId }) {
                               </button>
                               <button
                                 onClick={e => { e.stopPropagation(); setConfirmId(null) }}
-                                className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold"
+                                className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-black/75 text-[11px] font-semibold"
                               >
                                 Keep it
                               </button>
@@ -381,8 +381,8 @@ function EmptyState({ onSuggest }) {
       <div className="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
         <Sparkles size={26} className="text-primary-500" />
       </div>
-      <h2 className="text-base font-extrabold text-gray-800 mb-1">Ask Kaapu</h2>
-      <p className="text-xs text-gray-400 text-center mb-6 max-w-xs leading-relaxed">
+      <h2 className="text-base font-extrabold text-black mb-1">Ask Kaapu</h2>
+      <p className="text-xs text-black/75 text-center mb-6 max-w-xs leading-relaxed">
         Your personal health assistant. Ask about your conditions, medications, symptoms, or general wellness.
       </p>
       <div className="w-full grid grid-cols-2 gap-2">
@@ -390,7 +390,7 @@ function EmptyState({ onSuggest }) {
           <button
             key={i}
             onClick={() => onSuggest(s)}
-            className="text-left bg-white border border-gray-100 rounded-xl px-3 py-2.5 text-[11px] font-medium text-gray-600 leading-tight shadow-sm hover:border-primary-200 hover:bg-primary-50/30 transition-colors"
+            className="text-left bg-white border border-gray-100 rounded-xl px-3 py-2.5 text-[11px] font-medium text-black/75 leading-tight shadow-sm hover:border-primary-200 hover:bg-primary-50/30 transition-colors"
           >
             {s}
           </button>
@@ -823,10 +823,10 @@ export default function AI() {
         {/* History pill */}
         <button
           onClick={() => setShowHistory(true)}
-          className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-white/70 border border-gray-100 shadow-sm text-gray-500"
+          className="flex items-center gap-1.5 px-3 h-9 rounded-xl bg-white/70 border border-gray-100 shadow-sm text-black/75"
         >
           <History size={15} />
-          <span className="text-[11px] font-semibold text-gray-500">History</span>
+          <span className="text-[11px] font-semibold text-black/75">History</span>
         </button>
 
         {/* SOS pill — red gradient + pulse ring, same shape as History */}
@@ -861,7 +861,7 @@ export default function AI() {
           <div className="flex justify-end mb-2">
             <button
               onClick={saveAndClear}
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 bg-white border border-gray-100 px-2.5 py-1.5 rounded-xl shadow-sm"
+              className="flex items-center gap-1.5 text-[11px] font-semibold text-black/75 bg-white border border-gray-100 px-2.5 py-1.5 rounded-xl shadow-sm"
             >
               <RefreshCw size={11} />
               New chat
@@ -944,7 +944,7 @@ export default function AI() {
             className="fixed w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center z-10"
             style={{ bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px) + 4.5rem)', right: '1rem' }}
           >
-            <ChevronDown size={16} className="text-gray-500" />
+            <ChevronDown size={16} className="text-black/75" />
           </motion.button>
         )}
       </AnimatePresence>
@@ -955,7 +955,7 @@ export default function AI() {
           className="fixed left-0 right-0 bg-white border-t border-gray-100 px-4 pt-2.5 z-30"
           style={inputBarStyle}
         >
-          <p className="text-center text-[10px] text-gray-400 mb-1.5 max-w-lg mx-auto leading-tight">
+          <p className="text-center text-[10px] text-black/75 mb-1.5 max-w-lg mx-auto leading-tight">
             AI-generated response — always check with your GP before acting on it.
           </p>
 
@@ -973,7 +973,7 @@ export default function AI() {
                   if (voiceMode) { stopVoiceCall(); setVoiceMode(false) }
                 }}
                 className={`relative z-10 flex-1 flex items-center justify-center gap-1 py-1.5 rounded-full text-[11px] font-semibold transition-colors ${
-                  !voiceMode ? 'text-gray-800' : 'text-gray-400'
+                  !voiceMode ? 'text-black' : 'text-black/75'
                 }`}
               >
                 <MicOff size={13} /> Text
@@ -981,7 +981,7 @@ export default function AI() {
               <button
                 onClick={() => { if (!voiceMode) setVoiceMode(true) }}
                 className={`relative z-10 flex-1 flex items-center justify-center gap-1 py-1.5 rounded-full text-[11px] font-semibold transition-colors ${
-                  voiceMode ? 'text-primary-600' : 'text-gray-400'
+                  voiceMode ? 'text-primary-600' : 'text-black/75'
                 }`}
               >
                 <Mic size={13} /> Voice
@@ -1013,7 +1013,7 @@ export default function AI() {
                     )}
                   </button>
                   {!continuousVoiceActive && (
-                    <p className="text-[10px] text-gray-400 font-semibold mt-2">Tap to start talking</p>
+                    <p className="text-[10px] text-black/75 font-semibold mt-2">Tap to start talking</p>
                   )}
                   {continuousVoiceActive && isRecording && (
                     <p className="text-[10px] text-red-500 font-semibold mt-2 animate-pulse">Listening...</p>
@@ -1022,7 +1022,7 @@ export default function AI() {
                     <p className="text-[10px] text-primary-500 font-semibold mt-2">Speaking...</p>
                   )}
                   {continuousVoiceActive && !isRecording && !isSpeaking && (
-                    <p className="text-[10px] text-gray-400 font-semibold mt-2">Connected — tap to hang up</p>
+                    <p className="text-[10px] text-black/75 font-semibold mt-2">Connected — tap to hang up</p>
                   )}
                 </div>
               </>
@@ -1037,7 +1037,7 @@ export default function AI() {
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Ask about your health…"
-                    className="flex-1 text-sm text-gray-800 bg-transparent focus:outline-none placeholder-gray-300"
+                    className="flex-1 text-sm text-black bg-transparent focus:outline-none placeholder-gray-300"
                     disabled={loading}
                   />
                 </div>

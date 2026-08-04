@@ -136,7 +136,7 @@ function tsLabel(ts) {
 // ── Emergency detail sheet ────────────────────────────────────────────────────
 function EmergencyDetail({ event }) {
   if (!event) return (
-    <div className="text-center py-8 text-sm text-gray-400">No emergency event data found.</div>
+    <div className="text-center py-8 text-sm text-black/75">No emergency event data found.</div>
   )
   const mapsUrl = event.location
     ? `https://www.google.com/maps?q=${event.location.lat},${event.location.lng}`
@@ -151,22 +151,22 @@ function EmergencyDetail({ event }) {
         <p className={`text-xs font-extrabold uppercase tracking-wide ${event.status === 'resolved' ? 'text-emerald-700' : 'text-rose-700'}`}>
           {event.status === 'resolved' ? 'Resolved' : 'Active Emergency'}
         </p>
-        <p className="text-[10px] text-gray-400 ml-auto">
+        <p className="text-[10px] text-black/75 ml-auto">
           {format(new Date(event.triggeredAt), 'MMM d, h:mm a')}
         </p>
       </div>
       <div className="bg-gray-50 rounded-2xl overflow-hidden">
         <div className="flex items-center gap-2 px-4 py-3">
-          <MapPin size={14} className={event.location ? 'text-emerald-500' : 'text-gray-300'} />
+          <MapPin size={14} className={event.location ? 'text-emerald-500' : 'text-black/75'} />
           <div className="flex-1">
-            <p className="text-xs font-bold text-gray-700">Location at time of alert</p>
+            <p className="text-xs font-bold text-black/80">Location at time of alert</p>
             {event.location ? (
-              <p className="text-[11px] text-gray-400 font-mono mt-0.5">
+              <p className="text-[11px] text-black/75 font-mono mt-0.5">
                 {event.location.lat.toFixed(5)}, {event.location.lng.toFixed(5)}
                 {' '}· ±{Math.round(event.location.accuracy)}m
               </p>
             ) : (
-              <p className="text-[11px] text-gray-400">Location not available</p>
+              <p className="text-[11px] text-black/75">Location not available</p>
             )}
           </div>
           {mapsUrl && (
@@ -194,16 +194,16 @@ function EmergencyDetail({ event }) {
               {hid.name?.slice(0,2).toUpperCase()}
             </div>
             <div>
-              <p className="text-sm font-bold text-gray-800">{hid.name}</p>
-              <p className="text-xs text-gray-400">{hid.age}yo · {hid.gender} · {hid.familyName}</p>
-              <p className="text-[11px] text-gray-400">Blood: {hid.bloodType} · Allergies: {hid.allergies}</p>
+              <p className="text-sm font-bold text-black">{hid.name}</p>
+              <p className="text-xs text-black/75">{hid.age}yo · {hid.gender} · {hid.familyName}</p>
+              <p className="text-[11px] text-black/75">Blood: {hid.bloodType} · Allergies: {hid.allergies}</p>
             </div>
           </div>
           {hid.conditions?.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Heart size={12} className="text-rose-400" />
-                <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Conditions</p>
+                <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Conditions</p>
               </div>
               {hid.conditions.map((c, i) => (
                 <div key={i} className="text-xs text-rose-700 bg-rose-50 rounded-xl px-3 py-1.5 mb-1 font-medium">{c}</div>
@@ -214,7 +214,7 @@ function EmergencyDetail({ event }) {
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Pill size={12} className="text-indigo-400" />
-                <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Medications</p>
+                <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Medications</p>
               </div>
               {hid.medications.map((m, i) => (
                 <div key={i} className="text-xs text-indigo-700 bg-indigo-50 rounded-xl px-3 py-1.5 mb-1 font-medium">{m}</div>
@@ -225,7 +225,7 @@ function EmergencyDetail({ event }) {
             <div>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Phone size={12} className="text-emerald-400" />
-                <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Emergency Contacts</p>
+                <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Emergency Contacts</p>
               </div>
               {hid.emergencyContacts.map((c, i) => (
                 <div key={i} className="text-xs text-emerald-700 bg-emerald-50 rounded-xl px-3 py-1.5 mb-1 font-medium">
@@ -255,20 +255,20 @@ function EscalationDetail({ n, members, checkIns, riskProfiles }) {
             {member.avatar}
           </div>
           <div>
-            <p className="text-sm font-bold text-gray-800">{member.name}</p>
-            <p className="text-xs text-gray-400">{member.age}yo · {member.relationship}</p>
+            <p className="text-sm font-bold text-black">{member.name}</p>
+            <p className="text-xs text-black/75">{member.age}yo · {member.relationship}</p>
           </div>
         </div>
       )}
       <div className="bg-gray-50 rounded-2xl px-4 py-3 space-y-2">
-        <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Last Check-in</p>
+        <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Last Check-in</p>
         {lastCI ? (
-          <p className="text-sm font-semibold text-gray-700">
+          <p className="text-sm font-semibold text-black/80">
             {format(new Date(lastCI.date), 'MMM d, h:mm a')} — {lastCI.feeling}
-            {lastCI.notes && <span className="text-gray-400 font-normal"> · "{lastCI.notes}"</span>}
+            {lastCI.notes && <span className="text-black/75 font-normal"> · "{lastCI.notes}"</span>}
           </p>
         ) : (
-          <p className="text-sm text-gray-400">No check-in recorded</p>
+          <p className="text-sm text-black/75">No check-in recorded</p>
         )}
       </div>
       {rp && (
@@ -288,14 +288,14 @@ function FamilyRequestDetail({ n, onClose }) {
   const req = familyRequests.find(r => r.id === n.requestId)
 
   if (!req) return (
-    <div className="text-center py-8 text-sm text-gray-400">Request no longer available.</div>
+    <div className="text-center py-8 text-sm text-black/75">Request no longer available.</div>
   )
 
   if (req.status !== 'pending') return (
     <div className={`rounded-2xl px-4 py-4 text-center ${
       req.status === 'accepted' ? 'bg-emerald-50' : 'bg-gray-50'
     }`}>
-      <p className="text-sm font-bold text-gray-700">
+      <p className="text-sm font-bold text-black/80">
         {req.status === 'accepted' ? '✅ You accepted this request.' : 'You declined this request.'}
       </p>
     </div>
@@ -309,8 +309,8 @@ function FamilyRequestDetail({ n, onClose }) {
             {req.fromUserName.slice(0,2).toUpperCase()}
           </div>
           <div>
-            <p className="text-sm font-extrabold text-gray-800">{req.fromUserName}</p>
-            <p className="text-xs font-mono text-gray-400">{req.fromUserUid}</p>
+            <p className="text-sm font-extrabold text-black">{req.fromUserName}</p>
+            <p className="text-xs font-mono text-black/75">{req.fromUserUid}</p>
           </div>
         </div>
         <p className="text-xs text-indigo-700 font-medium">
@@ -328,7 +328,7 @@ function FamilyRequestDetail({ n, onClose }) {
         </button>
         <button
           onClick={() => { respondFamilyRequest(req.id, false); onClose() }}
-          className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gray-100 text-gray-600 font-semibold text-sm"
+          className="flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-gray-100 text-black/75 font-semibold text-sm"
         >
           <UserX size={15} /> Decline
         </button>
@@ -340,9 +340,9 @@ function FamilyRequestDetail({ n, onClose }) {
 function GenericDetail({ n }) {
   return (
     <div className="glass-card rounded-2xl px-4 py-4">
-      <p className="text-sm text-gray-700 leading-relaxed">{n.message}</p>
+      <p className="text-sm text-black/80 leading-relaxed">{n.message}</p>
       {n.timestamp && (
-        <p className="text-[10px] text-gray-400 mt-2">{format(new Date(n.timestamp), 'MMM d, yyyy h:mm a')}</p>
+        <p className="text-[10px] text-black/75 mt-2">{format(new Date(n.timestamp), 'MMM d, yyyy h:mm a')}</p>
       )}
     </div>
   )
@@ -389,12 +389,12 @@ function DetailSheet({ n, onClose }) {
               n.type === 'danger'    ? 'text-rose-500' :
               n.type === 'warning'   ? 'text-amber-500':
               n.type === 'escalation'? 'text-orange-500':
-              n.type === 'success'   ? 'text-emerald-500': 'text-gray-400'
+              n.type === 'success'   ? 'text-emerald-500': 'text-black/75'
             } />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-extrabold text-gray-800">{c.label}</p>
-            <p className="text-xs text-gray-400 truncate">{n.message.replace(/🚨|⚠️/g, '').trim()}</p>
+            <p className="text-sm font-extrabold text-black">{c.label}</p>
+            <p className="text-xs text-black/75 truncate">{n.message.replace(/🚨|⚠️/g, '').trim()}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
             <X size={14} />
@@ -475,14 +475,14 @@ function SwipeableNotification({ n, onDismiss, onTap }) {
           </div>
 
           {/* Message */}
-          <p className={`text-xs font-semibold flex-1 leading-snug line-clamp-2 ${isEmergency ? 'text-white' : 'text-gray-800'}`}>
+          <p className={`text-xs font-semibold flex-1 leading-snug line-clamp-2 ${isEmergency ? 'text-white' : 'text-black'}`}>
             {n.message}
           </p>
 
           {/* Tap hint */}
           <div className="flex items-center gap-0.5 flex-shrink-0">
-            <span className={`text-[9px] font-bold ${isEmergency ? 'text-white/60' : 'text-gray-300'}`}>tap</span>
-            <ChevronRight size={11} className={isEmergency ? 'text-white/60' : 'text-gray-300'} />
+            <span className={`text-[9px] font-bold ${isEmergency ? 'text-white/60' : 'text-black/75'}`}>tap</span>
+            <ChevronRight size={11} className={isEmergency ? 'text-white/60' : 'text-black/75'} />
           </div>
         </div>
       </button>
@@ -518,18 +518,18 @@ function NotifCentre({ dismissed, onTap, onClear, onClearAll, onClose }) {
             n.type === 'danger'    ? 'text-rose-500' :
             n.type === 'warning'   ? 'text-amber-500':
             n.type === 'escalation'? 'text-orange-500':
-            n.type === 'success'   ? 'text-emerald-500': 'text-gray-400'
+            n.type === 'success'   ? 'text-emerald-500': 'text-black/75'
           } />
         </div>
         <button className="flex-1 min-w-0 text-left" onClick={() => onTap(n)}>
-          <p className="text-xs font-semibold text-gray-800 leading-snug mb-0.5">{n.message.replace(/🚨|⚠️/g, '').trim()}</p>
-          <p className="text-[10px] text-gray-400">{c.label}{n.timestamp ? ' · ' + tsLabel(n.timestamp) : ''}</p>
+          <p className="text-xs font-semibold text-black leading-snug mb-0.5">{n.message.replace(/🚨|⚠️/g, '').trim()}</p>
+          <p className="text-[10px] text-black/75">{c.label}{n.timestamp ? ' · ' + tsLabel(n.timestamp) : ''}</p>
         </button>
         <button
           onClick={() => onClear(n.id)}
           className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 hover:bg-rose-50 hover:text-rose-400 transition-colors"
         >
-          <X size={11} className="text-gray-400" />
+          <X size={11} className="text-black/75" />
         </button>
       </div>
     )
@@ -560,8 +560,8 @@ function NotifCentre({ dismissed, onTap, onClear, onClearAll, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-2 pb-4 border-b border-black/6 flex-shrink-0">
           <div className="flex items-center gap-2">
-            <Bell size={16} className="text-gray-500" />
-            <p className="text-sm font-extrabold text-gray-800">Notifications</p>
+            <Bell size={16} className="text-black/75" />
+            <p className="text-sm font-extrabold text-black">Notifications</p>
             {myNotifs.length > 0 && (
               <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded-full">
                 {myNotifs.length}
@@ -572,7 +572,7 @@ function NotifCentre({ dismissed, onTap, onClear, onClearAll, onClose }) {
             {myNotifs.length > 0 && (
               <button
                 onClick={onClearAll}
-                className="flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-rose-500 transition-colors"
+                className="flex items-center gap-1 text-xs font-semibold text-black/75 hover:text-rose-500 transition-colors"
               >
                 <Trash2 size={12} /> Clear all
               </button>
@@ -587,15 +587,15 @@ function NotifCentre({ dismissed, onTap, onClear, onClearAll, onClose }) {
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {myNotifs.length === 0 ? (
             <div className="text-center py-16">
-              <Bell size={40} className="mx-auto text-gray-200 mb-3" />
-              <p className="text-sm font-semibold text-gray-500">All clear</p>
-              <p className="text-xs text-gray-400 mt-1">No notifications yet</p>
+              <Bell size={40} className="mx-auto text-black/20 mb-3" />
+              <p className="text-sm font-semibold text-black/75">All clear</p>
+              <p className="text-xs text-black/75 mt-1">No notifications yet</p>
             </div>
           ) : (
             <>
               {active.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">New</p>
+                  <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-2">New</p>
                   <div className="space-y-2">
                     {active.map(n => <NotifRow key={n.id} n={n} faded={false} />)}
                   </div>
@@ -603,7 +603,7 @@ function NotifCentre({ dismissed, onTap, onClear, onClearAll, onClose }) {
               )}
               {archived.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Earlier</p>
+                  <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-2">Earlier</p>
                   <div className="space-y-2">
                     {archived.map(n => <NotifRow key={n.id} n={n} faded />)}
                   </div>

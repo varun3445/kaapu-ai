@@ -98,7 +98,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
 
           {/* Category */}
           <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">
+            <p className="text-[11px] font-bold text-black/75 uppercase tracking-wider mb-2.5">
               Category
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -119,7 +119,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
                   }}
                 >
                   <span className="text-lg leading-none">{cat.icon}</span>
-                  <span className="text-xs font-semibold text-gray-700 leading-tight">{cat.label}</span>
+                  <span className="text-xs font-semibold text-black/80 leading-tight">{cat.label}</span>
                 </button>
               ))}
             </div>
@@ -133,7 +133,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
               >
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Type</p>
+                <p className="text-[11px] font-bold text-black/75 uppercase tracking-wider mb-2.5">Type</p>
                 <div className="flex flex-wrap gap-1.5">
                   {types.map((t, i) => (
                     <button
@@ -159,7 +159,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
               >
-                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Describe</p>
+                <p className="text-[11px] font-bold text-black/75 uppercase tracking-wider mb-2.5">Describe</p>
                 <input
                   type="text"
                   value={customType}
@@ -175,7 +175,7 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
           {/* Severity */}
           <div className="bg-white rounded-3xl px-4 py-4" style={{ border: '1.5px solid rgba(0,0,0,0.07)' }}>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Severity</p>
+              <p className="text-[11px] font-bold text-black/75 uppercase tracking-wider">Severity</p>
               <span className="text-sm font-extrabold" style={{ color: SEV_COLOR(severity) }}>
                 {SEV_LABEL(severity)}
               </span>
@@ -186,14 +186,14 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
               onChange={e => setSeverity(Number(e.target.value))}
               className="w-full accent-indigo-500"
             />
-            <div className="flex justify-between text-[10px] text-gray-300 mt-1 font-medium">
+            <div className="flex justify-between text-[10px] text-black/75 mt-1 font-medium">
               <span>Mild</span><span>Very severe</span>
             </div>
           </div>
 
           {/* Duration */}
           <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Duration</p>
+            <p className="text-[11px] font-bold text-black/75 uppercase tracking-wider mb-2.5">Duration</p>
             <div className="relative">
               <select
                 value={duration}
@@ -203,13 +203,13 @@ export default function SymptomForm({ region, onSubmit, onClose, initialNotes = 
               >
                 {DURATIONS.map(d => <option key={d}>{d}</option>)}
               </select>
-              <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-black/75 pointer-events-none" />
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Notes <span className="normal-case font-normal">(optional)</span></p>
+            <p className="text-[11px] font-bold text-black/75 uppercase tracking-wider mb-2.5">Notes <span className="normal-case font-normal">(optional)</span></p>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}

@@ -146,14 +146,14 @@ function SymptomPill({ symptom, onResolve }) {
       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
         style={{ background: (cat?.color || '#6366f1') + '22' }}>{cat?.icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800 truncate">{symptom.bodyLabel}</p>
-        <p className="text-[10px] text-gray-400">{symptom.type} · {symptom.duration}</p>
+        <p className="text-xs font-semibold text-black truncate">{symptom.bodyLabel}</p>
+        <p className="text-[10px] text-black/75">{symptom.type} · {symptom.duration}</p>
       </div>
       <div className="flex items-center gap-1.5">
         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${
           sev >= SEVERITY_HIGH_THRESHOLD ? 'bg-rose-100 text-rose-600' : sev >= SEVERITY_MID_THRESHOLD ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'
         }`}>{severityLabel(sev)}</span>
-        <button onClick={() => onResolve(symptom.id)} className="p-1 text-gray-300 hover:text-rose-400 transition-colors">
+        <button onClick={() => onResolve(symptom.id)} className="p-1 text-black/75 hover:text-rose-400 transition-colors">
           <X size={12} />
         </button>
       </div>
@@ -299,12 +299,15 @@ export default function LogPain() {
   }
 
   return (
-    <div className="flex flex-col h-full relative max-w-[480px] mx-auto w-full">
+    <div
+      className="flex flex-col relative max-w-[480px] mx-auto w-full"
+      style={{ height: 'calc(100% - var(--header-h, 72px))' }}
+    >
 
       {/* Page title bar */}
-      <div className="px-5 pt-3 pb-2 flex-shrink-0 bg-gradient-to-b from-slate-50 to-indigo-50">
-        <h1 className="text-lg font-extrabold text-gray-900">Any symptoms today?</h1>
-        <p className="text-xs text-gray-400">
+      <div className="px-5 pt-3 pb-2 flex-shrink-0">
+        <h1 className="text-lg font-extrabold text-black">Any symptoms today?</h1>
+        <p className="text-xs text-black/75">
           {activeSymptoms.length > 0
             ? `${activeSymptoms.length} active · tap body to log more`
             : 'Tap the body to log a symptom'}
@@ -322,9 +325,9 @@ export default function LogPain() {
           >
             <div className="flex items-center gap-2 mb-2.5">
               <div className="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0" />
-              <p className="text-sm font-bold text-gray-900">{voiceConfirm.regionLabel} detected</p>
+              <p className="text-sm font-bold text-black">{voiceConfirm.regionLabel} detected</p>
             </div>
-            <p className="text-xs text-gray-400 mb-1">How severe is it?</p>
+            <p className="text-xs text-black/75 mb-1">How severe is it?</p>
             <p className="text-[10px] text-indigo-400 font-medium mb-3">Tap a level, or just say how bad it is</p>
             <div className="flex gap-2">
               {[
@@ -343,7 +346,7 @@ export default function LogPain() {
             </div>
             <button
               onClick={() => { if (listening) stop(); setVoicePhase('idle'); setVoiceConfirm(null) }}
-              className="mt-2.5 w-full text-[11px] text-gray-400 hover:text-gray-600 transition-colors"
+              className="mt-2.5 w-full text-[11px] text-black/75 hover:text-black/75 transition-colors"
             >
               Cancel
             </button>
@@ -376,7 +379,7 @@ export default function LogPain() {
       </AnimatePresence>
 
       {/* 3D body */}
-      <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-slate-50 to-indigo-50 min-h-0">
+      <div className="flex-1 relative overflow-hidden min-h-0">
         <BodyScene
           pins={pins}
           onRegionClick={handleRegionClick}
@@ -445,7 +448,7 @@ export default function LogPain() {
           )}
         </AnimatePresence>
 
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 text-[10px] text-gray-400 font-medium pointer-events-none">
+        <div className="absolute top-3 right-3 flex items-center gap-1.5 text-[10px] text-black/75 font-medium pointer-events-none">
           <RotateCcw size={10} /> Rotate · Pan · Zoom
         </div>
       </div>
@@ -453,7 +456,7 @@ export default function LogPain() {
       {/* Active symptoms strip */}
       {activeSymptoms.length > 0 && (
         <div className="flex-shrink-0 px-4 pt-3 pb-2 border-t border-gray-100 max-h-36 overflow-y-auto">
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Active Symptoms</p>
+          <p className="text-[10px] font-semibold text-black/75 uppercase tracking-wider mb-2">Active Symptoms</p>
           <div className="space-y-2">
             {activeSymptoms.map(s => (
               <SymptomPill key={s.id} symptom={s} onResolve={resolveSymptom} />
@@ -472,7 +475,7 @@ export default function LogPain() {
       )}
       {supported && createPortal(
         <div
-          className="fixed left-0 right-0 flex justify-center pb-3 pt-2 bg-indigo-50 z-30"
+          className="fixed left-0 right-0 flex justify-center pb-3 pt-2 z-30"
           style={{ bottom: 0, paddingBottom: 'calc(0.75rem + 5.5rem + env(safe-area-inset-bottom, 0px))' }}
         >
           <motion.button

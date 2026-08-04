@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Sparkles">
+<path id="Vector" d="M14 3.5L11.7693 10.2818C11.6552 10.6289 11.4611 10.9444 11.2027 11.2027C10.9444 11.4611 10.6289 11.6552 10.2818 11.7693L3.5 14L10.2818 16.2307C10.6289 16.3448 10.9444 16.5389 11.2027 16.7973C11.4611 17.0556 11.6552 17.3711 11.7693 17.7182L14 24.5L16.2307 17.7182C16.3448 17.3711 16.5389 17.0556 16.7973 16.7973C17.0556 16.5389 17.3711 16.3448 17.7182 16.2307L24.5 14L17.7182 11.7693C17.3711 11.6552 17.0556 11.4611 16.7973 11.2027C16.5389 10.9444 16.3448 10.6289 16.2307 10.2818L14 3.5Z" stroke="#4F46E5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M5.83333 3.5V8.16667" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M22.1667 19.8333V24.5" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_4" d="M3.5 5.83333H8.16667" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_5" d="M19.8333 22.1667H24.5" stroke="#4F46E5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</svg>

@@ -91,19 +91,19 @@ function EmergencySummaryModal() {
 
           {/* Who + location */}
           <div className="glass-card rounded-2xl p-4 space-y-3">
-            <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Alert sent for</p>
+            <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Alert sent for</p>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-sm font-extrabold text-rose-600 flex-shrink-0">
                 {currentMember?.avatar}
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-800">{currentMember?.name}</p>
+                <p className="text-sm font-bold text-black">{currentMember?.name}</p>
                 {loc ? (
                   <div className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full mt-0.5 bg-emerald-50 text-emerald-700">
                     <MapPin size={10} /> Location shared (±{Math.round(loc.accuracy || 0)}m)
                   </div>
                 ) : (
-                  <div className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full mt-0.5 bg-gray-50 text-gray-400">
+                  <div className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full mt-0.5 bg-gray-50 text-black/75">
                     <MapPin size={10} /> Location not available
                   </div>
                 )}
@@ -123,12 +123,12 @@ function EmergencySummaryModal() {
 
             {ev.note ? (
               <div className="bg-gray-50 rounded-xl px-3 py-2.5">
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-1">Note</p>
-                <p className="text-xs text-gray-700">"{ev.note}"</p>
+                <p className="text-[10px] text-black/75 uppercase tracking-wider font-semibold mb-1">Note</p>
+                <p className="text-xs text-black/80">"{ev.note}"</p>
               </div>
             ) : null}
 
-            <p className="text-[10px] text-gray-400">
+            <p className="text-[10px] text-black/75">
               Triggered {ev.triggeredAt ? new Date(ev.triggeredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
             </p>
           </div>
@@ -142,9 +142,9 @@ function EmergencySummaryModal() {
 
             {/* Active symptoms */}
             <div className="flex items-start gap-2">
-              <Activity size={13} className={`flex-shrink-0 mt-0.5 ${activeSymptoms.length > 0 ? 'text-rose-500' : 'text-gray-300'}`} />
+              <Activity size={13} className={`flex-shrink-0 mt-0.5 ${activeSymptoms.length > 0 ? 'text-rose-500' : 'text-black/75'}`} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">
+                <p className="text-[10px] font-bold text-black/75 uppercase tracking-wide mb-1">
                   Active now
                   {highSev.length > 0 && (
                     <span className="ml-1.5 text-[10px] font-bold text-rose-500 bg-rose-50 px-1.5 py-0.5 rounded-full normal-case">
@@ -155,17 +155,17 @@ function EmergencySummaryModal() {
                 {activeSymptoms.length > 0 ? (
                   <div className="space-y-0.5">
                     {activeSymptoms.map(s => (
-                      <p key={s.id} className={`text-[11px] ${s.severity >= SEVERITY_HIGH_THRESHOLD ? 'text-rose-600 font-semibold' : 'text-gray-600'}`}>
+                      <p key={s.id} className={`text-[11px] ${s.severity >= SEVERITY_HIGH_THRESHOLD ? 'text-rose-600 font-semibold' : 'text-black/75'}`}>
                         {s.bodyLabel} — {s.type}
                         <span className={`ml-1 font-bold ${s.severity >= SEVERITY_HIGH_THRESHOLD ? 'text-rose-600' : s.severity >= SEVERITY_MID_THRESHOLD ? 'text-amber-500' : 'text-emerald-600'}`}>
                           {severityLabel(s.severity)}
                         </span>
-                        {s.timestamp && <span className="text-gray-400 font-normal"> · since {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>}
+                        {s.timestamp && <span className="text-black/75 font-normal"> · since {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>}
                       </p>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-[11px] text-gray-400">No active symptoms</p>
+                  <p className="text-[11px] text-black/75">No active symptoms</p>
                 )}
               </div>
             </div>
@@ -175,14 +175,14 @@ function EmergencySummaryModal() {
               <div className="border-t border-gray-100 pt-3 flex items-start gap-2">
                 <Shield size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">Past 7 days (resolved)</p>
+                  <p className="text-[10px] font-bold text-black/75 uppercase tracking-wide mb-1">Past 7 days (resolved)</p>
                   <div className="space-y-0.5">
                     {recentSymptoms.filter(s => s.resolved).slice(0, 4).map(s => (
-                      <p key={s.id} className="text-[11px] text-gray-500">
+                      <p key={s.id} className="text-[11px] text-black/75">
                         {s.bodyLabel} — {s.type}
-                        <span className="ml-1 text-gray-400">· {severityLabel(s.severity)}</span>
+                        <span className="ml-1 text-black/75">· {severityLabel(s.severity)}</span>
                         {s.timestamp && (
-                          <span className="text-gray-400"> · {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>
+                          <span className="text-black/75"> · {isToday(new Date(s.timestamp)) ? 'today' : isYesterday(new Date(s.timestamp)) ? 'yesterday' : format(new Date(s.timestamp), 'MMM d')}</span>
                         )}
                       </p>
                     ))}
@@ -196,8 +196,8 @@ function EmergencySummaryModal() {
               <div className="flex items-start gap-1.5">
                 <Shield size={12} className="text-indigo-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-0.5">Conditions</p>
-                  <p className="text-[11px] text-gray-600 leading-relaxed">
+                  <p className="text-[10px] font-bold text-black/75 uppercase tracking-wide mb-0.5">Conditions</p>
+                  <p className="text-[11px] text-black/75 leading-relaxed">
                     {currentConditions?.length > 0 ? currentConditions.map(c => c.name).join(', ') : 'None'}
                   </p>
                 </div>
@@ -205,8 +205,8 @@ function EmergencySummaryModal() {
               <div className="flex items-start gap-1.5">
                 <Pill size={12} className="text-teal-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-0.5">Medications</p>
-                  <p className="text-[11px] text-gray-600 leading-relaxed">
+                  <p className="text-[10px] font-bold text-black/75 uppercase tracking-wide mb-0.5">Medications</p>
+                  <p className="text-[11px] text-black/75 leading-relaxed">
                     {uniqueMedications.length > 0
                       ? uniqueMedications.map(m => m.dosage ? `${m.name} ${m.dosage}` : m.name).join(', ')
                       : 'None'}
@@ -221,7 +221,7 @@ function EmergencySummaryModal() {
                 {currentUser?.heightCm && (
                   <div className="flex items-center gap-1.5">
                     <Ruler size={12} className="text-sky-500 flex-shrink-0" />
-                    <p className="text-[11px] text-gray-600">
+                    <p className="text-[11px] text-black/75">
                       <span className="font-semibold">Height</span>{' '}
                       {currentUser.units === 'imperial'
                         ? `${Math.floor(currentUser.heightCm / 30.48)}ft ${Math.round((currentUser.heightCm / 2.54) % 12)}in`
@@ -232,7 +232,7 @@ function EmergencySummaryModal() {
                 {currentUser?.weightKg && (
                   <div className="flex items-center gap-1.5">
                     <Weight size={12} className="text-orange-400 flex-shrink-0" />
-                    <p className="text-[11px] text-gray-600">
+                    <p className="text-[11px] text-black/75">
                       <span className="font-semibold">Weight</span>{' '}
                       {currentUser.units === 'imperial'
                         ? `${Math.round(currentUser.weightKg * 2.20462)} lbs`
@@ -246,7 +246,7 @@ function EmergencySummaryModal() {
 
           {/* Emergency contacts */}
           <div className="glass-card rounded-2xl p-4 space-y-3">
-            <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Emergency Contacts</p>
+            <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Emergency Contacts</p>
             {emergencyContacts.length > 0 ? (
               <div className="space-y-2.5">
                 {emergencyContacts.map((contact, i) => (
@@ -260,9 +260,9 @@ function EmergencySummaryModal() {
                         } />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs font-bold text-gray-800 truncate">{contact.name}</p>
+                        <p className="text-xs font-bold text-black truncate">{contact.name}</p>
                         {contact.relationship && (
-                          <p className="text-[10px] text-gray-400">{contact.relationship}</p>
+                          <p className="text-[10px] text-black/75">{contact.relationship}</p>
                         )}
                       </div>
                     </div>
@@ -279,8 +279,8 @@ function EmergencySummaryModal() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Phone size={13} className="text-gray-300 flex-shrink-0" />
-                <p className="text-[11px] text-gray-400">No emergency contacts saved. Add them in Profile → Emergency Contacts.</p>
+                <Phone size={13} className="text-black/75 flex-shrink-0" />
+                <p className="text-[11px] text-black/75">No emergency contacts saved. Add them in Profile → Emergency Contacts.</p>
               </div>
             )}
           </div>
@@ -293,7 +293,7 @@ function EmergencySummaryModal() {
             <CheckCircle size={16} /> I'm OK — Resolve Alert
           </button>
 
-          <p className="text-center text-[11px] text-gray-400">
+          <p className="text-center text-[11px] text-black/75">
             Tap above to let your family know you're safe.
           </p>
         </div>
@@ -392,10 +392,10 @@ function ConnectedEmergencyModal({ onDismiss }) {
           {/* Health summary */}
           {summaryLines.length > 0 && (
             <div className="glass-card rounded-2xl p-4 space-y-2">
-              <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">{name.split(' ')[0]}'s Health Summary</p>
+              <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">{name.split(' ')[0]}'s Health Summary</p>
               {summaryLines.map((line, i) => (
                 <p key={i} className={`text-[11px] leading-relaxed ${
-                  line.startsWith('⚠️') ? 'text-rose-600 font-semibold' : 'text-gray-600'
+                  line.startsWith('⚠️') ? 'text-rose-600 font-semibold' : 'text-black/75'
                 }`}>{line}</p>
               ))}
             </div>
@@ -412,12 +412,12 @@ function ConnectedEmergencyModal({ onDismiss }) {
           {/* Dismiss */}
           <button
             onClick={onDismiss}
-            className="w-full py-3.5 rounded-2xl border-2 border-gray-200 text-sm font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-2"
+            className="w-full py-3.5 rounded-2xl border-2 border-gray-200 text-sm font-bold text-black/80 hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
             <X size={14} /> Dismiss Alert
           </button>
 
-          <p className="text-center text-[11px] text-gray-400 pb-1">
+          <p className="text-center text-[11px] text-black/75 pb-1">
             {name.split(' ')[0]} will need to mark themselves as safe.
           </p>
         </div>
@@ -461,7 +461,7 @@ export default function EmergencyButton() {
   // On the AI chat page, pin the FAB just below the header (header ≈ 4.25rem + safe-area-top)
   const fabPosition = isAIPage
     ? { top: 'calc(env(safe-area-inset-top, 0px) + 5rem)', right: '1rem' }
-    : { bottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))', right: '1rem' }
+    : { bottom: 'calc(5.5rem + 8px + env(safe-area-inset-bottom, 0px))', right: '1rem' }
 
   return (
     <>

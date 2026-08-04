@@ -17,7 +17,8 @@ export default {
         card: 'rgba(255,255,255,0.68)',
       },
       fontFamily: {
-        sans: ['Figtree', 'system-ui', 'sans-serif'],
+        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        figtree: ['Figtree', 'system-ui', 'sans-serif'],
       },
       boxShadow: {
         card: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06)',

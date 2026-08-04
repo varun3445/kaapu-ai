@@ -10,7 +10,7 @@ function Loader() {
     <Html center>
       <div className="flex flex-col items-center gap-2">
         <div className="w-8 h-8 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin" />
-        <p className="text-xs text-gray-400">Loading…</p>
+        <p className="text-xs text-black/75">Loading…</p>
       </div>
     </Html>
   )

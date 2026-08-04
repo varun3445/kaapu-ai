@@ -5,13 +5,13 @@ export default function ActivityChart({ onConnect }) {
     <div className="glass-card rounded-2xl p-5 relative overflow-hidden">
       {/* Coming soon overlay */}
       <div className="absolute inset-0 rounded-2xl bg-white/85 backdrop-blur-md z-10 flex flex-col items-center justify-center gap-1.5">
-        <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">Coming Soon</span>
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-black/75">Coming Soon</span>
       </div>
       {/* Header */}
       <div className="flex justify-between items-start mb-5">
         <div>
-          <h3 className="text-sm font-bold text-gray-800">Activity Tracker</h3>
-          <p className="text-xs text-gray-400 mt-0.5">Steps, calories & heart rate</p>
+          <h3 className="text-sm font-bold text-black">Activity Tracker</h3>
+          <p className="text-xs text-black/75 mt-0.5">Steps, calories & heart rate</p>
         </div>
       </div>
 
@@ -34,8 +34,8 @@ export default function ActivityChart({ onConnect }) {
           <Smartphone size={22} className="text-primary-400" />
         </div>
 
-        <p className="text-sm font-bold text-gray-600 mb-1">No activity data yet</p>
-        <p className="text-xs text-gray-400 max-w-[220px] leading-relaxed">
+        <p className="text-sm font-bold text-black/75 mb-1">No activity data yet</p>
+        <p className="text-xs text-black/75 max-w-[220px] leading-relaxed">
           Connect Apple Health or Google Health Connect to see your steps, calories, and more.
         </p>
 

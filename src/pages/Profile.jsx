@@ -37,7 +37,7 @@ function AddMemberModal({ onClose, onSave }) {
         transition={{ type: 'spring', damping: 28 }}
         className="relative bg-white rounded-t-3xl w-full max-w-md p-6 pb-10"
       >
-        <h2 className="text-base font-bold text-gray-800 mb-5">Add Family Member</h2>
+        <h2 className="text-base font-bold text-black mb-5">Add Family Member</h2>
         <form onSubmit={handleSave} className="space-y-4">
           {/* Avatar color pick */}
           <div className="flex justify-center gap-3 mb-2">
@@ -73,7 +73,7 @@ function AddMemberModal({ onClose, onSave }) {
             {RELATIONS.map(r => (
               <button key={r} type="button" onClick={() => set('relationship', r)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                  form.relationship === r ? 'border-primary-500 bg-primary-500 text-white' : 'border-gray-200 text-gray-500'
+                  form.relationship === r ? 'border-primary-500 bg-primary-500 text-white' : 'border-gray-200 text-black/75'
                 }`}>
                 {r}
               </button>
@@ -108,10 +108,10 @@ function MemberCard({ member, isCurrent, symptoms }) {
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-bold text-gray-800">{member.name}</p>
+            <p className="text-sm font-bold text-black">{member.name}</p>
             {isCurrent && <span className="text-[10px] bg-primary-100 text-primary-700 font-semibold px-1.5 py-0.5 rounded-full">Active</span>}
           </div>
-          <p className="text-xs text-gray-400">{member.relationship} · {member.age} years old · {member.gender}</p>
+          <p className="text-xs text-black/75">{member.relationship} · {member.age} years old · {member.gender}</p>
           {activeSymptoms.length > 0 && (
             <p className="text-[10px] text-amber-500 font-semibold mt-0.5">
               {activeSymptoms.length} active symptom{activeSymptoms.length > 1 ? 's' : ''}
@@ -129,7 +129,7 @@ function MemberCard({ member, isCurrent, symptoms }) {
         ].map(stat => (
           <div key={stat.label} className="bg-gray-50 rounded-xl p-2 text-center">
             <p className="text-base font-bold" style={{ color: stat.color }}>{stat.value}</p>
-            <p className="text-[10px] text-gray-400">{stat.label}</p>
+            <p className="text-[10px] text-black/75">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -166,8 +166,8 @@ export default function Profile() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-lg font-extrabold text-gray-900">Family Profiles</h2>
-          <p className="text-xs text-gray-400 mt-0.5">{myFamilyMembers.length} member{myFamilyMembers.length !== 1 ? 's' : ''}</p>
+          <h2 className="text-lg font-extrabold text-black">Family Profiles</h2>
+          <p className="text-xs text-black/75 mt-0.5">{myFamilyMembers.length} member{myFamilyMembers.length !== 1 ? 's' : ''}</p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
@@ -205,13 +205,13 @@ export default function Profile() {
               }`}
             >
               <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-                <Icon size={15} className="text-gray-500" />
+                <Icon size={15} className="text-black/75" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-gray-700">{item.label}</p>
-                {item.sub && <p className="text-xs text-gray-400">{item.sub}</p>}
+                <p className="text-sm font-semibold text-black/80">{item.label}</p>
+                {item.sub && <p className="text-xs text-black/75">{item.sub}</p>}
               </div>
-              <ChevronRight size={14} className="text-gray-300" />
+              <ChevronRight size={14} className="text-black/75" />
             </button>
           )
         })}

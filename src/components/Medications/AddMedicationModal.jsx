@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, Pill, Loader } from 'lucide-react'
 import { useApp } from '../../context/AppContext'
 import useMedicationInfo from '../../hooks/useMedicationInfo'
+import ConditionSelect from './ConditionSelect'
 
 // Extract dosage embedded in a medication name, e.g. "Dolo 650" → "650mg"
 function extractDosageFromName(name) {
@@ -125,7 +126,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
         style={{ background: 'white', maxHeight: '90vh', boxShadow: '0 -4px 40px rgba(0,0,0,0.18)' }}
       >
         <div className="flex justify-between items-center px-5 pt-5 pb-3 border-b border-gray-100">
-          <h2 className="text-sm font-extrabold text-gray-800">Add Medication</h2>
+          <h2 className="text-sm font-extrabold text-black">Add Medication</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
             <X size={14} />
           </button>
@@ -164,8 +165,8 @@ export default function AddMedicationModal({ onClose, conditions }) {
                         <Pill size={12} style={{ color: sevColor.class }} />
                         <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: sevColor.class }}>{info.drugClass}</p>
                       </div>
-                      <p className="text-xs font-semibold text-gray-700 mb-0.5">{info.name}</p>
-                      <p className="text-[11px] text-gray-500 leading-relaxed">{info.description} {info.uses}</p>
+                      <p className="text-xs font-semibold text-black/80 mb-0.5">{info.name}</p>
+                      <p className="text-[11px] text-black/75 leading-relaxed">{info.description} {info.uses}</p>
                     </>
                   ) : null}
                 </div>
@@ -193,7 +194,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
 
           {/* Frequency */}
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">Frequency</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-black/75 mb-2">Frequency</p>
             <div className="flex flex-wrap gap-2">
               {FREQS.map(f => (
                 <button
@@ -202,7 +203,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
                   className={`text-xs font-semibold px-3 py-1.5 rounded-xl border-2 transition-all ${
                     frequency === f.value
                       ? 'border-primary-500 bg-primary-50 text-primary-700'
-                      : 'border-gray-100 text-gray-400'
+                      : 'border-gray-100 text-black/75'
                   }`}
                 >
                   {f.label}
@@ -219,9 +220,9 @@ export default function AddMedicationModal({ onClose, conditions }) {
                 exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }}
                 className="overflow-hidden"
               >
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-black/75 mb-2">
                   Days
-                  {days.length === 0 && <span className="ml-1.5 normal-case font-medium text-gray-300">(every day)</span>}
+                  {days.length === 0 && <span className="ml-1.5 normal-case font-medium text-black/75">(every day)</span>}
                 </p>
                 <div className="flex gap-1.5">
                   {DAYS.map(d => (
@@ -231,7 +232,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
                       className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition-all ${
                         days.includes(d)
                           ? 'bg-primary-500 text-white'
-                          : 'bg-gray-100 text-gray-400'
+                          : 'bg-gray-100 text-black/75'
                       }`}
                     >
                       {d[0]}
@@ -250,7 +251,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
                 exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }}
                 className="overflow-hidden"
               >
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-2">When to take</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-black/75 mb-2">When to take</p>
                 <div className="grid grid-cols-2 gap-2">
                   {TIME_PRESETS.map(preset => (
                     <button
@@ -260,11 +261,11 @@ export default function AddMedicationModal({ onClose, conditions }) {
                       className={`py-2.5 rounded-xl border-2 text-xs font-semibold transition-all ${
                         timePresets.includes(preset.label)
                           ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-100 text-gray-400'
+                          : 'border-gray-100 text-black/75'
                       }`}
                     >
                       <div>{preset.label}</div>
-                      <div className="text-[10px] font-normal text-gray-400 mt-0.5">{preset.time}</div>
+                      <div className="text-[10px] font-normal text-black/75 mt-0.5">{preset.time}</div>
                     </button>
                   ))}
                 </div>
@@ -274,16 +275,7 @@ export default function AddMedicationModal({ onClose, conditions }) {
 
           {/* Link to condition */}
           {conditions.length > 0 && (
-            <select
-              value={condId}
-              onChange={e => setCondId(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 bg-white"
-            >
-              <option value="">Not linked to condition</option>
-              {conditions.map(c => (
-                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
-              ))}
-            </select>
+            <ConditionSelect conditions={conditions} value={condId} onChange={setCondId} />
           )}
 
           <button

@@ -34,19 +34,19 @@ export default function HeartRateChart() {
     <div className="glass-card rounded-2xl p-4">
       <div className="flex justify-between items-center mb-1">
         <div>
-          <h3 className="text-sm font-bold text-gray-800">Heart Rate Analysis</h3>
-          <p className="text-xs text-gray-400">Compare last month</p>
+          <h3 className="text-sm font-bold text-black">Heart Rate Analysis</h3>
+          <p className="text-xs text-black/75">Compare last month</p>
         </div>
-        <button className="text-xs font-semibold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full flex items-center gap-1">
+        <button className="text-xs font-semibold text-black/75 bg-gray-100 px-3 py-1.5 rounded-full flex items-center gap-1">
           Month <span className="text-[10px]">▾</span>
         </button>
       </div>
 
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-2xl font-bold text-gray-800">♥</span>
-        <span className="text-3xl font-bold text-gray-800">{current.bpm}</span>
+        <span className="text-2xl font-bold text-black">♥</span>
+        <span className="text-3xl font-bold text-black">{current.bpm}</span>
         <div className="ml-1">
-          <p className="text-xs text-gray-400">Current BPM</p>
+          <p className="text-xs text-black/75">Current BPM</p>
           <p className="text-[10px] text-rose-400">Peak {current.high} / Low {current.low}</p>
         </div>
       </div>
@@ -67,7 +67,7 @@ export default function HeartRateChart() {
         </LineChart>
       </ResponsiveContainer>
 
-      <div className="flex justify-between text-[10px] text-gray-300 mt-1 px-1">
+      <div className="flex justify-between text-[10px] text-black/75 mt-1 px-1">
         {['1 May', '7 May', '14 May', '21 May', '28 May'].map(d => (
           <span key={d}>{d}</span>
         ))}

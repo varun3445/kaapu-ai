@@ -68,10 +68,10 @@ function AddConditionModal({ onClose }) {
         {/* Header */}
         <div className="flex justify-between items-center px-5 pt-5 pb-3 flex-shrink-0">
           <div>
-            <h2 className="text-sm font-extrabold text-gray-800">
+            <h2 className="text-sm font-extrabold text-black">
               {step === 'pick' ? 'Add Condition' : selected?.name}
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-black/75 mt-0.5">
               {step === 'pick' ? 'Select from common conditions' : 'Fill in details'}
             </p>
           </div>
@@ -89,7 +89,7 @@ function AddConditionModal({ onClose }) {
         {step === 'pick' && (
           <div className="flex-1 overflow-y-auto px-5 pb-6">
             <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/75" />
               <input
                 type="text"
                 placeholder="Search conditions…"
@@ -107,14 +107,14 @@ function AddConditionModal({ onClose }) {
                 >
                   <span className="text-2xl">{p.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800">{p.name}</p>
-                    <p className="text-[11px] text-gray-400">ICD: {p.icd} · {p.category}</p>
+                    <p className="text-sm font-bold text-black">{p.name}</p>
+                    <p className="text-[11px] text-black/75">ICD: {p.icd} · {p.category}</p>
                   </div>
                   <span className="text-primary-400 text-lg">›</span>
                 </button>
               ))}
               {filtered.length === 0 && (
-                <p className="text-center text-sm text-gray-400 py-6">No matches found</p>
+                <p className="text-center text-sm text-black/75 py-6">No matches found</p>
               )}
             </div>
           </div>
@@ -125,7 +125,7 @@ function AddConditionModal({ onClose }) {
           <div className="flex-1 overflow-y-auto px-5 space-y-4">
             {/* Severity */}
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-2">Severity</label>
+              <label className="text-xs font-semibold text-black/75 block mb-2">Severity</label>
               <div className="grid grid-cols-3 gap-2">
                 {['mild', 'moderate', 'severe'].map(s => (
                   <button
@@ -137,7 +137,7 @@ function AddConditionModal({ onClose }) {
                         ? s === 'mild' ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
                           : s === 'moderate' ? 'border-amber-400 bg-amber-50 text-amber-700'
                           : 'border-rose-400 bg-rose-50 text-rose-700'
-                        : 'border-gray-100 text-gray-400'
+                        : 'border-gray-100 text-black/75'
                     }`}
                   >
                     {s}
@@ -148,7 +148,7 @@ function AddConditionModal({ onClose }) {
 
             {/* Diagnosed date */}
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Diagnosis Date (optional)</label>
+              <label className="text-xs font-semibold text-black/75 block mb-1.5">Diagnosis Date (optional)</label>
               <input
                 type="date"
                 value={diagDate}
@@ -159,7 +159,7 @@ function AddConditionModal({ onClose }) {
 
             {/* Linked symptom categories */}
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-2">Monitor Symptom Categories</label>
+              <label className="text-xs font-semibold text-black/75 block mb-2">Monitor Symptom Categories</label>
               <div className="flex flex-wrap gap-2">
                 {SYMPTOM_CATEGORIES.filter(c => c.id !== 'other').map(cat => (
                   <button
@@ -181,7 +181,7 @@ function AddConditionModal({ onClose }) {
 
             {/* Notes */}
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Clinical Notes (optional)</label>
+              <label className="text-xs font-semibold text-black/75 block mb-1.5">Clinical Notes (optional)</label>
               <textarea
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
@@ -239,7 +239,7 @@ function AddMedicationModal({ onClose, conditions }) {
         className="relative bg-white rounded-t-3xl w-full max-w-md"
       >
         <div className="flex justify-between items-center px-5 pt-5 pb-3">
-          <h2 className="text-sm font-extrabold text-gray-800">Add Medication</h2>
+          <h2 className="text-sm font-extrabold text-black">Add Medication</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
             <X size={14} />
           </button>
@@ -259,7 +259,7 @@ function AddMedicationModal({ onClose, conditions }) {
             {FREQS.map(f => (
               <button key={f} type="button" onClick={() => setFrequency(f)}
                 className={`text-xs font-semibold px-3 py-1.5 rounded-xl border-2 transition-all ${
-                  frequency === f ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-100 text-gray-400'
+                  frequency === f ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-100 text-black/75'
                 }`}>
                 {f}
               </button>
@@ -313,8 +313,8 @@ export default function Conditions() {
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h2 className="text-lg font-extrabold text-gray-900">Conditions</h2>
-          <p className="text-xs text-gray-400 mt-0.5">
+          <h2 className="text-lg font-extrabold text-black">Conditions</h2>
+          <p className="text-xs text-black/75 mt-0.5">
             {currentMember?.name} · {currentConditions.length} condition{currentConditions.length !== 1 ? 's' : ''} · {currentMedications.length} med{currentMedications.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -345,8 +345,8 @@ export default function Conditions() {
       {currentConditions.length === 0 ? (
         <div className="text-center py-10 glass-card rounded-3xl mb-4">
           <div className="text-5xl mb-3">🏥</div>
-          <p className="text-sm font-bold text-gray-600">No conditions recorded</p>
-          <p className="text-xs text-gray-400 mt-1">Add chronic conditions to track symptoms and medications</p>
+          <p className="text-sm font-bold text-black/75">No conditions recorded</p>
+          <p className="text-xs text-black/75 mt-1">Add chronic conditions to track symptoms and medications</p>
           <button onClick={() => setShowAddCond(true)}
             className="mt-4 bg-primary-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl">
             Add first condition
@@ -368,7 +368,7 @@ export default function Conditions() {
       {/* Standalone medications */}
       {standaloneMeds.length > 0 && (
         <div className="glass-card rounded-2xl p-4">
-          <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <p className="text-xs font-extrabold text-black/75 uppercase tracking-wider mb-3 flex items-center gap-2">
             <Pill size={13} className="text-indigo-400" />
             Other Medications
           </p>

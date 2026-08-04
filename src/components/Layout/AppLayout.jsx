@@ -58,29 +58,18 @@ export default function AppLayout() {
   const isMyEmergency = !!activeEmergency && activeEmergency.familyId === currentUser?.familyId
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: '#eeeae6' }}>
-      {/* Ambient blobs — give the frosted glass something to blur over */}
-      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-        <div className="absolute -top-24 -left-16 w-80 h-80 rounded-full opacity-50"
-          style={{ background: 'radial-gradient(circle, #c7d2fe 0%, transparent 70%)', filter: 'blur(48px)' }} />
-        <div className="absolute top-1/3 -right-24 w-72 h-72 rounded-full opacity-40"
-          style={{ background: 'radial-gradient(circle, #ddd6fe 0%, transparent 70%)', filter: 'blur(48px)' }} />
-        <div className="absolute bottom-24 left-1/4 w-64 h-64 rounded-full opacity-35"
-          style={{ background: 'radial-gradient(circle, #bae6fd 0%, transparent 70%)', filter: 'blur(48px)' }} />
-        <div className="absolute bottom-0 right-1/4 w-56 h-56 rounded-full opacity-30"
-          style={{ background: 'radial-gradient(circle, #fde68a 0%, transparent 70%)', filter: 'blur(48px)' }} />
-      </div>
-      <Header />
-
-      {/* Emergency banner — only for the person who triggered it, never for observers */}
-      <AnimatePresence>
-        {isMyEmergency && <EmergencyBanner />}
-      </AnimatePresence>
-
+    <div className="flex flex-col h-screen overflow-hidden" style={{ backgroundImage: 'linear-gradient(180deg, #acd1fb 0%, #ffffff 88.4%)' }}>
       <main
         className="flex-1 overflow-y-auto page-enter"
         style={{ paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
+        <Header />
+
+        {/* Emergency banner — only for the person who triggered it, never for observers */}
+        <AnimatePresence>
+          {isMyEmergency && <EmergencyBanner />}
+        </AnimatePresence>
+
         <Outlet />
       </main>
 

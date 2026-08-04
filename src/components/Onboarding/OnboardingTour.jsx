@@ -282,11 +282,11 @@ function Tooltip({ step, rect, stepIdx, total, ww, wh, onNext, onPrev, onSkip })
           {/* Icon + title */}
           <div className="flex items-center gap-2.5 mb-2">
             <span className="text-[22px]">{step.icon}</span>
-            <p className="text-[14px] font-extrabold text-gray-900 leading-snug">{step.title}</p>
+            <p className="text-[14px] font-extrabold text-black leading-snug">{step.title}</p>
           </div>
 
           {/* Body */}
-          <p className="text-[11px] text-gray-500 leading-relaxed mb-4">{step.body}</p>
+          <p className="text-[11px] text-black/75 leading-relaxed mb-4">{step.body}</p>
 
           {/* Footer */}
           <div className="flex items-center justify-between">
@@ -294,19 +294,19 @@ function Tooltip({ step, rect, stepIdx, total, ww, wh, onNext, onPrev, onSkip })
               {!isFirst && (
                 <button
                   onClick={onPrev}
-                  className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors"
+                  className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center text-black/75 hover:bg-gray-200 transition-colors"
                 >
                   <ChevronLeft size={14} />
                 </button>
               )}
-              <p className="text-[10px] text-gray-300 font-semibold ml-0.5">{stepIdx + 1}/{total}</p>
+              <p className="text-[10px] text-black/75 font-semibold ml-0.5">{stepIdx + 1}/{total}</p>
             </div>
 
             <div className="flex items-center gap-2">
               {!isLast && !isFirst && (
                 <button
                   onClick={onSkip}
-                  className="text-[11px] text-gray-400 font-semibold px-2 py-1 rounded-lg hover:text-gray-600 transition-colors"
+                  className="text-[11px] text-black/75 font-semibold px-2 py-1 rounded-lg hover:text-black/75 transition-colors"
                 >
                   Skip tour
                 </button>

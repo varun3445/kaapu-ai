@@ -7,6 +7,8 @@ import { SYMPTOM_CATEGORIES, FEELING_CONFIG } from '../data/mockData'
 import { Avatar } from '../components/Family/FamilySwitcher'
 import { supabase, supabaseReady } from '../supabase'
 import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
+import { getConditionIcon } from '../components/Conditions/conditionIcons'
+import medPillFilledIcon from '../assets/icons/med-pill.svg'
 
 // ── Shared helper ─────────────────────────────────────────────────────────────
 function formatUID(val) {
@@ -29,10 +31,10 @@ function MemberBadge({ member, active, onClick }) {
     >
       <Avatar member={member} size="sm" />
       <div className="text-left">
-        <p className={`text-xs font-bold leading-none ${active ? 'text-primary-700' : 'text-gray-700'}`}>
+        <p className={`text-xs font-bold leading-none ${active ? 'text-primary-700' : 'text-black/80'}`}>
           {member.name.split(' ')[0]}
         </p>
-        <p className="text-[10px] text-gray-400 mt-0.5">{member.relationship}</p>
+        <p className="text-[10px] text-black/75 mt-0.5">{member.relationship}</p>
       </div>
     </button>
   )
@@ -81,7 +83,7 @@ function ManageSheet({ onClose }) {
   function statusPill(status) {
     if (status === 'pending')  return <span className="text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full">Pending</span>
     if (status === 'accepted') return <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full">Accepted</span>
-    return <span className="text-[9px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">Declined</span>
+    return <span className="text-[9px] font-bold text-black/75 bg-gray-100 px-1.5 py-0.5 rounded-full">Declined</span>
   }
 
   return (
@@ -104,7 +106,7 @@ function ManageSheet({ onClose }) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/6 flex-shrink-0">
-          <p className="text-sm font-extrabold text-gray-800">Manage Family</p>
+          <p className="text-sm font-extrabold text-black">Manage Family</p>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
             <X size={14} />
           </button>
@@ -117,7 +119,7 @@ function ManageSheet({ onClose }) {
               key={id}
               onClick={() => { setTab(id); setResult(null) }}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all ${
-                tab === id ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                tab === id ? 'bg-white text-black shadow-sm' : 'text-black/75 hover:text-black/75'
               }`}
             >{label}</button>
           ))}
@@ -132,7 +134,7 @@ function ManageSheet({ onClose }) {
               {/* Incoming requests */}
               {incoming.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Connection Requests</p>
+                  <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-2">Connection Requests</p>
                   <div className="space-y-2">
                     {incoming.map(r => (
                       <div key={r.id} className="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5">
@@ -141,8 +143,8 @@ function ManageSheet({ onClose }) {
                             {r.fromUserName.slice(0,2).toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-gray-800">{r.fromUserName}</p>
-                            <p className="text-[10px] text-gray-400 font-mono">{r.fromUserUid}</p>
+                            <p className="text-xs font-bold text-black">{r.fromUserName}</p>
+                            <p className="text-[10px] text-black/75 font-mono">{r.fromUserUid}</p>
                             <p className="text-[10px] text-indigo-600 font-semibold mt-0.5">
                               Wants to add you as: <span className="font-extrabold">{r.relationship}</span>
                             </p>
@@ -157,7 +159,7 @@ function ManageSheet({ onClose }) {
                           </button>
                           <button
                             onClick={() => respondFamilyRequest(r.id, false)}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gray-100 text-gray-500 text-xs font-semibold"
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-gray-100 text-black/75 text-xs font-semibold"
                           >
                             <UserX size={12} /> Decline
                           </button>
@@ -170,7 +172,7 @@ function ManageSheet({ onClose }) {
 
               {/* Current members */}
               <div>
-                <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Current Members</p>
+                <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-2">Current Members</p>
                 <div className="space-y-2">
                   {myFamilyMembers.map(m => {
                     const isSelf = m.id === currentMember?.id || m.relationship === 'Self'
@@ -178,8 +180,8 @@ function ManageSheet({ onClose }) {
                       <div key={m.id} className="flex items-center gap-3 glass-card rounded-2xl p-3">
                         <Avatar member={m} size="md" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-800">{m.name}</p>
-                          <p className="text-xs text-gray-400">{m.relationship}{m.age ? ` · ${m.age}yo` : m.age === null || m.age === undefined ? '' : ''}</p>
+                          <p className="text-sm font-bold text-black">{m.name}</p>
+                          <p className="text-xs text-black/75">{m.relationship}{m.age ? ` · ${m.age}yo` : m.age === null || m.age === undefined ? '' : ''}</p>
                         </div>
                         {isSelf ? (
                           <span className="text-[10px] font-semibold text-primary-500 bg-primary-50 px-2 py-1 rounded-full">You</span>
@@ -189,7 +191,7 @@ function ManageSheet({ onClose }) {
                             <button onClick={() => handleRemove(m.id)}
                               className="text-[10px] font-bold text-white bg-rose-500 px-2 py-1 rounded-lg">Yes</button>
                             <button onClick={() => setConfirmRm(null)}
-                              className="text-[10px] font-bold text-gray-500 bg-gray-200 px-2 py-1 rounded-lg">No</button>
+                              className="text-[10px] font-bold text-black/75 bg-gray-200 px-2 py-1 rounded-lg">No</button>
                           </div>
                         ) : (
                           <button
@@ -208,16 +210,16 @@ function ManageSheet({ onClose }) {
               {/* Outgoing requests */}
               {outgoing.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Sent Requests</p>
+                  <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-2">Sent Requests</p>
                   <div className="space-y-2">
                     {outgoing.map(r => (
                       <div key={r.id} className="flex items-center gap-3 glass-card rounded-2xl p-3">
-                        <div className="w-9 h-9 rounded-xl bg-gray-200 flex items-center justify-center text-xs font-extrabold text-gray-500 flex-shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-gray-200 flex items-center justify-center text-xs font-extrabold text-black/75 flex-shrink-0">
                           {r.toUserName.slice(0,2).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-gray-800">{r.toUserName}</p>
-                          <p className="text-[10px] text-gray-400">{r.relationship} · {format(new Date(r.timestamp), 'MMM d')}</p>
+                          <p className="text-xs font-bold text-black">{r.toUserName}</p>
+                          <p className="text-[10px] text-black/75">{r.relationship} · {format(new Date(r.timestamp), 'MMM d')}</p>
                         </div>
                         {statusPill(r.status)}
                       </div>
@@ -244,7 +246,7 @@ function ManageSheet({ onClose }) {
 
               {/* UID input */}
               <div>
-                <label className="text-xs font-semibold text-gray-500 block mb-1.5">Their Health ID</label>
+                <label className="text-xs font-semibold text-black/75 block mb-1.5">Their Health ID</label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -258,8 +260,8 @@ function ManageSheet({ onClose }) {
 
               {/* Relationship */}
               <div>
-                <label className="text-xs font-semibold text-gray-500 block mb-1">This person is my…</label>
-                <p className="text-[10px] text-gray-400 mb-2">e.g. selecting "Parent" means they are your parent</p>
+                <label className="text-xs font-semibold text-black/75 block mb-1">This person is my…</label>
+                <p className="text-[10px] text-black/75 mb-2">e.g. selecting "Parent" means they are your parent</p>
                 <div className="flex flex-wrap gap-1.5">
                   {RELATIONSHIPS.map(r => (
                     <button
@@ -268,7 +270,7 @@ function ManageSheet({ onClose }) {
                       className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border-2 transition-all ${
                         relationship === r
                           ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-100 text-gray-400 hover:border-gray-200'
+                          : 'border-gray-100 text-black/75 hover:border-gray-200'
                       }`}
                     >{r}</button>
                   ))}
@@ -338,12 +340,12 @@ function SymptomRow({ symptom }) {
       <span className="text-base">{cat?.icon}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
-          <p className="text-xs font-semibold text-gray-800">{symptom.bodyLabel}</p>
+          <p className="text-xs font-semibold text-black">{symptom.bodyLabel}</p>
           {symptom.resolved && (
             <span className="text-[9px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">Resolved</span>
           )}
         </div>
-        <p className="text-[10px] text-gray-400">
+        <p className="text-[10px] text-black/75">
           {symptom.type} · {symptomDurationLabel(symptom)} · {isToday(new Date(symptom.timestamp)) ? 'Today' : format(new Date(symptom.timestamp), 'MMM d')}
         </p>
       </div>
@@ -361,9 +363,9 @@ function MoodRow({ checkIn }) {
       <span className="text-xl">{cfg.emoji}</span>
       <div className="flex-1">
         <p className="text-xs font-semibold" style={{ color: cfg.color }}>{cfg.label}</p>
-        {checkIn.notes && <p className="text-[10px] text-gray-400 mt-0.5">{checkIn.notes}</p>}
+        {checkIn.notes && <p className="text-[10px] text-black/75 mt-0.5">{checkIn.notes}</p>}
       </div>
-      <p className="text-[10px] text-gray-300">{isToday(new Date(checkIn.date)) ? 'Today' : format(new Date(checkIn.date), 'MMM d')}</p>
+      <p className="text-[10px] text-black/75">{isToday(new Date(checkIn.date)) ? 'Today' : format(new Date(checkIn.date), 'MMM d')}</p>
     </div>
   )
 }
@@ -483,8 +485,8 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
         <div className="flex items-center gap-3">
           <Avatar member={member} size="lg" />
           <div>
-            <p className="font-extrabold text-gray-900">{member.name}</p>
-            <p className="text-xs text-gray-400">
+            <p className="font-extrabold text-black">{member.name}</p>
+            <p className="text-xs text-black/75">
               {[
                 member.relationship !== 'Self' ? member.relationship : null,
                 member.age > 0 ? `${member.age}yo` : null,
@@ -497,12 +499,12 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
         {/* Bio chips */}
         <div className="flex flex-wrap gap-2">
           {member.age > 0 && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-black/75 px-2.5 py-1 rounded-full">
               <User size={11} /> {member.age} yrs
             </span>
           )}
           {member.gender && member.gender !== 'other' && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full capitalize">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-black/75 px-2.5 py-1 rounded-full capitalize">
               <User size={11} /> {member.gender}
             </span>
           )}
@@ -533,11 +535,11 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
             </span>
           )}
           {isSelf && (currentUser?.homeLocation ? (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-black/75 px-2.5 py-1 rounded-full">
               <MapPin size={11} /> {currentUser.homeLocation}
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-gray-400 px-2.5 py-1 rounded-full">
+            <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-gray-100 text-black/75 px-2.5 py-1 rounded-full">
               <MapPin size={11} /> Location not set
             </span>
           ))}
@@ -564,7 +566,7 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`flex-1 py-2 text-xs font-semibold rounded-xl transition-all ${
-                tab === t.id ? 'bg-primary-600 text-white' : 'text-gray-500'
+                tab === t.id ? 'bg-primary-600 text-white' : 'text-black/75'
               }`}>{t.label}</button>
           ))}
         </div>
@@ -581,7 +583,7 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold border transition-all ${
                   showSortMenu
                     ? 'bg-primary-600 text-white border-primary-600'
-                    : 'bg-white text-gray-600 border-gray-200'
+                    : 'bg-white text-black/75 border-gray-200'
                 }`}
               >
                 Sort
@@ -602,7 +604,7 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
                         key={opt.id}
                         onClick={() => pickSort(opt.id)}
                         className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-colors ${
-                          sortField === opt.id ? 'bg-primary-50 text-primary-700' : 'text-gray-600 hover:bg-gray-50'
+                          sortField === opt.id ? 'bg-primary-50 text-primary-700' : 'text-black/75 hover:bg-gray-50'
                         }`}
                       >
                         {opt.label}
@@ -630,29 +632,31 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
               {/* Active symptoms only */}
               {active.length > 0 ? (
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-2">Active Symptoms</p>
+                  <p className="text-xs font-semibold text-black/75 mb-2">Active Symptoms</p>
                   <div className="space-y-2">{active.map(s => <SymptomRow key={s.id} symptom={s} />)}</div>
                 </div>
               ) : (
                 <div className="text-center py-8 glass-card rounded-2xl">
                   <p className="text-3xl mb-2">💚</p>
-                  <p className="text-sm font-semibold text-gray-600">No active symptoms</p>
-                  <p className="text-xs text-gray-400 mt-1">All looking good right now</p>
+                  <p className="text-sm font-semibold text-black/75">No active symptoms</p>
+                  <p className="text-xs text-black/75 mt-1">All looking good right now</p>
                 </div>
               )}
 
               {/* Conditions */}
               {memberConditions.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-2">Conditions</p>
+                  <p className="text-xs font-semibold text-black/75 mb-2">Conditions</p>
                   <div className="glass-card rounded-2xl divide-y divide-gray-50">
                     {memberConditions.map(c => (
                       <div key={c.id} className="flex items-center gap-3 px-4 py-3">
-                        <span className="text-lg">{c.icon || '🏥'}</span>
+                        <span className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(79,70,229,0.1)' }}>
+                          <img src={getConditionIcon(c)} alt="" className="w-[18px] h-[18px]" />
+                        </span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-gray-800">{c.name}</p>
+                          <p className="text-xs font-bold text-black">{c.name}</p>
                           {c.diagnosedDate && (
-                            <p className="text-[10px] text-gray-400">Since {new Date(c.diagnosedDate).getFullYear()}</p>
+                            <p className="text-[10px] text-black/75">Since {new Date(c.diagnosedDate).getFullYear()}</p>
                           )}
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
@@ -669,16 +673,16 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
               {/* Medications */}
               {memberMedications.length > 0 && (
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 mb-2">Medications</p>
+                  <p className="text-xs font-semibold text-black/75 mb-2">Medications</p>
                   <div className="glass-card rounded-2xl divide-y divide-gray-50">
                     {memberMedications.map(m => (
                       <div key={m.id} className="flex items-center gap-3 px-4 py-3">
                         <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm">💊</span>
+                          <img src={medPillFilledIcon} alt="" className="w-4 h-4" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-gray-800 truncate">{m.name}</p>
-                          <p className="text-[10px] text-gray-400">{[m.dosage, m.frequency].filter(Boolean).join(' · ')}</p>
+                          <p className="text-xs font-bold text-black truncate">{m.name}</p>
+                          <p className="text-[10px] text-black/75">{[m.dosage, m.frequency].filter(Boolean).join(' · ')}</p>
                         </div>
                       </div>
                     ))}
@@ -690,7 +694,7 @@ function MemberProfile({ member, symptoms: localSymptoms, checkIns: localCheckIn
             <div className="space-y-2">
               {sortedSymptoms.length === 0 ? (
                 <div className="text-center py-10 glass-card rounded-2xl">
-                  <p className="text-sm text-gray-400">No symptoms logged</p>
+                  <p className="text-sm text-black/75">No symptoms logged</p>
                 </div>
               ) : (
                 sortedSymptoms.map(s => <SymptomRow key={s.id} symptom={s} />)
@@ -716,13 +720,13 @@ export default function Family() {
     <div className="px-4 pt-4 pb-6 max-w-lg mx-auto">
       <div className="flex items-center justify-between mb-4">
         <div data-tour="family-header">
-          <h2 className="text-lg font-extrabold text-gray-900">Connected Accounts</h2>
-          <p className="text-xs text-gray-400 mt-0.5">{myFamilyMembers.length} member{myFamilyMembers.length !== 1 ? 's' : ''}</p>
+          <h2 className="text-lg font-extrabold text-black">Connected Accounts</h2>
+          <p className="text-xs text-black/75 mt-0.5">{myFamilyMembers.length} member{myFamilyMembers.length !== 1 ? 's' : ''}</p>
         </div>
         <button
           data-tour="family-manage-btn"
           onClick={() => setShowManage(true)}
-          className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors border border-primary-100"
+          className="flex items-center gap-1 text-xs font-semibold bg-[rgba(79,70,229,0.1)] text-[#4f46e5] border border-black/10 px-2.5 py-1.5 rounded-full hover:opacity-80 transition-colors"
         >
           <Settings2 size={13} /> Manage
         </button>

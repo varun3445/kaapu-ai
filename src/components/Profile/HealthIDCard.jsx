@@ -100,10 +100,10 @@ export default function HealthIDCard() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Heart size={13} className="text-rose-400" />
-                    <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Chronic Conditions</p>
+                    <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Chronic Conditions</p>
                   </div>
                   {hid.conditions.length === 0 ? (
-                    <p className="text-xs text-gray-300 italic pl-1">None recorded</p>
+                    <p className="text-xs text-black/75 italic pl-1">None recorded</p>
                   ) : (
                     <div className="space-y-1.5">
                       {hid.conditions.map((c, i) => (
@@ -119,10 +119,10 @@ export default function HealthIDCard() {
                 <div>
                   <div className="flex items-center gap-2 mb-2">
                     <Pill size={13} className="text-indigo-400" />
-                    <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Current Medications</p>
+                    <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Current Medications</p>
                   </div>
                   {hid.medications.length === 0 ? (
-                    <p className="text-xs text-gray-300 italic pl-1">None recorded</p>
+                    <p className="text-xs text-black/75 italic pl-1">None recorded</p>
                   ) : (
                     <div className="space-y-1.5">
                       {hid.medications.map((m, i) => (
@@ -139,7 +139,7 @@ export default function HealthIDCard() {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <Phone size={13} className="text-emerald-400" />
-                      <p className="text-[10px] font-extrabold text-gray-500 uppercase tracking-wider">Emergency Contacts</p>
+                      <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Emergency Contacts</p>
                     </div>
                     <div className="space-y-1.5">
                       {hid.emergencyContacts.map((c, i) => (
@@ -151,7 +151,7 @@ export default function HealthIDCard() {
                   </div>
                 )}
 
-                <p className="text-[10px] text-gray-300 text-center">
+                <p className="text-[10px] text-black/75 text-center">
                   Generated {format(new Date(hid.generatedAt), 'MMM d, yyyy h:mm a')} · For emergency use only
                 </p>
               </div>

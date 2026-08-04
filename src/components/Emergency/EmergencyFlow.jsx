@@ -98,8 +98,8 @@ export default function EmergencyFlow({ onClose, sentRef }) {
     requesting:  { cls: 'bg-amber-50  text-amber-600',   msg: 'Getting location…' },
     got:         { cls: 'bg-emerald-50 text-emerald-700', msg: `📍 Location locked (±${location ? Math.round(location.accuracy) : '?'}m)` },
     denied:      { cls: 'bg-rose-50    text-rose-500',    msg: 'Location denied' },
-    unavailable: { cls: 'bg-gray-50    text-gray-400',    msg: 'Location unavailable' },
-  }[locState] ?? { cls: 'bg-gray-50 text-gray-400', msg: '' }
+    unavailable: { cls: 'bg-gray-50    text-black/75',    msg: 'Location unavailable' },
+  }[locState] ?? { cls: 'bg-gray-50 text-black/75', msg: '' }
 
   return (
     <motion.div
@@ -176,7 +176,7 @@ export default function EmergencyFlow({ onClose, sentRef }) {
                     {currentMember?.avatar}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800">{currentMember?.name}</p>
+                    <p className="text-sm font-bold text-black">{currentMember?.name}</p>
                     <div className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full mt-0.5 ${locMeta.cls}`}>
                       <MapPin size={10} />
                       {locMeta.msg}
@@ -196,7 +196,7 @@ export default function EmergencyFlow({ onClose, sentRef }) {
                 />
 
                 <button onClick={handleCancel}
-                  className="w-full py-3.5 rounded-2xl border-2 border-gray-200 text-sm font-extrabold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all">
+                  className="w-full py-3.5 rounded-2xl border-2 border-gray-200 text-sm font-extrabold text-black/80 hover:bg-gray-50 active:scale-95 transition-all">
                   ✕ Cancel — I'm OK
                 </button>
                 <button onClick={() => triggerNowRef.current?.()}
@@ -213,7 +213,7 @@ export default function EmergencyFlow({ onClose, sentRef }) {
                 <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}>
                   <Loader size={40} className="text-rose-500" />
                 </motion.div>
-                <p className="text-sm font-bold text-gray-700">Sending emergency alert…</p>
+                <p className="text-sm font-bold text-black/80">Sending emergency alert…</p>
               </motion.div>
             )}
 

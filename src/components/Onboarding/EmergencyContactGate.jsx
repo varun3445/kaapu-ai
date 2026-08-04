@@ -51,8 +51,8 @@ export default function EmergencyContactGate() {
 
         {/* Heading */}
         <div className="text-center mb-6">
-          <h1 className="text-xl font-extrabold text-gray-900 mb-1">Add an emergency contact</h1>
-          <p className="text-sm text-gray-500 leading-relaxed">
+          <h1 className="text-xl font-extrabold text-black mb-1">Add an emergency contact</h1>
+          <p className="text-sm text-black/75 leading-relaxed">
             Before you continue, add at least one person Kaapu can alert if you press the SOS button. This is required.
           </p>
         </div>
@@ -63,7 +63,7 @@ export default function EmergencyContactGate() {
             <div className="w-7 h-7 rounded-xl bg-rose-50 flex items-center justify-center">
               <Phone size={13} className="text-rose-500" />
             </div>
-            <p className="text-xs font-bold text-gray-700">Primary Contact <span className="text-rose-500">*</span></p>
+            <p className="text-xs font-bold text-black/80">Primary Contact <span className="text-rose-500">*</span></p>
           </div>
 
           {/* Name */}
@@ -73,7 +73,7 @@ export default function EmergencyContactGate() {
               placeholder="Full name *"
               value={name}
               onChange={e => { setName(e.target.value); setError('') }}
-              className="w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+              className="w-full px-3 py-2.5 rounded-xl text-sm text-black focus:outline-none transition-all"
               style={{
                 background: 'rgba(255,255,255,0.7)',
                 border: error ? '1.5px solid #f87171' : '0.75px solid rgba(0,0,0,0.10)',
@@ -89,7 +89,7 @@ export default function EmergencyContactGate() {
             placeholder="Phone e.g. +447911123456"
             value={phone}
             onChange={e => setPhone(e.target.value)}
-            className="w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+            className="w-full px-3 py-2.5 rounded-xl text-sm text-black focus:outline-none transition-all"
             style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)' }}
           />
 
@@ -104,7 +104,7 @@ export default function EmergencyContactGate() {
               <option value="">Relationship…</option>
               {REL_OPTIONS.map(r => <option key={r} value={r}>{r}</option>)}
             </select>
-            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+            <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-black/75 pointer-events-none" />
           </div>
         </div>
 
@@ -122,7 +122,7 @@ export default function EmergencyContactGate() {
           )}
         </button>
 
-        <p className="text-center text-[10px] text-gray-400 mt-3 px-2">
+        <p className="text-center text-[10px] text-black/75 mt-3 px-2">
           You can add more contacts or edit this any time in Profile → Emergency Contacts.
         </p>
       </div>

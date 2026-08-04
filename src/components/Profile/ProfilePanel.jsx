@@ -6,7 +6,7 @@ import {
   Copy, Check as CheckIcon, MapPin, Clock, PauseCircle,
   Eye, EyeOff, Users, BarChart2, Save, Phone, Trash2,
   Download, AlertTriangle, FileText, TrendingUp, TrendingDown, Minus, Play,
-  Megaphone, Send, Pill, Sparkles, Zap, Crown, Star,
+  Megaphone, Send, Pill, Sparkles, Zap, Crown, Star, Camera, Loader2,
 } from 'lucide-react'
 import { TOUR_KEY } from '../Onboarding/OnboardingTour'
 import { useApp } from '../../context/AppContext'
@@ -45,16 +45,16 @@ function SaveFeedbackModal({ result, onClose }) {
                 <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center">
                   <CheckIcon size={26} className="text-emerald-500" />
                 </div>
-                <p className="text-base font-extrabold text-gray-900">Changes saved!</p>
-                <p className="text-xs text-gray-400">Your profile has been updated across all devices.</p>
+                <p className="text-base font-extrabold text-black">Changes saved!</p>
+                <p className="text-xs text-black/75">Your profile has been updated across all devices.</p>
               </>
             ) : (
               <>
                 <div className="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Save size={22} className="text-gray-400" />
+                  <Save size={22} className="text-black/75" />
                 </div>
-                <p className="text-base font-extrabold text-gray-900">No changes to save</p>
-                <p className="text-xs text-gray-400">Everything is already up to date.</p>
+                <p className="text-base font-extrabold text-black">No changes to save</p>
+                <p className="text-xs text-black/75">Everything is already up to date.</p>
               </>
             )}
           </motion.div>
@@ -121,8 +121,8 @@ function WeightHistorySheet({ history, units, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
           <div>
-            <h3 className="text-sm font-extrabold text-gray-900">Weight History</h3>
-            <p className="text-xs text-gray-400 mt-0.5">{sorted.length} entr{sorted.length === 1 ? 'y' : 'ies'} · tap ✏️ to edit</p>
+            <h3 className="text-sm font-extrabold text-black">Weight History</h3>
+            <p className="text-xs text-black/75 mt-0.5">{sorted.length} entr{sorted.length === 1 ? 'y' : 'ies'} · tap ✏️ to edit</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
             <X size={14} />
@@ -133,8 +133,8 @@ function WeightHistorySheet({ history, units, onClose }) {
           {sorted.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-3xl mb-2">⚖️</p>
-              <p className="text-sm font-semibold text-gray-600">No history yet</p>
-              <p className="text-xs text-gray-400 mt-1">Save your weight to start tracking</p>
+              <p className="text-sm font-semibold text-black/75">No history yet</p>
+              <p className="text-xs text-black/75 mt-1">Save your weight to start tracking</p>
             </div>
           ) : sorted.map((entry, i) => {
             const prev  = sorted[i + 1]
@@ -164,7 +164,7 @@ function WeightHistorySheet({ history, units, onClose }) {
                   >
                     <p className="flex-1 text-xs font-semibold text-rose-700">Delete {dateStr} entry?</p>
                     <button onClick={() => setConfirmDel(null)}
-                      className="text-[10px] font-bold text-gray-500 px-3 py-1.5 rounded-xl bg-white border border-gray-200">
+                      className="text-[10px] font-bold text-black/75 px-3 py-1.5 rounded-xl bg-white border border-gray-200">
                       Cancel
                     </button>
                     <button onClick={() => deleteEntry(i)}
@@ -183,7 +183,7 @@ function WeightHistorySheet({ history, units, onClose }) {
                   >
                     {/* Date */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-gray-800">{dateStr}</p>
+                      <p className="text-xs font-bold text-black">{dateStr}</p>
                       {i === 0 && !isEditing && (
                         <p className="text-[10px] text-primary-500 font-semibold mt-0.5">Latest</p>
                       )}
@@ -199,9 +199,9 @@ function WeightHistorySheet({ history, units, onClose }) {
                             value={editVal}
                             onChange={e => setEditVal(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') commitEdit(i); if (e.key === 'Escape') setEditingIdx(null) }}
-                            className="w-24 px-2 py-1.5 pr-8 rounded-xl text-sm font-bold text-gray-800 border border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200 bg-white"
+                            className="w-24 px-2 py-1.5 pr-8 rounded-xl text-sm font-bold text-black border border-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-200 bg-white"
                           />
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold">
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-black/75 font-semibold">
                             {isImperial ? 'lbs' : 'kg'}
                           </span>
                         </div>
@@ -211,15 +211,15 @@ function WeightHistorySheet({ history, units, onClose }) {
                         </button>
                         <button onClick={() => setEditingIdx(null)}
                           className="w-7 h-7 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <X size={12} className="text-gray-500" />
+                          <X size={12} className="text-black/75" />
                         </button>
                       </div>
                     ) : (
                       <>
                         {/* Weight + delta */}
-                        <p className="text-sm font-extrabold text-gray-900">{display(entry.weightKg)}</p>
+                        <p className="text-sm font-extrabold text-black">{display(entry.weightKg)}</p>
                         <div className={`flex items-center gap-1 w-[68px] justify-end ${
-                          isGain ? 'text-rose-500' : isLoss ? 'text-emerald-500' : 'text-gray-400'
+                          isGain ? 'text-rose-500' : isLoss ? 'text-emerald-500' : 'text-black/75'
                         }`}>
                           {delta !== null && (
                             <>
@@ -235,7 +235,7 @@ function WeightHistorySheet({ history, units, onClose }) {
                         <div className="flex items-center gap-1 ml-1">
                           <button
                             onClick={() => { setEditingIdx(i); setEditVal(isImperial ? (entry.weightKg * 2.20462).toFixed(1) : String(entry.weightKg)) }}
-                            className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-primary-50 hover:text-primary-500 flex items-center justify-center transition-colors text-gray-400"
+                            className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-primary-50 hover:text-primary-500 flex items-center justify-center transition-colors text-black/75"
                           >
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
@@ -244,7 +244,7 @@ function WeightHistorySheet({ history, units, onClose }) {
                           </button>
                           <button
                             onClick={() => setConfirmDel(i)}
-                            className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center transition-colors text-gray-400"
+                            className="w-7 h-7 rounded-xl bg-gray-100 hover:bg-rose-50 hover:text-rose-500 flex items-center justify-center transition-colors text-black/75"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -291,15 +291,15 @@ function skinShadow(selected) {
 }
 
 // ── Shared UI ─────────────────────────────────────────────────────────────────
-function SettingRow({ icon: Icon, label, sub, children, iconBg = 'bg-gray-100', iconColor = 'text-gray-500' }) {
+function SettingRow({ icon: Icon, label, sub, children, iconBg = 'bg-gray-100', iconColor = 'text-black/75' }) {
   return (
     <div className="flex items-center gap-3 py-3">
       <div className={`w-8 h-8 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
         <Icon size={15} className={iconColor} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-semibold text-gray-800">{label}</p>
-        {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+        <p className="text-xs font-semibold text-black">{label}</p>
+        {sub && <p className="text-[10px] text-black/75 mt-0.5">{sub}</p>}
       </div>
       {children}
     </div>
@@ -319,13 +319,13 @@ function Toggle({ value, onChange }) {
 function Input({ label, style: extraStyle, suffix, ...props }) {
   return (
     <div>
-      {label && <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">{label}</label>}
+      {label && <label className="text-[10px] font-semibold text-black/75 uppercase tracking-wider block mb-1">{label}</label>}
       <div className="relative">
         <input {...props}
-          className={`w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none transition-all ${suffix ? 'pr-10' : ''}`}
+          className={`w-full px-3 py-2.5 rounded-xl text-sm text-black focus:outline-none transition-all ${suffix ? 'pr-10' : ''}`}
           style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)', ...extraStyle }} />
         {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold pointer-events-none">{suffix}</span>
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-black/75 font-semibold pointer-events-none">{suffix}</span>
         )}
       </div>
     </div>
@@ -336,9 +336,9 @@ function BackHeader({ title, onBack }) {
   return (
     <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-black/6 flex-shrink-0">
       <button onClick={onBack} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
-        <ChevronLeft size={16} className="text-gray-600" />
+        <ChevronLeft size={16} className="text-black/75" />
       </button>
-      <p className="text-sm font-extrabold text-gray-900">{title}</p>
+      <p className="text-sm font-extrabold text-black">{title}</p>
     </div>
   )
 }
@@ -422,13 +422,13 @@ function NotificationsPage({ onBack }) {
       <BackHeader title="Notifications" onBack={onBack} />
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Timezone</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Timezone</p>
           <div className="glass-card rounded-2xl px-4 py-3">
-            <p className="text-[10px] text-gray-400 mb-2">Used to send reminders at the right local time</p>
+            <p className="text-[10px] text-black/75 mb-2">Used to send reminders at the right local time</p>
             <select
               value={timezone}
               onChange={e => setTimezone(e.target.value)}
-              className="w-full text-xs font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-400"
+              className="w-full text-xs font-semibold text-black/80 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary-400"
             >
               {/* Show detected tz at top if not in list */}
               {!TIMEZONES.find(t => t.value === detectedTz) && (
@@ -444,7 +444,7 @@ function NotificationsPage({ onBack }) {
         </div>
 
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Alert Preferences</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Alert Preferences</p>
           <div className="glass-card rounded-2xl px-4 divide-y divide-black/5">
             <SettingRow icon={Bell} label="Emergency Alerts" sub="Always on — cannot be disabled" iconBg="bg-rose-50" iconColor="text-rose-500">
               <span className="text-[10px] font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded-full">Always on</span>
@@ -572,7 +572,7 @@ function PrivacyPage({ onBack, onOpenPrivacy }) {
       <BackHeader title="Privacy & Sharing" onBack={onBack} />
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Data Access</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Data Access</p>
           <div className="glass-card rounded-2xl px-4 divide-y divide-black/5">
             <SettingRow icon={Users} label="Family Members" sub="Family can view your health entries" iconBg="bg-indigo-50" iconColor="text-indigo-500">
               <Toggle value={priv.familyVisible} onChange={() => toggle('familyVisible')} />
@@ -580,26 +580,26 @@ function PrivacyPage({ onBack, onOpenPrivacy }) {
             <SettingRow icon={Shield} label="Care Team" sub="Doctors can see your health timeline" iconBg="bg-primary-50" iconColor="text-primary-500">
               <Toggle value={priv.doctorShare} onChange={() => toggle('doctorShare')} />
             </SettingRow>
-            <SettingRow icon={BarChart2} label="Anonymous Analytics" sub="Help improve Kaapu (no personal data)" iconBg="bg-gray-100" iconColor="text-gray-400">
+            <SettingRow icon={BarChart2} label="Anonymous Analytics" sub="Help improve Kaapu (no personal data)" iconBg="bg-gray-100" iconColor="text-black/75">
               <Toggle value={priv.analytics} onChange={() => toggle('analytics')} />
             </SettingRow>
           </div>
         </div>
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Data & Storage</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Data & Storage</p>
           <div className="glass-card rounded-2xl px-4 divide-y divide-black/5">
             <SettingRow icon={Eye} label="Profile Visibility" sub="Only visible to connected family" iconBg="bg-emerald-50" iconColor="text-emerald-500">
               <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Private</span>
             </SettingRow>
-            <SettingRow icon={EyeOff} label="Health ID Sharing" sub="Only visible when you share it manually" iconBg="bg-gray-100" iconColor="text-gray-400">
-              <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Manual only</span>
+            <SettingRow icon={EyeOff} label="Health ID Sharing" sub="Only visible when you share it manually" iconBg="bg-gray-100" iconColor="text-black/75">
+              <span className="text-[10px] font-bold text-black/75 bg-gray-100 px-2 py-1 rounded-full">Manual only</span>
             </SettingRow>
           </div>
         </div>
         <SaveButton saved={saved} onClick={save} />
         <SaveFeedbackModal result={saveResult} onClose={() => setSaveResult(null)} />
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Your Data</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Your Data</p>
           <div className="glass-card rounded-2xl overflow-hidden divide-y divide-black/5">
             <button onClick={onOpenPrivacy}
               className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left">
@@ -607,10 +607,10 @@ function PrivacyPage({ onBack, onOpenPrivacy }) {
                 <FileText size={13} className="text-indigo-500" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-semibold text-gray-700">Privacy Policy</p>
-                <p className="text-[10px] text-gray-400">How we collect and use your data</p>
+                <p className="text-xs font-semibold text-black/80">Privacy Policy</p>
+                <p className="text-[10px] text-black/75">How we collect and use your data</p>
               </div>
-              <ChevronRight size={13} className="text-gray-300" />
+              <ChevronRight size={13} className="text-black/75" />
             </button>
             <button onClick={downloadData} disabled={downloading}
               className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left disabled:opacity-50">
@@ -618,8 +618,8 @@ function PrivacyPage({ onBack, onOpenPrivacy }) {
                 <Download size={13} className="text-emerald-500" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-semibold text-gray-700">Download My Data</p>
-                <p className="text-[10px] text-gray-400">Export everything as JSON (GDPR Art. 20)</p>
+                <p className="text-xs font-semibold text-black/80">Download My Data</p>
+                <p className="text-[10px] text-black/75">Export everything as JSON (GDPR Art. 20)</p>
               </div>
               {downloading && <div className="w-3.5 h-3.5 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />}
             </button>
@@ -635,8 +635,8 @@ function PrivacyPolicyPage({ onBack }) {
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Privacy Policy" onBack={onBack} />
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 text-xs text-gray-600 leading-relaxed">
-        <p className="text-[10px] text-gray-400">Last updated: April 2026</p>
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 text-xs text-black/75 leading-relaxed">
+        <p className="text-[10px] text-black/75">Last updated: April 2026</p>
 
         {[
           { title: 'Who we are', body: 'Kaapu is a personal and family health tracking application. When we say "we", "our", or "Kaapu", we mean the operator of this service. Your data is stored securely using Supabase, hosted in the EU.' },
@@ -649,7 +649,7 @@ function PrivacyPolicyPage({ onBack }) {
           { title: 'Contact', body: 'For privacy enquiries or to exercise your rights, contact: info@ownflows.com' },
         ].map(({ title, body }) => (
           <div key={title}>
-            <p className="text-xs font-extrabold text-gray-800 mb-1">{title}</p>
+            <p className="text-xs font-extrabold text-black mb-1">{title}</p>
             <p>{body}</p>
           </div>
         ))}
@@ -757,15 +757,15 @@ function AccountPage({ onBack }) {
 
         {/* Personal details */}
         <div data-tour="account-personal">
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Personal Details</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Personal Details</p>
           <div className="space-y-3">
             <Input label="Full Name" type="text" placeholder="Your name" value={name} onChange={e => setName(e.target.value)} />
             <div className="grid grid-cols-2 gap-3">
               <Input label="Age" type="number" placeholder="30" min={1} max={120} value={age} onChange={e => setAge(e.target.value)} />
               <div>
-                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Gender</label>
+                <label className="text-[10px] font-semibold text-black/75 uppercase tracking-wider block mb-1">Gender</label>
                 <select value={gender} onChange={e => setGender(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl text-sm text-gray-800 focus:outline-none transition-all capitalize"
+                  className="w-full px-3 py-2.5 rounded-xl text-sm text-black focus:outline-none transition-all capitalize"
                   style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)' }}>
                   <option value="female">Female</option>
                   <option value="male">Male</option>
@@ -776,12 +776,12 @@ function AccountPage({ onBack }) {
 
             {/* Unit toggle */}
             <div className="flex items-center justify-between">
-              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Units</label>
+              <label className="text-[10px] font-semibold text-black/75 uppercase tracking-wider">Units</label>
               <div className="flex bg-gray-100 rounded-xl p-0.5 gap-0.5">
                 {['metric', 'imperial'].map(u => (
                   <button key={u} onClick={() => setUnits(u)}
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all capitalize ${
-                      units === u ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400'
+                      units === u ? 'bg-white text-black shadow-sm' : 'text-black/75'
                     }`}>
                     {u === 'metric' ? 'Metric (cm / kg)' : 'Imperial (ft / lbs)'}
                   </button>
@@ -796,23 +796,23 @@ function AccountPage({ onBack }) {
                 suffix="cm" />
             ) : (
               <div>
-                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">Height</label>
+                <label className="text-[10px] font-semibold text-black/75 uppercase tracking-wider block mb-1">Height</label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <input type="number" placeholder="5" min={1} max={8}
                       value={heightFt}
                       onChange={e => handleHeightImperial(e.target.value, heightIn)}
-                      className="w-full px-3 py-2.5 pr-8 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                      className="w-full px-3 py-2.5 pr-8 rounded-xl text-sm text-black focus:outline-none transition-all"
                       style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)' }} />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold">ft</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-black/75 font-semibold">ft</span>
                   </div>
                   <div className="relative flex-1">
                     <input type="number" placeholder="11" min={0} max={11}
                       value={heightIn}
                       onChange={e => handleHeightImperial(heightFt, e.target.value)}
-                      className="w-full px-3 py-2.5 pr-8 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                      className="w-full px-3 py-2.5 pr-8 rounded-xl text-sm text-black focus:outline-none transition-all"
                       style={{ background:'rgba(255,255,255,0.7)', border:'0.75px solid rgba(0,0,0,0.10)', boxShadow:'inset 0 1px 2px rgba(0,0,0,0.04)' }} />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-semibold">in</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-black/75 font-semibold">in</span>
                   </div>
                 </div>
               </div>
@@ -821,7 +821,7 @@ function AccountPage({ onBack }) {
             {/* Weight */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Weight</label>
+                <label className="text-[10px] font-semibold text-black/75 uppercase tracking-wider">Weight</label>
                 {(currentUser?.weightHistory?.length > 0) && (
                   <button
                     onClick={() => setShowWtHistory(true)}
@@ -845,24 +845,24 @@ function AccountPage({ onBack }) {
         </div>
 
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Contact</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Contact</p>
           <Input label="Email Address" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
         </div>
 
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Location</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Location</p>
           <Input label="Home Location" type="text" placeholder="e.g. London, UK" value={homeLocation} onChange={e => setHomeLocation(e.target.value)} />
-          <p className="text-[10px] text-gray-400 mt-1.5 px-1">Used for location-based check-in reminders.</p>
+          <p className="text-[10px] text-black/75 mt-1.5 px-1">Used for location-based check-in reminders.</p>
         </div>
 
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2">Health ID</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-2">Health ID</p>
           <div className="glass-card rounded-2xl px-4 py-3 flex items-center gap-3">
             <div className="flex-1">
-              <p className="text-[10px] text-gray-400 mb-0.5">Your unique identifier</p>
-              <p className="text-sm font-bold font-mono text-gray-800 tracking-widest">{currentUser?.uid || '—'}</p>
+              <p className="text-[10px] text-black/75 mb-0.5">Your unique identifier</p>
+              <p className="text-sm font-bold font-mono text-black tracking-widest">{currentUser?.uid || '—'}</p>
             </div>
-            <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-1 rounded-full">Read-only</span>
+            <span className="text-[10px] text-black/75 bg-gray-100 px-2 py-1 rounded-full">Read-only</span>
           </div>
         </div>
 
@@ -880,7 +880,7 @@ function AccountPage({ onBack }) {
 
         {/* Delete account */}
         <div>
-          <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">Danger Zone</p>
+          <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Danger Zone</p>
           <div className="glass-card rounded-2xl p-4 border border-rose-100">
             {deleteStep === 0 && (
               <button onClick={() => setDeleteStep(1)}
@@ -894,8 +894,8 @@ function AccountPage({ onBack }) {
                 <div className="flex items-start gap-2.5">
                   <AlertTriangle size={16} className="text-rose-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-xs font-bold text-gray-800">This cannot be undone</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">All your health data, symptoms, check-ins, and account will be permanently deleted.</p>
+                    <p className="text-xs font-bold text-black">This cannot be undone</p>
+                    <p className="text-[10px] text-black/75 mt-0.5">All your health data, symptoms, check-ins, and account will be permanently deleted.</p>
                   </div>
                 </div>
                 <Input
@@ -906,7 +906,7 @@ function AccountPage({ onBack }) {
                 />
                 <div className="flex gap-2">
                   <button onClick={() => { setDeleteStep(0); setDeleteInput('') }}
-                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-xs font-semibold hover:bg-gray-50 transition-colors">
+                    className="flex-1 py-2.5 rounded-xl border border-gray-200 text-black/75 text-xs font-semibold hover:bg-gray-50 transition-colors">
                     Cancel
                   </button>
                   <button
@@ -992,7 +992,7 @@ function EmergencyContactsPage({ onBack }) {
       <BackHeader title="Emergency Contacts" onBack={onBack} />
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
 
-        <p className="text-[11px] text-gray-400 leading-relaxed">
+        <p className="text-[11px] text-black/75 leading-relaxed">
           These people will be shown in the emergency alert modal when you trigger an SOS. Up to 3 contacts.
         </p>
 
@@ -1010,14 +1010,14 @@ function EmergencyContactsPage({ onBack }) {
                   <div className={`w-7 h-7 rounded-xl ${hasError ? 'bg-rose-50' : col.bg} flex items-center justify-center`}>
                     <Phone size={13} className={hasError ? 'text-rose-500' : col.icon} />
                   </div>
-                  <p className="text-xs font-bold text-gray-700">
+                  <p className="text-xs font-bold text-black/80">
                     {slotLabels[idx]}
                     {required && <span className="text-rose-500 ml-0.5">*</span>}
                   </p>
                 </div>
                 {!isEmpty && (
                   <button onClick={() => clear(idx)} className="w-6 h-6 rounded-full bg-gray-100 hover:bg-rose-100 flex items-center justify-center transition-colors">
-                    <Trash2 size={11} className="text-gray-400 hover:text-rose-500" />
+                    <Trash2 size={11} className="text-black/75 hover:text-rose-500" />
                   </button>
                 )}
               </div>
@@ -1059,7 +1059,7 @@ function EmergencyContactsPage({ onBack }) {
 
         <div className="glass-card rounded-2xl px-4 py-3 flex items-start gap-2.5">
           <span className="text-base mt-0.5">💡</span>
-          <p className="text-[11px] text-gray-500 leading-relaxed">
+          <p className="text-[11px] text-black/75 leading-relaxed">
             Contacts are shown to family members viewing your emergency alert. They can tap to call directly.
           </p>
         </div>
@@ -1083,7 +1083,7 @@ const PLANS = [
     bg: 'bg-gray-50',
     border: 'border-gray-200',
     iconBg: 'bg-gray-100',
-    iconColor: 'text-gray-500',
+    iconColor: 'text-black/75',
     badge: null,
     features: [
       'Core symptom logging, SOS trigger, medications, health timeline, emergency contacts',
@@ -1143,16 +1143,16 @@ function PlanPage({ onBack }) {
         {/* Current plan banner */}
         <div className="glass-card rounded-2xl px-4 py-3.5 flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-            <Star size={15} className="text-gray-500" />
+            <Star size={15} className="text-black/75" />
           </div>
           <div className="flex-1">
-            <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider">Current plan</p>
-            <p className="text-sm font-extrabold text-gray-800">Free</p>
+            <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Current plan</p>
+            <p className="text-sm font-extrabold text-black">Free</p>
           </div>
-          <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">Active</span>
+          <span className="text-[10px] font-bold text-black/75 bg-gray-100 px-2.5 py-1 rounded-full">Active</span>
         </div>
 
-        <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider pt-1">Upgrade</p>
+        <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider pt-1">Upgrade</p>
 
         {/* Plan cards */}
         {PLANS.filter(p => p.id !== 'free').map(plan => {
@@ -1167,7 +1167,7 @@ function PlanPage({ onBack }) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-extrabold text-gray-900">{plan.name}</p>
+                    <p className="text-sm font-extrabold text-black">{plan.name}</p>
                     {plan.badge && (
                       <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
                         style={{ background: plan.accent + '20', color: plan.accent }}>
@@ -1190,7 +1190,7 @@ function PlanPage({ onBack }) {
                       style={{ background: plan.accent + '18' }}>
                       <CheckIcon size={8} style={{ color: plan.accent }} />
                     </div>
-                    <p className="text-[11px] text-gray-600">{f}</p>
+                    <p className="text-[11px] text-black/75">{f}</p>
                   </div>
                 ))}
               </div>
@@ -1207,7 +1207,7 @@ function PlanPage({ onBack }) {
           )
         })}
 
-        <p className="text-[10px] text-gray-400 text-center pb-2">
+        <p className="text-[10px] text-black/75 text-center pb-2">
           Billing via Stripe & App Store · Cancel anytime
         </p>
       </div>
@@ -1290,7 +1290,7 @@ function NhsIdCard() {
         {editing ? (
           <div className="space-y-2.5">
             <div>
-              <label className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider block mb-1">NHS Number</label>
+              <label className="text-[10px] font-semibold text-black/75 uppercase tracking-wider block mb-1">NHS Number</label>
               <input
                 autoFocus
                 type="text"
@@ -1298,12 +1298,12 @@ function NhsIdCard() {
                 placeholder="485 777 3456"
                 value={draft}
                 onChange={handleChange}
-                className="w-full px-3 py-2.5 rounded-xl text-sm font-bold text-gray-800 tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-300"
+                className="w-full px-3 py-2.5 rounded-xl text-sm font-bold text-black tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-300"
                 style={{ background: 'rgba(255,255,255,0.7)', border: error ? '1.5px solid #f87171' : '0.75px solid rgba(0,0,0,0.10)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)', fontFamily: 'monospace', letterSpacing: '0.1em' }}
               />
               {error && <p className="text-[10px] text-rose-500 font-semibold mt-1">⚠️ {error}</p>}
             </div>
-            <p className="text-[10px] text-gray-400 leading-relaxed">
+            <p className="text-[10px] text-black/75 leading-relaxed">
               Find it on your NHS card, a prescription letter, or by calling 111.
             </p>
             <div className="flex gap-2">
@@ -1315,7 +1315,7 @@ function NhsIdCard() {
                   : <><CheckIcon size={11} /> Save</>}
               </button>
               <button onClick={() => { setEditing(false); setError('') }}
-                className="flex-1 py-2 rounded-xl bg-gray-100 text-gray-500 text-[11px] font-semibold">
+                className="flex-1 py-2 rounded-xl bg-gray-100 text-black/75 text-[11px] font-semibold">
                 Cancel
               </button>
             </div>
@@ -1323,11 +1323,11 @@ function NhsIdCard() {
         ) : stored ? (
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-[10px] text-gray-400 mb-0.5">Registered number</p>
+              <p className="text-[10px] text-black/75 mb-0.5">Registered number</p>
               <p className="text-lg font-extrabold tracking-[0.18em] font-mono" style={{ color: '#005EB8' }}>{stored}</p>
             </div>
             <button onClick={() => { setDraft(stored); setEditing(true) }}
-              className="text-[10px] font-semibold text-gray-400 hover:text-gray-600 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-xl transition-colors">
+              className="text-[10px] font-semibold text-black/75 hover:text-black/75 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded-xl transition-colors">
               Edit
             </button>
           </div>
@@ -1344,11 +1344,25 @@ function NhsIdCard() {
 
 // ── Main ProfilePanel ─────────────────────────────────────────────────────────
 export default function ProfilePanel({ open, onClose }) {
-  const { currentUser, currentMember, skinColor, setSkinColor, logout, isAdmin, sendBroadcast, symptoms, conditions, medications } = useApp()
+  const { currentUser, currentMember, skinColor, setSkinColor, logout, isAdmin, sendBroadcast, symptoms, conditions, medications, uploadAvatarPhoto } = useApp()
   const [copied, setCopied] = useState(false)
   const [page,   setPage]   = useState(null)
   const [generatingReport, setGeneratingReport] = useState(false)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const [avatarError,     setAvatarError]     = useState('')
+  const avatarInputRef = useRef(null)
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file later
+    if (!file) return
+    setAvatarError('')
+    setAvatarUploading(true)
+    const result = await uploadAvatarPhoto(file)
+    setAvatarUploading(false)
+    if (result?.error) setAvatarError(result.error)
+  }
 
   async function downloadGPReport() {
     if (!currentUser || !currentMember) return
@@ -1412,7 +1426,7 @@ export default function ProfilePanel({ open, onClose }) {
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 30, stiffness: 320 }}
           className="fixed inset-0 z-[90] flex flex-col max-w-lg mx-auto"
-          style={{ background: '#eeeae6' }}
+          style={{ background: '#acd1fb' }}
         >
           {/* Ambient blobs */}
           <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
@@ -1423,7 +1437,7 @@ export default function ProfilePanel({ open, onClose }) {
           <AnimatePresence mode="wait">
             {page ? (
               <motion.div key={page} initial={{ x:60, opacity:0 }} animate={{ x:0, opacity:1 }} exit={{ x:60, opacity:0 }}
-                transition={{ type:'spring', damping:28, stiffness:320 }} className="flex flex-col flex-1 overflow-y-auto">
+                transition={{ type:'spring', damping:28, stiffness:320 }} className="flex flex-col flex-1 overflow-y-auto no-scrollbar">
                 {page === 'emergency-contacts' && <EmergencyContactsPage onBack={() => setPage(null)} />}
                 {page === 'notifications'      && <NotificationsPage     onBack={() => setPage(null)} />}
                 {page === 'privacy'            && <PrivacyPage           onBack={() => setPage(null)} onOpenPrivacy={() => setPage('privacy-policy')} />}
@@ -1433,18 +1447,40 @@ export default function ProfilePanel({ open, onClose }) {
               </motion.div>
             ) : (
               <motion.div key="main" initial={{ x:-40, opacity:0 }} animate={{ x:0, opacity:1 }} exit={{ x:-40, opacity:0 }}
-                transition={{ type:'spring', damping:28, stiffness:320 }} className="flex-1 overflow-y-auto">
+                transition={{ type:'spring', damping:28, stiffness:320 }} className="flex-1 overflow-y-auto no-scrollbar">
 
                 {/* Hero */}
                 <div className="bg-gradient-to-br from-primary-600 to-indigo-500 px-5 pb-6"
                   style={{ paddingTop:'calc(env(safe-area-inset-top, 16px) + 20px)' }}>
                   <div className="flex items-start justify-between mb-5">
                     <div className="flex items-center gap-3">
-                      {currentMember && <Avatar member={currentMember} size="lg" />}
+                      {currentMember && (
+                        <button
+                          onClick={() => avatarInputRef.current?.click()}
+                          disabled={avatarUploading}
+                          className="relative rounded-full flex-shrink-0 hover:opacity-90 transition-opacity"
+                          aria-label="Change profile photo"
+                        >
+                          <Avatar member={currentMember} size="lg" />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-white flex items-center justify-center shadow-sm">
+                            {avatarUploading
+                              ? <Loader2 size={11} className="text-primary-600 animate-spin" />
+                              : <Camera size={11} className="text-primary-600" />}
+                          </span>
+                        </button>
+                      )}
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                      />
                       <div className="text-white">
                         <p className="font-extrabold text-base leading-tight">{currentMember?.name || currentUser?.name}</p>
                         <p className="text-primary-200 text-xs mt-0.5">{currentUser?.email}</p>
                         {ageLine && <p className="text-primary-300 text-[10px] mt-0.5">{ageLine}</p>}
+                        {avatarError && <p className="text-rose-200 text-[10px] mt-0.5">{avatarError}</p>}
                       </div>
                     </div>
                     <button onClick={handleClose}
@@ -1474,8 +1510,8 @@ export default function ProfilePanel({ open, onClose }) {
                       <div className="w-5 h-5 rounded-full border border-white/60"
                         style={{ background:skinGradient(skinColor), boxShadow:'0 2px 6px rgba(0,0,0,0.22), inset 0 1px 2px rgba(255,255,255,0.4)' }} />
                       <div>
-                        <p className="text-xs font-bold text-gray-800">3D Body Skin Tone</p>
-                        <p className="text-[10px] text-gray-400">Changes the body model in Body Map</p>
+                        <p className="text-xs font-bold text-black">3D Body Skin Tone</p>
+                        <p className="text-[10px] text-black/75">Changes the body model in Body Map</p>
                       </div>
                     </div>
                     <div className="flex gap-2.5 flex-wrap">
@@ -1507,8 +1543,8 @@ export default function ProfilePanel({ open, onClose }) {
                       <FileText size={16} className="text-indigo-500" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-xs font-semibold text-gray-800">Visiting your GP?</p>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-xs font-semibold text-black">Visiting your GP?</p>
+                      <p className="text-[10px] text-black/75">
                         {isIOS
                           ? 'Opens your 30-day health summary — tap Share to save'
                           : 'Download your 30-day health summary PDF'}
@@ -1522,7 +1558,7 @@ export default function ProfilePanel({ open, onClose }) {
 
                   {/* Settings list */}
                   <div>
-                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-2.5">Settings</p>
+                    <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-2.5">Settings</p>
                     <div className="glass-card rounded-2xl overflow-hidden divide-y divide-black/5">
                       {SETTINGS.map(item => {
                         const Icon = item.icon
@@ -1532,16 +1568,16 @@ export default function ProfilePanel({ open, onClose }) {
                             {...(item.id === 'notifications' ? { 'data-tour': 'notifications-btn' } : {})}
                             className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-white/60 transition-colors text-left">
                             <div className={`w-7 h-7 rounded-lg ${item.iconBg || 'bg-white/80'} shadow-sm flex items-center justify-center`}>
-                              <Icon size={14} className={item.iconColor || 'text-gray-400'} />
+                              <Icon size={14} className={item.iconColor || 'text-black/75'} />
                             </div>
                             <div className="flex-1">
-                              <p className="text-xs font-semibold text-gray-700">{item.label}</p>
-                              <p className="text-[10px] text-gray-400 truncate max-w-[200px]">{item.sub}</p>
+                              <p className="text-xs font-semibold text-black/80">{item.label}</p>
+                              <p className="text-[10px] text-black/75 truncate max-w-[200px]">{item.sub}</p>
                             </div>
                             {item.badge && (
                               <span className="text-[9px] font-bold text-indigo-500 bg-indigo-50 px-2 py-0.5 rounded-full mr-1">{item.badge}</span>
                             )}
-                            <ChevronRight size={13} className="text-gray-300" />
+                            <ChevronRight size={13} className="text-black/75" />
                           </button>
                         )
                       })}

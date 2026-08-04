@@ -40,7 +40,7 @@ function LoadingMessage() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -6 }}
         transition={{ duration: 0.25 }}
-        className="text-xs text-gray-400 font-medium"
+        className="text-sm text-black/75"
       >
         {LOADING_MESSAGES[index]}
       </motion.p>
@@ -67,11 +67,13 @@ function AppRoutes() {
   if (appLoading) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center gap-4"
-        style={{ background: '#eeeae6' }}
+        className="min-h-screen flex flex-col items-center justify-center gap-6 pb-[145px]"
+        style={{ background: '#acd1fb' }}
       >
-        <img src="/logo.png" alt="Kaapu" className="w-16 h-16 object-contain animate-pulse" style={{ mixBlendMode: 'multiply' }} />
-        <p className="text-sm font-semibold text-gray-400 tracking-wide">Kaapu</p>
+        <div className="flex flex-col items-center gap-2">
+          <img src="/logo.png" alt="Kaapu" className="w-16 h-16 object-contain animate-pulse" style={{ mixBlendMode: 'multiply' }} />
+          <p className="text-2xl font-extrabold text-black">Kaapu</p>
+        </div>
         <LoadingMessage />
       </div>
     )

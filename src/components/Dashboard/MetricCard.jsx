@@ -17,12 +17,12 @@ export default function MetricCard({ icon, label, value, unit, sub, color = '#4f
         )}
       </div>
       <div>
-        <p className="text-[11px] text-gray-400 font-medium">{label}</p>
+        <p className="text-[11px] text-black/75 font-medium">{label}</p>
         <div className="flex items-baseline gap-1 mt-0.5">
-          <span className="text-xl font-bold text-gray-800">{value}</span>
-          {unit && <span className="text-xs text-gray-400 font-medium">{unit}</span>}
+          <span className="text-xl font-bold text-black">{value}</span>
+          {unit && <span className="text-xs text-black/75 font-medium">{unit}</span>}
         </div>
-        {sub && <p className="text-[10px] text-gray-400 mt-0.5">{sub}</p>}
+        {sub && <p className="text-[10px] text-black/75 mt-0.5">{sub}</p>}
       </div>
     </motion.div>
   )

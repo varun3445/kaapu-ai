@@ -32,7 +32,7 @@ function CheckInModal({ onClose, targetDate }) {
         className="relative glass-elevated rounded-3xl w-full max-w-sm p-6"
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-base font-bold text-gray-800">
+          <h2 className="text-base font-bold text-black">
             {targetDate && !isToday(targetDate) ? `Check-in · ${format(targetDate, 'EEE, d MMM')}` : 'Edit Check-in'}
           </h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
@@ -146,7 +146,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
           style={{ background: (cat?.color || '#6366f1') + '1a' }}>{cat?.icon}</div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <p className="text-xs font-bold text-gray-800">{item.bodyLabel}</p>
+            <p className="text-xs font-bold text-black">{item.bodyLabel}</p>
             {isContinuation && (
               <span className="text-[9px] bg-amber-100 text-amber-600 font-bold px-1.5 py-0.5 rounded-full">
                 Day {item._dayIndex + 1}
@@ -159,17 +159,17 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
               <span className="text-[9px] bg-emerald-100 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full">Resolved</span>
             )}
           </div>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-black/75">
             {cat?.label} · {item.type}
-            {isContinuation && <span className="text-gray-300"> · started {format(new Date(item.timestamp), 'MMM d')}</span>}
+            {isContinuation && <span className="text-black/75"> · started {format(new Date(item.timestamp), 'MMM d')}</span>}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="text-right">
             <p className="text-sm font-bold" style={{ color: sevColor }}>{severityLabel(sev)}</p>
-            <p className="text-[10px] text-gray-300">{symptomDurationLabel(item)}</p>
+            <p className="text-[10px] text-black/75">{symptomDurationLabel(item)}</p>
           </div>
-          {open ? <ChevronUp size={13} className="text-gray-300" /> : <ChevronDown size={13} className="text-gray-300" />}
+          {open ? <ChevronUp size={13} className="text-black/75" /> : <ChevronDown size={13} className="text-black/75" />}
         </div>
       </button>
       <AnimatePresence>
@@ -183,7 +183,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                   { l:'Logged',   v: format(new Date(item.timestamp), 'MMM d'), c:'#374151' },
                 ].map(s => (
                   <div key={s.l} className="bg-gray-50 rounded-xl p-2 text-center">
-                    <p className="text-[10px] text-gray-400 mb-0.5">{s.l}</p>
+                    <p className="text-[10px] text-black/75 mb-0.5">{s.l}</p>
                     <p className="text-xs font-bold" style={{ color: s.c }}>{s.v}</p>
                   </div>
                 ))}
@@ -233,14 +233,14 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                         <div>
                           <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold block mb-1">Start date</label>
                           <input type="date" value={editStart} onChange={e => setEditStart(e.target.value)}
-                            className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                            className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-black/80 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
                         </div>
                         {item.resolved && (
                           <div>
                             <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold block mb-1">End date</label>
                             <input type="date" value={editEnd} onChange={e => setEditEnd(e.target.value)}
                               min={editStart}
-                              className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                              className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-black/80 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
                           </div>
                         )}
                       </div>
@@ -256,7 +256,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                       <div>
                         <label className="text-[10px] text-indigo-400 uppercase tracking-wider font-semibold block mb-1">Notes</label>
                         <textarea value={editNotes} onChange={e => setEditNotes(e.target.value)} rows={3}
-                          className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
+                          className="w-full rounded-xl border border-indigo-200 bg-white px-2.5 py-1.5 text-xs text-black/80 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none" />
                       </div>
                       <div className="flex gap-2">
                         <button onClick={saveEdit}
@@ -264,7 +264,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                           Save
                         </button>
                         <button onClick={() => setEditing(false)}
-                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-black/75 text-[11px] font-semibold">
                           Cancel
                         </button>
                       </div>
@@ -289,7 +289,7 @@ function SymptomCard({ item, onResolve, onDelete, onEdit, readOnly = false }) {
                           Yes, delete it
                         </button>
                         <button onClick={() => setConfirming(false)}
-                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-black/75 text-[11px] font-semibold">
                           Keep it
                         </button>
                       </div>
@@ -316,11 +316,11 @@ function CheckInCard({ item, onEdit, onDelete, readOnly = false }) {
           style={{ background: cfg.bg }}>{cfg.emoji}</div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
-          {item.notes && <p className="text-[11px] text-gray-400 mt-0.5 truncate">{item.notes}</p>}
+          {item.notes && <p className="text-[11px] text-black/75 mt-0.5 truncate">{item.notes}</p>}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <p className="text-[10px] text-gray-300">{format(new Date(item.date), 'h:mm a')}</p>
-          {open ? <ChevronUp size={13} className="text-gray-300" /> : <ChevronDown size={13} className="text-gray-300" />}
+          <p className="text-[10px] text-black/75">{format(new Date(item.date), 'h:mm a')}</p>
+          {open ? <ChevronUp size={13} className="text-black/75" /> : <ChevronDown size={13} className="text-black/75" />}
         </div>
       </button>
       <AnimatePresence>
@@ -366,7 +366,7 @@ function CheckInCard({ item, onEdit, onDelete, readOnly = false }) {
                           Yes, delete it
                         </button>
                         <button onClick={() => setConfirming(false)}
-                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                          className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-black/75 text-[11px] font-semibold">
                           Keep it
                         </button>
                       </div>
@@ -427,7 +427,7 @@ function DocViewer({ doc, onClose, onDelete }) {
         </button>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{doc.name}</p>
-          <p className="text-[11px] text-gray-400">{type.label} · {format(new Date(doc.uploadedAt), 'MMM d, yyyy')}</p>
+          <p className="text-[11px] text-black/75">{type.label} · {format(new Date(doc.uploadedAt), 'MMM d, yyyy')}</p>
         </div>
         <button
           onClick={handleDelete}
@@ -446,9 +446,9 @@ function DocViewer({ doc, onClose, onDelete }) {
           ) : isPdf ? (
             <div className="flex flex-col h-full">
               {pdfLoading && (
-                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-400">
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-black/75">
                   <Loader size={28} className="animate-spin text-primary-400" />
-                  <p className="text-sm text-gray-400">Loading PDF…</p>
+                  <p className="text-sm text-black/75">Loading PDF…</p>
                 </div>
               )}
               {!pdfLoading && pdfBlob && (
@@ -461,8 +461,8 @@ function DocViewer({ doc, onClose, onDelete }) {
               )}
               {!pdfLoading && !pdfBlob && (
                 <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6">
-                  <FileText size={48} className="text-gray-300" />
-                  <p className="text-sm font-semibold text-gray-600">Couldn't load preview</p>
+                  <FileText size={48} className="text-black/75" />
+                  <p className="text-sm font-semibold text-black/75">Couldn't load preview</p>
                   <button onClick={handleOpenExternal}
                     className="flex items-center gap-2 bg-primary-600 text-white text-sm font-bold px-5 py-3 rounded-2xl">
                     Open PDF ↗
@@ -470,7 +470,7 @@ function DocViewer({ doc, onClose, onDelete }) {
                 </div>
               )}
               <div className="bg-gray-800 px-4 py-2 flex-shrink-0 flex items-center justify-between gap-3">
-                <p className="text-[11px] text-gray-400 truncate flex-1">{doc.fileName}</p>
+                <p className="text-[11px] text-black/75 truncate flex-1">{doc.fileName}</p>
                 <button onClick={handleOpenExternal}
                   className="flex-shrink-0 flex items-center gap-1.5 text-xs text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-colors">
                   Open externally ↗
@@ -483,21 +483,21 @@ function DocViewer({ doc, onClose, onDelete }) {
             </div>
           )
         ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400 p-6">
-            <FileText size={48} className="text-gray-300" />
-            <p className="text-sm font-semibold text-gray-600">Preview not available</p>
-            <p className="text-xs text-gray-400 text-center max-w-xs">
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-black/75 p-6">
+            <FileText size={48} className="text-black/75" />
+            <p className="text-sm font-semibold text-black/75">Preview not available</p>
+            <p className="text-xs text-black/75 text-center max-w-xs">
               File previews are only available during the session they were uploaded.
               The document metadata has been saved.
             </p>
-            {doc.notes && <p className="text-xs text-gray-500 max-w-xs text-center italic">"{doc.notes}"</p>}
+            {doc.notes && <p className="text-xs text-black/75 max-w-xs text-center italic">"{doc.notes}"</p>}
           </div>
         )}
       </div>
       {doc.notes && url && (
         <div className="bg-white px-4 py-3 border-t border-gray-100 flex-shrink-0">
-          <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold mb-0.5">Notes</p>
-          <p className="text-xs text-gray-600">{doc.notes}</p>
+          <p className="text-[10px] text-black/75 uppercase tracking-wider font-semibold mb-0.5">Notes</p>
+          <p className="text-xs text-black/75">{doc.notes}</p>
         </div>
       )}
     </motion.div>,
@@ -512,8 +512,8 @@ function DocTimelineCard({ item, onView }) {
       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
         style={{ background: type.color + '18' }}>{type.icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-gray-800 truncate">{item.name}</p>
-        <p className="text-[11px] text-gray-400">{type.label}</p>
+        <p className="text-xs font-bold text-black truncate">{item.name}</p>
+        <p className="text-[11px] text-black/75">{type.label}</p>
       </div>
       <span className="text-[10px] text-primary-500 font-semibold bg-primary-50 px-2 py-1 rounded-full">View</span>
     </button>
@@ -571,7 +571,7 @@ function UploadModal({ onClose, onSave }) {
         className="relative glass-elevated rounded-3xl w-full max-w-md p-6 overflow-y-auto"
         style={{ maxHeight: '88vh' }}>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-sm font-bold text-gray-800">Add Health Record</h2>
+          <h2 className="text-sm font-bold text-black">Add Health Record</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center"><X size={14} /></button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -579,19 +579,19 @@ function UploadModal({ onClose, onSave }) {
             className="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center cursor-pointer hover:border-primary-300 hover:bg-primary-50 transition-all">
             <input ref={fileRef} type="file" accept={ACCEPTED_TYPES} className="hidden"
               onChange={e => handleFile(e.target.files[0])} />
-            <Upload size={22} className="mx-auto text-gray-300 mb-1.5" />
+            <Upload size={22} className="mx-auto text-black/75 mb-1.5" />
             {file
               ? <p className="text-sm font-medium text-primary-600">{file.name}</p>
               : <>
-                  <p className="text-sm text-gray-500 font-medium">Tap to upload</p>
-                  <p className="text-xs text-gray-300 mt-0.5">JPEG or PNG only</p>
+                  <p className="text-sm text-black/75 font-medium">Tap to upload</p>
+                  <p className="text-xs text-black/75 mt-0.5">JPEG or PNG only</p>
                 </>}
             {fileErr && <p className="text-xs text-rose-500 mt-1 font-medium">{fileErr}</p>}
           </div>
           <input type="text" placeholder="Document name *" value={name} onChange={e => setName(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" />
           <div>
-            <label className="text-xs font-semibold text-gray-500 block mb-1.5">Document Date</label>
+            <label className="text-xs font-semibold text-black/75 block mb-1.5">Document Date</label>
             <input type="date" value={docDate} max={today} onChange={e => setDocDate(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 bg-white" />
           </div>
@@ -600,7 +600,7 @@ function UploadModal({ onClose, onSave }) {
               <button key={t.id} type="button" onClick={() => setDocType(t.id)}
                 className={`p-2 rounded-xl border-2 text-center transition-all ${docType === t.id ? 'border-primary-500 bg-primary-50' : 'border-gray-100'}`}>
                 <div className="text-base">{t.icon}</div>
-                <p className="text-[9px] font-medium text-gray-600 mt-0.5 leading-tight">{t.label}</p>
+                <p className="text-[9px] font-medium text-black/75 mt-0.5 leading-tight">{t.label}</p>
               </button>
             ))}
           </div>
@@ -623,8 +623,8 @@ function RecordsOverlay({ documents, onClose, onAdd, onView, onDelete }) {
       className="fixed inset-0 z-50 bg-surface flex flex-col">
       <div className="bg-white border-b border-gray-100 px-4 pt-5 pb-4 flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-gray-800">Health Records</h2>
-          <p className="text-xs text-gray-400">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
+          <h2 className="text-base font-bold text-black">Health Records</h2>
+          <p className="text-xs text-black/75">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={onAdd}
@@ -639,9 +639,9 @@ function RecordsOverlay({ documents, onClose, onAdd, onView, onDelete }) {
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {documents.length === 0 ? (
           <div className="text-center py-20">
-            <FolderOpen size={40} className="mx-auto text-gray-200 mb-3" />
-            <p className="text-sm font-semibold text-gray-500">No records yet</p>
-            <p className="text-xs text-gray-400 mt-1">Upload lab results, prescriptions, and more</p>
+            <FolderOpen size={40} className="mx-auto text-black/20 mb-3" />
+            <p className="text-sm font-semibold text-black/75">No records yet</p>
+            <p className="text-xs text-black/75 mt-1">Upload lab results, prescriptions, and more</p>
             <button onClick={onAdd} className="mt-4 bg-primary-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl">Upload first record</button>
           </div>
         ) : (
@@ -654,9 +654,9 @@ function RecordsOverlay({ documents, onClose, onAdd, onView, onDelete }) {
                   <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                     style={{ background: type.color + '1a' }}>{type.icon}</div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800 truncate">{d.name}</p>
-                    <p className="text-xs text-gray-400">{type.label} · {format(new Date(d.uploadedAt), 'MMM d, yyyy')}</p>
-                    {d.notes && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{d.notes}</p>}
+                    <p className="text-sm font-bold text-black truncate">{d.name}</p>
+                    <p className="text-xs text-black/75">{type.label} · {format(new Date(d.uploadedAt), 'MMM d, yyyy')}</p>
+                    {d.notes && <p className="text-xs text-black/75 mt-0.5 line-clamp-1">{d.notes}</p>}
                   </div>
                   <span className="text-[10px] text-primary-500 font-semibold bg-primary-50 px-2 py-1 rounded-full flex-shrink-0">View</span>
                 </button>
@@ -685,7 +685,7 @@ function RecordsOverlay({ documents, onClose, onAdd, onView, onDelete }) {
                             Yes, delete it
                           </button>
                           <button onClick={() => setConfirmDocId(null)}
-                            className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-gray-500 text-[11px] font-semibold">
+                            className="flex-1 py-1.5 rounded-xl bg-white border border-gray-200 text-black/75 text-[11px] font-semibold">
                             Keep it
                           </button>
                         </div>
@@ -759,10 +759,10 @@ function AddConditionModal({ onClose }) {
         style={{ maxHeight:'88vh' }}>
         <div className="flex justify-between items-center px-5 pt-5 pb-3 flex-shrink-0">
           <div>
-            <h2 className="text-sm font-extrabold text-gray-800">
+            <h2 className="text-sm font-extrabold text-black">
               {step === 'pick' ? 'Add Condition' : selected?.name}
             </h2>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-black/75 mt-0.5">
               {step === 'pick' ? 'Select from common conditions' : 'Fill in details'}
             </p>
           </div>
@@ -779,7 +779,7 @@ function AddConditionModal({ onClose }) {
         {step === 'pick' && (
           <div className="flex-1 overflow-y-auto px-5 pb-6">
             <div className="relative mb-3">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/75" />
               <input type="text" placeholder="Search conditions…" value={query}
                 onChange={e => setQuery(e.target.value)}
                 className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" />
@@ -790,14 +790,14 @@ function AddConditionModal({ onClose }) {
                   className="w-full flex items-center gap-3 p-3 glass-card rounded-2xl hover:bg-white/80 transition-all text-left">
                   <span className="text-2xl">{p.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-800">{p.name}</p>
-                    <p className="text-[11px] text-gray-400">ICD: {p.icd} · {p.category}</p>
+                    <p className="text-sm font-bold text-black">{p.name}</p>
+                    <p className="text-[11px] text-black/75">ICD: {p.icd} · {p.category}</p>
                   </div>
                   <span className="text-primary-400 text-lg">›</span>
                 </button>
               ))}
               {filtered.length === 0 && (
-                <p className="text-center text-sm text-gray-400 py-6">No matches found</p>
+                <p className="text-center text-sm text-black/75 py-6">No matches found</p>
               )}
             </div>
           </div>
@@ -806,7 +806,7 @@ function AddConditionModal({ onClose }) {
         {step === 'details' && selected && (
           <div className="flex-1 overflow-y-auto px-5 space-y-4 pb-4">
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-2">Severity</label>
+              <label className="text-xs font-semibold text-black/75 block mb-2">Severity</label>
               <div className="grid grid-cols-3 gap-2">
                 {['mild','moderate','severe'].map(s => (
                   <button key={s} type="button" onClick={() => setSeverity(s)}
@@ -815,18 +815,18 @@ function AddConditionModal({ onClose }) {
                         ? s === 'mild'     ? 'border-emerald-400 bg-emerald-50 text-emerald-700'
                           : s === 'moderate' ? 'border-amber-400 bg-amber-50 text-amber-700'
                           : 'border-rose-400 bg-rose-50 text-rose-700'
-                        : 'border-gray-100 text-gray-400'
+                        : 'border-gray-100 text-black/75'
                     }`}>{s}</button>
                 ))}
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Diagnosis Date (optional)</label>
+              <label className="text-xs font-semibold text-black/75 block mb-1.5">Diagnosis Date (optional)</label>
               <input type="date" value={diagDate} onChange={e => setDiagDate(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-primary-400" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-2">Monitor Symptom Categories</label>
+              <label className="text-xs font-semibold text-black/75 block mb-2">Monitor Symptom Categories</label>
               <div className="flex flex-wrap gap-2">
                 {SYMPTOM_CATEGORIES.filter(c => c.id !== 'other').map(cat => (
                   <button key={cat.id} type="button" onClick={() => toggleCat(cat.id)}
@@ -842,7 +842,7 @@ function AddConditionModal({ onClose }) {
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5">Clinical Notes (optional)</label>
+              <label className="text-xs font-semibold text-black/75 block mb-1.5">Clinical Notes (optional)</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)}
                 placeholder="Triggers, management strategy, doctor notes…"
                 rows={3}
@@ -890,7 +890,7 @@ function ConditionsPanel() {
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-black/75">
           {currentMember?.name} · {currentConditions.length} condition{currentConditions.length !== 1 ? 's' : ''} · {currentMedications.length} med{currentMedications.length !== 1 ? 's' : ''}
         </p>
         <div className="flex gap-2">
@@ -920,8 +920,8 @@ function ConditionsPanel() {
       {currentConditions.length === 0 ? (
         <div className="text-center py-10 px-6 glass-card rounded-3xl">
           <div className="text-5xl mb-3">🏥</div>
-          <p className="text-sm font-bold text-gray-600">No conditions recorded</p>
-          <p className="text-xs text-gray-400 mt-1">Add chronic conditions to track symptoms and medications</p>
+          <p className="text-sm font-bold text-black/75">No conditions recorded</p>
+          <p className="text-xs text-black/75 mt-1">Add chronic conditions to track symptoms and medications</p>
           <button onClick={() => setShowAddCond(true)}
             className="mt-4 bg-primary-600 text-white text-sm font-bold px-5 py-2.5 rounded-2xl">
             Add first condition
@@ -938,7 +938,7 @@ function ConditionsPanel() {
       {/* Standalone meds */}
       {standaloneMeds.length > 0 && (
         <div className="glass-card rounded-2xl p-4">
-          <p className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <p className="text-xs font-extrabold text-black/75 uppercase tracking-wider mb-3 flex items-center gap-2">
             <Pill size={13} className="text-indigo-400" /> Other Medications
           </p>
           <div className="space-y-2">
@@ -1131,7 +1131,7 @@ export default function History() {
             </motion.p>
           </AnimatePresence>
           <button data-tour="history-records-btn" onClick={() => setShowRecords(true)}
-            className="flex items-center gap-1.5 text-xs font-bold text-primary-600 bg-primary-50 px-3 py-2 rounded-xl hover:bg-primary-100 transition-colors">
+            className="flex items-center gap-1 text-xs font-semibold bg-[rgba(79,70,229,0.1)] text-[#4f46e5] border border-black/10 px-2.5 py-1.5 rounded-full hover:opacity-80 transition-colors">
             <FolderOpen size={13} /> Records
           </button>
         </div>
@@ -1139,7 +1139,7 @@ export default function History() {
         {/* Month nav */}
         <div className="flex items-center gap-3">
           <button onClick={prevMonth}
-            className="w-8 h-8 rounded-full bg-white/80 border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-white hover:text-primary-600 transition-colors shadow-sm">
+            className="w-8 h-8 rounded-full bg-white/80 border border-gray-200 flex items-center justify-center text-black/75 hover:bg-white hover:text-primary-600 transition-colors shadow-sm">
             <ChevronLeft size={15} />
           </button>
           <AnimatePresence mode="wait">
@@ -1147,10 +1147,10 @@ export default function History() {
               key={format(viewMonth, 'yyyy-MM')}
               initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }}
               transition={{ duration: 0.18 }}
-              className="text-sm font-bold text-gray-700 flex-1"
+              className="text-sm font-bold text-black/80 flex-1"
             >
               {format(viewMonth, 'MMMM yyyy')}
-              <span className="ml-2 text-[10px] font-semibold text-gray-400">
+              <span className="ml-2 text-[10px] font-semibold text-black/75">
                 · {filtered.length} entr{filtered.length === 1 ? 'y' : 'ies'}
               </span>
             </motion.p>
@@ -1158,8 +1158,8 @@ export default function History() {
           <button onClick={nextMonth} disabled={isCurrentMonth}
             className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors shadow-sm ${
               isCurrentMonth
-                ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed'
-                : 'bg-white/80 border-gray-200 text-gray-500 hover:bg-white hover:text-primary-600'
+                ? 'bg-gray-50 border-gray-100 text-black/75 cursor-not-allowed'
+                : 'bg-white/80 border-gray-200 text-black/75 hover:bg-white hover:text-primary-600'
             }`}>
             <ChevronRight size={15} />
           </button>
@@ -1172,7 +1172,7 @@ export default function History() {
         {TIMELINE_TABS.map(t => (
           <button key={t} onClick={() => setTimelineTab(t)}
             className={`flex-shrink-0 flex-1 py-1.5 text-xs font-semibold rounded-xl transition-all ${
-              timelineTab === t ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+              timelineTab === t ? 'bg-white text-black shadow-sm' : 'text-black/75 hover:text-black/75'
             }`}>{t}</button>
         ))}
       </div>
@@ -1180,7 +1180,7 @@ export default function History() {
       {/* Search + Sort */}
       <div className="flex gap-2 mb-3">
         <div className="relative flex-1">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 pointer-events-none" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-black/75 pointer-events-none" />
           <input
             type="text"
             value={search}
@@ -1190,7 +1190,7 @@ export default function History() {
           />
           {search && (
             <button onClick={() => setSearch('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500">
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black/75 hover:text-black/75">
               <X size={12} />
             </button>
           )}
@@ -1200,7 +1200,7 @@ export default function History() {
           className={`flex items-center gap-1.5 px-3 py-2.5 rounded-2xl text-xs font-semibold border transition-all flex-shrink-0 ${
             sortOrder !== 'desc'
               ? 'bg-primary-600 text-white border-primary-600'
-              : 'bg-white/70 text-gray-600 border-gray-200'
+              : 'bg-white/70 text-black/75 border-gray-200'
           }`}
           title={sortOrder === 'desc' ? 'Newest first' : 'Oldest first'}
         >
@@ -1210,7 +1210,7 @@ export default function History() {
 
       {search && (
         <div className="flex items-center gap-2 mb-3">
-          <p className="text-[11px] text-gray-400">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</p>
+          <p className="text-[11px] text-black/75">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</p>
           <span className="flex items-center gap-1 text-[11px] bg-primary-50 text-primary-700 font-semibold px-2 py-0.5 rounded-full">
             "{search}" <button onClick={() => setSearch('')}><X size={10} /></button>
           </span>
@@ -1220,8 +1220,8 @@ export default function History() {
       {grouped.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-5xl mb-3">📋</div>
-          <p className="text-sm font-semibold text-gray-600">Nothing in {format(viewMonth, 'MMMM')}</p>
-          <p className="text-xs text-gray-400 mt-1">Try a different month or log a new entry.</p>
+          <p className="text-sm font-semibold text-black/75">Nothing in {format(viewMonth, 'MMMM')}</p>
+          <p className="text-xs text-black/75 mt-1">Try a different month or log a new entry.</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -1229,7 +1229,7 @@ export default function History() {
             <div key={label}>
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-2 h-2 rounded-full bg-primary-400" />
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">{label}</p>
+                <p className="text-xs font-bold text-black/75 uppercase tracking-wide">{label}</p>
               </div>
               <div className="space-y-2 ml-4">
                 {items.map(item =>

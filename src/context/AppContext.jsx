@@ -766,8 +766,13 @@ export function AppProvider({ children }) {
         const msg = error.message?.toLowerCase() || ''
         if (msg.includes('email not confirmed'))
           return { error: 'Please confirm your email first — check your inbox for a verification link.' }
-        if (msg.includes('invalid') || msg.includes('not found') || msg.includes('no user'))
+        // Supabase returns the same generic "Invalid login credentials" message for both
+        // a wrong password and a nonexistent account (deliberate — avoids leaking which
+        // emails are registered), so we can't tell those apart here.
+        if (msg.includes('not found') || msg.includes('no user'))
           return { error: 'No account found with that email. Please sign up first.' }
+        if (msg.includes('invalid'))
+          return { error: 'Incorrect email or password. Please try again.' }
         return { error: error.message || 'Invalid email or password.' }
       }
       return { ok: true }
@@ -782,9 +787,7 @@ export function AppProvider({ children }) {
     try {
       const deadline = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000))
 
-      const siteUrl = window.location.hostname === 'localhost'
-        ? window.location.origin
-        : 'https://health-ex.netlify.app'
+      const siteUrl = window.location.origin
       const { data: authData, error: authErr } = await Promise.race([
         supabase.auth.signUp({
           email: data.email,
@@ -797,10 +800,19 @@ export function AppProvider({ children }) {
         deadline,
       ])
       if (authErr) {
-        if (authErr.message.toLowerCase().includes('already')) return { error: 'Email already in use.' }
+        if (authErr.message.toLowerCase().includes('already')) return { error: 'Email already in use, please sign in.' }
         return { error: authErr.message }
       }
       if (!authData?.user) return { error: 'Sign up failed. Please try again.' }
+
+      // Supabase's signUp() deliberately does NOT return an error for an
+      // email that's already registered and confirmed — it responds as if a
+      // new signup succeeded, to avoid leaking which emails exist. The
+      // documented way to detect this client-side is that `identities`
+      // comes back as an empty array for an existing, confirmed user.
+      if (Array.isArray(authData.user.identities) && authData.user.identities.length === 0) {
+        return { error: 'Email already in use, please sign in.' }
+      }
 
       // Email confirmation is enabled — no session yet. Save profile data
       // so _loadUserData can use it when the user confirms and logs in.
@@ -823,17 +835,42 @@ export function AppProvider({ children }) {
       const familyName     = `${lastName} Family`
       const avatarInitials = fullName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 
+      // Derive age from date of birth when provided, falling back to a raw age value
+      const ageFromDob = data.dob
+        ? Math.max(0, Math.floor((Date.now() - new Date(data.dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000)))
+        : null
+
+      // Upload the chosen avatar photo now — currentUser isn't set yet, so
+      // this can't go through uploadAvatarPhoto(); upload directly using uid.
+      let avatarUrl = null
+      if (data.avatarFile) {
+        const ext  = data.avatarFile.type.split('/')[1]
+        const path = `${uid}/avatar.${ext}`
+        const { error: upErr } = await supabase.storage
+          .from('avatars')
+          .upload(path, data.avatarFile, { contentType: data.avatarFile.type, upsert: true })
+        if (!upErr) {
+          const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path)
+          avatarUrl = `${pub.publicUrl}?t=${Date.now()}`
+        }
+      }
+
       const userProfile = {
         id: uid, email: data.email, name: fullName,
         role: data.role || 'user', familyId, uid: uid9,
-        age: parseInt(data.age) || null, gender: data.gender || 'other',
+        age: ageFromDob ?? (parseInt(data.age) || null), gender: data.gender || 'other',
+        ...(data.preferredName ? { preferredName: data.preferredName } : {}),
+        ...(data.country ? { country: data.country } : {}),
+        ...(data.dob ? { dob: data.dob } : {}),
+        ...(avatarUrl ? { avatarUrl } : {}),
         ...(data.consentGivenAt ? { consentGivenAt: data.consentGivenAt } : {}),
       }
 
       const memberRecord = {
         id: `mem-${uid}`, familyId, userId: uid, name: fullName,
-        age: parseInt(data.age) || null, gender: data.gender || 'other',
+        age: ageFromDob ?? (parseInt(data.age) || null), gender: data.gender || 'other',
         relationship: 'Self', avatar: avatarInitials, avatarColor: '#6366f1',
+        ...(avatarUrl ? { avatarUrl } : {}),
       }
 
       // Use upsert so our correct data always wins even if _loadUserData
@@ -877,9 +914,7 @@ export function AppProvider({ children }) {
 
   const signInWithOAuth = useCallback(async (provider) => {
     if (!supabase) return { error: 'Supabase not configured.' }
-    const redirectTo = window.location.hostname === 'localhost'
-      ? window.location.origin
-      : 'https://health-ex.netlify.app'
+    const redirectTo = window.location.origin
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo },
@@ -888,10 +923,20 @@ export function AppProvider({ children }) {
     return { ok: true }
   }, [])
 
+  // RLS on `users` only allows reading your own row, so an unauthenticated
+  // existence check can't just select from the table (it'll always come back
+  // empty). Use the email_exists() RPC instead, which runs as SECURITY
+  // DEFINER server-side and only ever returns a boolean.
+  const checkEmailExists = useCallback(async (email) => {
+    if (!supabase) return false
+    const { data } = await supabase.rpc('email_exists', { check_email: email.trim().toLowerCase() })
+    return !!data
+  }, [])
+
   const resetPassword = useCallback(async (email) => {
     if (!supabase) return { error: 'Supabase not configured.' }
-    const { data } = await supabase.from('users').select('id').eq('email', email.trim().toLowerCase()).maybeSingle()
-    if (!data) return { notFound: true }
+    const exists = await checkEmailExists(email)
+    if (!exists) return { notFound: true }
     const redirectTo = window.location.origin
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
     if (error) return { error: error.message }
@@ -924,6 +969,7 @@ export function AppProvider({ children }) {
     if (updates.name)   { memberUpdates.name = updates.name; memberUpdates.avatar = updates.name.slice(0, 2).toUpperCase() }
     if (updates.age !== undefined)    memberUpdates.age    = parseInt(updates.age) || null
     if (updates.gender) memberUpdates.gender = updates.gender
+    if (updates.avatarUrl !== undefined) memberUpdates.avatarUrl = updates.avatarUrl
 
     if (Object.keys(memberUpdates).length > 0) {
       setMembers(prev => prev.map(m =>
@@ -943,6 +989,35 @@ export function AppProvider({ children }) {
       if (fresh) setCurrentUser({ ...fresh, ...updates })
     }
   }, [currentUser, sbUpdate])
+
+  const ALLOWED_AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+  const AVATAR_MAX_BYTES = 5 * 1024 * 1024 // 5MB, matches the bucket's file_size_limit
+
+  const uploadAvatarPhoto = useCallback(async (file) => {
+    if (!file) return { error: 'No file selected.' }
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type)) return { error: 'Please choose a JPEG, PNG, or WEBP image.' }
+    if (file.size > AVATAR_MAX_BYTES) return { error: 'Image must be under 5MB.' }
+    if (!currentUser) return { error: 'You need to be signed in to set a profile photo.' }
+
+    // Demo mode has no real auth session for Storage RLS — preview locally only.
+    if (isDemoRef.current || !supabase) {
+      const avatarUrl = URL.createObjectURL(file)
+      await updateProfile({ avatarUrl })
+      return { avatarUrl }
+    }
+
+    const ext  = file.type.split('/')[1]
+    const path = `${currentUser.id}/avatar.${ext}`
+    const { error: upErr } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { contentType: file.type, upsert: true })
+    if (upErr) return { error: 'Upload failed. Please try again.' }
+
+    const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+    const avatarUrl = `${data.publicUrl}?t=${Date.now()}` // cache-bust so re-uploads show immediately
+    await updateProfile({ avatarUrl })
+    return { avatarUrl }
+  }, [currentUser, updateProfile])
 
   // ── Notifications ─────────────────────────────────────────────────────────
   const pushNotif = useCallback((n) => {
@@ -1538,8 +1613,8 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider value={{
       appLoading, isDemoMode,
-      currentUser, login, signup, logout, signInWithOAuth, updateProfile,
-      isPasswordRecovery, resetPassword, updatePassword,
+      currentUser, login, signup, logout, signInWithOAuth, updateProfile, uploadAvatarPhoto,
+      isPasswordRecovery, resetPassword, updatePassword, checkEmailExists,
       currentMember, myFamilyMembers, members, addMember, removeMember, switchMember,
       familyRequests, sendFamilyRequest, respondFamilyRequest,
       notifCentreOpen, setNotifCentreOpen,

@@ -1107,9 +1107,9 @@ const PLANS = [
     ],
   },
   {
-    id: 'family',
-    name: 'Family',
-    price: '£17.99',
+    id: 'premium-plus',
+    name: 'Premium+',
+    price: '£12.99',
     priceNote: '/month',
     icon: Crown,
     accent: '#7c3aed',
@@ -1117,10 +1117,10 @@ const PLANS = [
     border: 'border-violet-200',
     iconBg: 'bg-violet-100',
     iconColor: 'text-violet-500',
-    badge: 'Best value',
+    badge: null,
     features: [
-      'Up to 3 additional connected members — less than £4.50pp',
-      'Family dashboard, real-time alerts, shared location visibility',
+      'Everything in Premium',
+      'Fully conversational voice — log symptoms, set reminders, and get medication calls just by talking to Kaapu',
     ],
   },
 ]

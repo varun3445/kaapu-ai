@@ -24,7 +24,12 @@ html, body, #root {
   margin: 0;
   padding: 0;
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  background: #eeeae6;
+  /* Matches the app's default blue background — this is what iOS Safari's
+     chrome (address bar / bottom toolbar) samples and shows during elastic
+     overscroll bounce, so it must match rather than default to a neutral
+     color. Pages with their own theme (e.g. DoctorPortal) set their own
+     background on their root element, which paints over this. */
+  background: #acd1fb;
   color: #111827;
 }
 

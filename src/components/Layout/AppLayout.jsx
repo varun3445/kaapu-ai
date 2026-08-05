@@ -58,7 +58,7 @@ export default function AppLayout() {
   const isMyEmergency = !!activeEmergency && activeEmergency.familyId === currentUser?.familyId
 
   return (
-    <div className="flex flex-col h-dvh overflow-hidden" style={{ backgroundImage: 'linear-gradient(180deg, #acd1fb 0%, #ffffff 88.4%)' }}>
+    <div className="flex flex-col h-dvh overflow-hidden" style={{ background: '#acd1fb' }}>
       <main
         className="flex-1 overflow-y-auto page-enter"
         style={{ paddingBottom: 'calc(5.5rem + env(safe-area-inset-bottom, 0px))' }}

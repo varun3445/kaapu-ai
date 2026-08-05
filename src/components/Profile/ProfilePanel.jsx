@@ -129,7 +129,7 @@ function WeightHistorySheet({ history, units, onClose }) {
           </button>
         </div>
 
-        <div className="overflow-y-auto px-5 py-4 space-y-2 flex-1">
+        <div className="overflow-y-auto px-5 py-4 space-y-2 flex-1 no-scrollbar">
           {sorted.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-3xl mb-2">⚖️</p>
@@ -420,7 +420,7 @@ function NotificationsPage({ onBack }) {
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Notifications" onBack={onBack} />
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 no-scrollbar">
         <div>
           <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Timezone</p>
           <div className="glass-card rounded-2xl px-4 py-3">
@@ -570,7 +570,7 @@ function PrivacyPage({ onBack, onOpenPrivacy }) {
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Privacy & Sharing" onBack={onBack} />
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 no-scrollbar">
         <div>
           <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider mb-3">Data Access</p>
           <div className="glass-card rounded-2xl px-4 divide-y divide-black/5">
@@ -635,7 +635,7 @@ function PrivacyPolicyPage({ onBack }) {
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Privacy Policy" onBack={onBack} />
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 text-xs text-black/75 leading-relaxed">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 text-xs text-black/75 leading-relaxed no-scrollbar">
         <p className="text-[10px] text-black/75">Last updated: April 2026</p>
 
         {[
@@ -753,7 +753,7 @@ function AccountPage({ onBack }) {
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Account" onBack={onBack} />
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 no-scrollbar">
 
         {/* Personal details */}
         <div data-tour="account-personal">
@@ -990,7 +990,7 @@ function EmergencyContactsPage({ onBack }) {
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Emergency Contacts" onBack={onBack} />
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 no-scrollbar">
 
         <p className="text-[11px] text-black/75 leading-relaxed">
           These people will be shown in the emergency alert modal when you trigger an SOS. Up to 3 contacts.
@@ -1138,7 +1138,7 @@ function PlanPage({ onBack }) {
   return (
     <div className="flex flex-col h-full">
       <BackHeader title="Your Plan" onBack={onBack} />
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 no-scrollbar">
 
         {/* Current plan banner */}
         <div className="glass-card rounded-2xl px-4 py-3.5 flex items-center gap-3">
@@ -1417,7 +1417,7 @@ export default function ProfilePanel({ open, onClose }) {
     ? `${currentMember.relationship}${currentMember.age ? ` · ${currentMember.age}yo` : ''}`
     : null
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -1611,6 +1611,7 @@ export default function ProfilePanel({ open, onClose }) {
           </AnimatePresence>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

@@ -147,6 +147,7 @@ export function AppProvider({ children }) {
   const [familyRequests,  setFamilyRequests]  = useState(_demoParam ? DEMO_FAMILY_REQUESTS.map(r => ({ ...r, toUserId: _demoUser.id, toUserName: _demoUser.name || r.toUserName })) : [])
   const [notifications,   setNotifications]   = useState([])
   const [notifCentreOpen, setNotifCentreOpen] = useState(false)
+  const [profilePanelOpen, setProfilePanelOpen] = useState(false)
   const [activeEmergency, setActiveEmergency] = useState(null)
   const [skinColor,       setSkinColorState]  = useState(() => lsLoad(LS.skinColor, '#C49272'))
   // Detect a password-recovery link straight from the URL synchronously on
@@ -1654,6 +1655,7 @@ export function AppProvider({ children }) {
       currentMember, myFamilyMembers, members, addMember, removeMember, switchMember,
       familyRequests, sendFamilyRequest, respondFamilyRequest,
       notifCentreOpen, setNotifCentreOpen,
+      profilePanelOpen, setProfilePanelOpen,
       currentSymptoms, currentCheckIns, currentDocuments,
       symptoms, checkIns, documents, families,
       addSymptom, updateSymptom, resolveSymptom, deleteSymptom,

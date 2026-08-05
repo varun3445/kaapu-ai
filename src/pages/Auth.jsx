@@ -321,7 +321,7 @@ export default function Auth() {
   const showTabs = !(mode === 'signup' && signupStep === 2)
 
   return (
-    <div className="h-screen overflow-hidden flex flex-col" style={{ background: '#acd1fb' }}>
+    <div className="h-dvh overflow-hidden flex flex-col" style={{ background: '#acd1fb' }}>
       {/* Hero header — fixed 128px from top, same on every screen */}
       <div className="flex flex-col items-center pt-28 pb-6 px-6">
         <div className="flex items-center gap-2 justify-center">

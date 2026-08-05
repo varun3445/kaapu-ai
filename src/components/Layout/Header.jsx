@@ -136,8 +136,8 @@ export default function Header() {
   const {
     currentMember, notifications, notifCentreOpen, setNotifCentreOpen,
     familyRequests, currentUser,
+    profilePanelOpen: panelOpen, setProfilePanelOpen: setPanelOpen,
   } = useApp()
-  const [panelOpen,  setPanelOpen]  = useState(false)
   const [peopleOpen, setPeopleOpen] = useState(false)
   const headerRef = useRef(null)
 

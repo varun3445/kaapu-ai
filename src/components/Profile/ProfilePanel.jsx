@@ -1141,15 +1141,27 @@ function PlanPage({ onBack }) {
       <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 no-scrollbar">
 
         {/* Current plan banner */}
-        <div className="glass-card rounded-2xl px-4 py-3.5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
-            <Star size={15} className="text-black/75" />
+        <div className="glass-card rounded-2xl overflow-hidden">
+          <div className="px-4 py-3.5 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center">
+              <Star size={15} className="text-black/75" />
+            </div>
+            <div className="flex-1">
+              <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Current plan</p>
+              <p className="text-sm font-extrabold text-black">Free</p>
+            </div>
+            <span className="text-[10px] font-bold text-black/75 bg-gray-100 px-2.5 py-1 rounded-full">Active</span>
           </div>
-          <div className="flex-1">
-            <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider">Current plan</p>
-            <p className="text-sm font-extrabold text-black">Free</p>
+          <div className="px-4 py-3 space-y-2 border-t border-gray-100">
+            {PLANS.find(p => p.id === 'free').features.map(f => (
+              <div key={f} className="flex items-center gap-2.5">
+                <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-200">
+                  <CheckIcon size={8} className="text-black/75" />
+                </div>
+                <p className="text-[11px] text-black/75">{f}</p>
+              </div>
+            ))}
           </div>
-          <span className="text-[10px] font-bold text-black/75 bg-gray-100 px-2.5 py-1 rounded-full">Active</span>
         </div>
 
         <p className="text-[10px] font-extrabold text-black/75 uppercase tracking-wider pt-1">Upgrade</p>
@@ -1175,9 +1187,10 @@ function PlanPage({ onBack }) {
                       </span>
                     )}
                   </div>
-                  <p className="text-sm font-extrabold leading-none" style={{ color: plan.accent }}>
-                    {plan.price}
-                    <span className="text-[10px] font-semibold ml-0.5 opacity-70">{plan.priceNote}</span>
+                  <p className="text-sm font-extrabold leading-none flex items-center gap-1.5">
+                    <span className="text-black/40 line-through">{plan.price}</span>
+                    <span style={{ color: plan.accent }}>Free</span>
+                    <span className="text-[10px] font-semibold opacity-70" style={{ color: plan.accent }}>for now</span>
                   </p>
                 </div>
               </div>

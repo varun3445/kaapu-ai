@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Bell, X, Users, UserCheck, UserX } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useApp } from '../../context/AppContext'
@@ -18,7 +19,7 @@ function PeoplePanel({ open, onClose }) {
 
   if (!open) return null
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -127,7 +128,8 @@ function PeoplePanel({ open, onClose }) {
           </div>
         </div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body
   )
 }
 

@@ -22,8 +22,9 @@ export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [slowHint, setSlowHint] = useState(false)
   const [confirmEmail, setConfirmEmail] = useState('')
-  const [forgotMode, setForgotMode] = useState('idle') // 'idle' | 'form' | 'sent' | 'notFound'
+  const [forgotMode, setForgotMode] = useState('idle') // 'idle' | 'form' | 'sent' | 'notFound' | 'error'
   const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotError, setForgotError] = useState('')
   const [forgotLoading, setForgotLoading] = useState(false)
   const [newPassword, setNewPassword] = useState('')
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('')
@@ -62,9 +63,13 @@ export default function Auth() {
       }
       setError('')
       setLoading(true)
-      const exists = await checkEmailExists(form.email)
+      const check = await checkEmailExists(form.email)
       setLoading(false)
-      if (exists) {
+      if (check.error) {
+        setError('Could not verify email right now. Please try again.')
+        return
+      }
+      if (check.exists) {
         setError('Email already in use, please sign in.')
         return
       }
@@ -119,7 +124,7 @@ export default function Auth() {
     const result = await resetPassword(forgotEmail)
     setForgotLoading(false)
     if (result.notFound) { setForgotMode('notFound'); return }
-    if (result.error) { setForgotMode('notFound'); return }
+    if (result.error) { setForgotError(result.error); setForgotMode('error'); return }
     setForgotMode('sent')
   }
 
@@ -245,6 +250,27 @@ export default function Auth() {
               <button onClick={() => setForgotMode('form')}
                 className="w-full py-3 rounded-2xl font-semibold text-sm text-black/75">
                 Try a different email
+              </button>
+            </div>
+          )}
+
+          {forgotMode === 'error' && (
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5"
+                style={{ background: 'rgba(239,68,68,0.1)' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(239,68,68,0.8)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/>
+                </svg>
+              </div>
+              <h2 className="text-xl font-extrabold text-black mb-2">Couldn't send reset email</h2>
+              <p className="text-sm text-black/75 mb-6">
+                {forgotError.toLowerCase().includes('rate limit')
+                  ? "We've hit the limit on how many reset emails can be sent right now. Please wait a bit and try again."
+                  : forgotError}
+              </p>
+              <button onClick={() => setForgotMode('form')}
+                className="w-full py-3.5 rounded-2xl font-bold text-sm bg-primary-600 text-white">
+                Try again
               </button>
             </div>
           )}

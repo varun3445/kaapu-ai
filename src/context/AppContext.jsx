@@ -4,6 +4,14 @@ import { supabase, supabaseReady } from '../supabase'
 import { startAlarm, stopActiveAlarm } from '../utils/audio'
 import { severityLabel, SEVERITY_HIGH_THRESHOLD, SEVERITY_MID_THRESHOLD } from '../utils/severity'
 
+// Canonical production origin for auth email redirects (OAuth, signup
+// confirmation, password reset). Falls back to wherever the app is
+// currently running (e.g. localhost, or a Vercel preview URL) so dev and
+// preview deployments still work — but production always redirects back to
+// the real domain instead of whatever preview URL a user happened to click
+// "forgot password" from.
+const SITE_ORIGIN = import.meta.env.VITE_SITE_URL || window.location.origin
+
 // ── Push Notifications (lazy — native iOS + Android via Capacitor) ────────────
 let _pushPlugin = null
 async function getPushPlugin() {
@@ -141,7 +149,14 @@ export function AppProvider({ children }) {
   const [notifCentreOpen, setNotifCentreOpen] = useState(false)
   const [activeEmergency, setActiveEmergency] = useState(null)
   const [skinColor,       setSkinColorState]  = useState(() => lsLoad(LS.skinColor, '#C49272'))
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false)
+  // Detect a password-recovery link straight from the URL synchronously on
+  // first render, rather than waiting on onAuthStateChange — that event only
+  // fires after Supabase has round-tripped to verify the token, and if that
+  // verification is slow/fails for any reason we still don't want the
+  // recovery screen to flash away or never appear.
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(
+    () => typeof window !== 'undefined' && window.location.hash.includes('type=recovery')
+  )
 
   // Push notification registration ref (prevent duplicate registrations)
   const symptomsRef = useRef(symptoms)
@@ -181,6 +196,20 @@ export function AppProvider({ children }) {
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // A password-recovery link establishes a real session too (it has to,
+      // to authorize updateUser({ password })) — so INITIAL_SESSION/SIGNED_IN
+      // can fire for it just like a normal login, racing ahead of (or
+      // instead of) the dedicated PASSWORD_RECOVERY event. If we let that
+      // fall into the normal load-and-sign-in path, currentUser gets set and
+      // the /auth route immediately redirects away before the "set new
+      // password" screen ever has a chance to render. The URL hash still has
+      // `type=recovery` at this point regardless of which event fired, so
+      // use that as the source of truth instead of trusting the event name.
+      const isRecoveryLink = window.location.hash.includes('type=recovery')
+      if (isRecoveryLink) {
+        setIsPasswordRecovery(true)
+        return
+      }
       if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session) {
         if (loadingRef.current) return // already loading, skip duplicate
         loadingRef.current = true
@@ -787,13 +816,12 @@ export function AppProvider({ children }) {
     try {
       const deadline = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000))
 
-      const siteUrl = window.location.origin
       const { data: authData, error: authErr } = await Promise.race([
         supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
-            emailRedirectTo: siteUrl,
+            emailRedirectTo: SITE_ORIGIN,
             data: { full_name: (data.name || '').trim() },
           },
         }),
@@ -914,10 +942,9 @@ export function AppProvider({ children }) {
 
   const signInWithOAuth = useCallback(async (provider) => {
     if (!supabase) return { error: 'Supabase not configured.' }
-    const redirectTo = window.location.origin
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo },
+      options: { redirectTo: SITE_ORIGIN },
     })
     if (error) return { error: error.message }
     return { ok: true }
@@ -928,16 +955,25 @@ export function AppProvider({ children }) {
   // empty). Use the email_exists() RPC instead, which runs as SECURITY
   // DEFINER server-side and only ever returns a boolean.
   const checkEmailExists = useCallback(async (email) => {
-    if (!supabase) return false
-    const { data } = await supabase.rpc('email_exists', { check_email: email.trim().toLowerCase() })
-    return !!data
+    if (!supabase) return { error: 'Supabase not configured.' }
+    const { data, error } = await supabase.rpc('email_exists', { check_email: email.trim().toLowerCase() })
+    if (error) return { error: error.message }
+    return { exists: !!data }
   }, [])
 
   const resetPassword = useCallback(async (email) => {
     if (!supabase) return { error: 'Supabase not configured.' }
-    const exists = await checkEmailExists(email)
-    if (!exists) return { notFound: true }
-    const redirectTo = window.location.origin
+    const check = await checkEmailExists(email)
+    if (check.error) return { error: check.error }
+    if (!check.exists) return { notFound: true }
+    // Must redirect straight to /auth, NOT the root. Landing on `/` first
+    // means PrivateRoute sees no session yet (Supabase hasn't had a chance
+    // to parse the #access_token=...&type=recovery hash) and immediately
+    // navigates to /auth itself — which strips the hash from the URL before
+    // Supabase's detectSessionInUrl ever reads it, silently destroying the
+    // one-time recovery token. Landing directly on /auth renders <Auth />
+    // with no redirect in between, so the hash survives.
+    const redirectTo = `${SITE_ORIGIN}/auth`
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo })
     if (error) return { error: error.message }
     return { ok: true }

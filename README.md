@@ -52,15 +52,6 @@ Design tokens live in `tokens/tokens.json`. Components are documented in Storybo
 
 React 18, Vite, Tailwind CSS 3, Framer Motion, Three.js with react three fiber, Recharts, React Router, Capacitor 8, Supabase, Claude API, ElevenLabs, Storybook 10, Vitest with Playwright, MSW.
 
-## Run it locally
-
-```bash
-cp .env.example .env.local     # add Supabase values
-npm install
-npm run dev
-npm run storybook              # component workshop on :6006
-```
-
 ## Author
 
 [Varun Srivathsan](https://varunsrivathsan.com).
